@@ -47,40 +47,60 @@ const layouts = [
   {
     value: "banquet",
     label: "Fishbone",
-    desc: "Angled tables in fishbone style. Great for dinners.",
+    desc: "Angled tables pointing toward the stage. Great for dinners.",
     diagram: (
       <svg viewBox="0 0 100 70" className="w-full h-full">
-        <rect x="20" y="6" width="60" height="6" rx="1" fill="currentColor" opacity="0.3" />
-        <text x="50" y="11" textAnchor="middle" fontSize="3.5" fill="currentColor" opacity="0.7">STAGE</text>
-        {/* Two rows of angled tables — classic herringbone pattern */}
-        {[26, 50].map((cy) => (
-          <g key={cy}>
-            <rect x="14" y={cy} width="22" height="4" rx="0.5" fill="currentColor" opacity="0.45" transform={`rotate(30 25 ${cy + 2})`} />
-            <rect x="42" y={cy} width="22" height="4" rx="0.5" fill="currentColor" opacity="0.45" transform={`rotate(-30 53 ${cy + 2})`} />
-            <rect x="68" y={cy} width="22" height="4" rx="0.5" fill="currentColor" opacity="0.45" transform={`rotate(30 79 ${cy + 2})`} />
-          </g>
-        ))}
-        {/* Chairs along each table */}
-        {[28, 52].map((cy) =>
-          [25, 53, 79].map((cx, idx) => {
-            const angle = idx % 2 === 0 ? 30 : -30;
-            const rad = (angle * Math.PI) / 180;
-            return [-1, 1].map((side) => {
-              const dx = Math.cos(rad + Math.PI / 2) * 4 * side;
-              const dy = Math.sin(rad + Math.PI / 2) * 4 * side;
-              return (
-                <circle
-                  key={`${cx}-${cy}-${side}`}
-                  cx={cx + dx}
-                  cy={cy + dy}
-                  r="1.4"
-                  fill="currentColor"
-                  opacity="0.85"
-                />
-              );
-            });
-          }),
-        )}
+        {/* Stage at top center */}
+        <rect x="40" y="6" width="20" height="5" rx="0.5" fill="currentColor" opacity="0.5" />
+        {/* Stage chairs (small dots) */}
+        <circle cx="46" cy="14" r="1.2" fill="currentColor" opacity="0.6" />
+        <circle cx="54" cy="14" r="1.2" fill="currentColor" opacity="0.6" />
+
+        {/* 4 tables in V-shape pointing toward the stage */}
+        {[
+          { cx: 30, cy: 28, angle: -30 },
+          { cx: 70, cy: 28, angle: 30 },
+          { cx: 26, cy: 52, angle: -30 },
+          { cx: 74, cy: 52, angle: 30 },
+        ].map(({ cx, cy, angle }) => {
+          const tableW = 18;
+          const tableH = 4;
+          const rad = (angle * Math.PI) / 180;
+          const cos = Math.cos(rad);
+          const sin = Math.sin(rad);
+          const chairOffset = 3.5;
+          const positions = [-0.3, 0, 0.3];
+          return (
+            <g key={`${cx}-${cy}`}>
+              <rect
+                x={cx - tableW / 2}
+                y={cy - tableH / 2}
+                width={tableW}
+                height={tableH}
+                rx="0.5"
+                transform={`rotate(${angle} ${cx} ${cy})`}
+                fill="currentColor"
+                opacity="0.85"
+              />
+              {[-1, 1].flatMap((side) =>
+                positions.map((t, i) => {
+                  const x = cx + t * tableW * cos + side * chairOffset * -sin;
+                  const y = cy + t * tableW * sin + side * chairOffset * cos;
+                  return (
+                    <circle
+                      key={`${side}-${i}`}
+                      cx={x}
+                      cy={y}
+                      r="1.3"
+                      fill="currentColor"
+                      opacity="0.6"
+                    />
+                  );
+                }),
+              )}
+            </g>
+          );
+        })}
       </svg>
     ),
   },
