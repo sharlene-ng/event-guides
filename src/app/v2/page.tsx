@@ -4,13 +4,6 @@ import CalendarView from "@/components/CalendarView";
 
 export const dynamic = "force-dynamic";
 
-const sections = [
-  { href: "/v2/hall-info", title: "Hall Info", desc: "Capacity, equipment, layouts, pricing", icon: "🏛️" },
-  { href: "/v2/sop", title: "Booking Guide", desc: "Step-by-step from approval to event day", icon: "📋" },
-  { href: "/v2/checklist", title: "Checklist", desc: "Generic event-day reference", icon: "✅" },
-  { href: "/v2/contacts", title: "Contacts", desc: "Approver, building mgmt, PICs, vendors", icon: "📞" },
-];
-
 const layoutLabel: Record<string, string> = {
   theater: "Theater",
   classroom: "Classroom",
@@ -106,14 +99,6 @@ export default async function V2Home() {
         </div>
       )}
 
-      {/* Calendar */}
-      <section className="mb-12">
-        <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
-          Hall Availability
-        </p>
-        <CalendarView events={allApproved} />
-      </section>
-
       {/* Upcoming events grouped by month */}
       <section className="mb-12">
         <div className="flex items-baseline justify-between mb-4">
@@ -163,24 +148,12 @@ export default async function V2Home() {
         )}
       </section>
 
-      {/* Wiki sections */}
+      {/* Calendar */}
       <section>
-        <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-4">
-          Wiki Sections
+        <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+          Hall Availability
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {sections.map((s) => (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="bg-white border border-gray-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-md transition-all"
-            >
-              <div className="text-2xl mb-2">{s.icon}</div>
-              <h3 className="font-semibold text-gray-900 text-sm">{s.title}</h3>
-              <p className="text-xs text-gray-500 mt-1">{s.desc}</p>
-            </Link>
-          ))}
-        </div>
+        <CalendarView events={allApproved} />
       </section>
     </div>
   );

@@ -186,11 +186,8 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
                     key={e.id + key}
                     href={`/v2/events/${e.id}`}
                     className="block bg-blue-600 hover:bg-blue-700 text-white text-[10px] truncate rounded px-1.5 py-0.5 leading-tight"
-                    title={e.name}
+                    title={`${e.name}${e.startTime ? ` · ${e.startTime}` : ""}`}
                   >
-                    {e.startTime && (
-                      <span className="opacity-75 mr-1">{e.startTime}</span>
-                    )}
                     {e.name}
                   </Link>
                 ))}
