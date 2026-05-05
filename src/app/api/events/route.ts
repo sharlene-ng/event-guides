@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Basic validation
-    const required = ["name", "date", "organizer", "layout", "projectType"];
+    // Basic validation — projectType, pic, requirements set by admin later
+    const required = ["name", "date", "organizer", "layout"];
     for (const f of required) {
       if (!body[f]) {
         return NextResponse.json(
