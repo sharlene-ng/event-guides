@@ -62,30 +62,30 @@ export default async function V2Home() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-white border border-blue-100 p-8 sm:p-10 mb-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-8 sm:p-10 text-white mb-8 shadow-sm">
         <div
-          className="absolute inset-0 opacity-40"
+          className="absolute inset-0 opacity-15"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 30% 50%, rgba(99,102,241,0.12) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
+              "radial-gradient(circle at 30% 50%, white 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
           }}
         />
         <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
           <div>
-            <p className="text-blue-600 text-xs font-semibold tracking-[0.2em] uppercase mb-3">
+            <p className="text-blue-100 text-xs font-semibold tracking-[0.2em] uppercase mb-3">
               Internal Wiki
             </p>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
               BIG Hall Event Planning
             </h1>
-            <p className="text-gray-500 text-sm sm:text-base max-w-xl">
+            <p className="text-blue-50 text-sm sm:text-base max-w-xl">
               Calendar of upcoming bookings, booking guide, and resources.
             </p>
           </div>
           <Link
             href="/v2/submit"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 shadow-sm transition-colors text-sm self-start sm:self-end"
+            className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-50 shadow-md transition-colors text-sm self-start sm:self-end"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
             Submit New Event
