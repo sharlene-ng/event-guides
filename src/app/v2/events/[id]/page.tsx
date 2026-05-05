@@ -1,14 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getEvent } from "@/lib/sheets";
+import { isAdminAuthed } from "@/lib/admin";
 import EventChecklist from "./EventChecklist";
+import AdminControls from "./AdminControls";
 
 export const dynamic = "force-dynamic";
 
 const layoutLabel: Record<string, string> = {
   theater: "Theater seats",
   classroom: "Classroom",
-  banquet: "Banquet",
+  banquet: "Herringbone (fishbone) style",
 };
 
 const projectTypeLabel: Record<string, string> = {
@@ -31,6 +33,8 @@ export default async function EventDetailPage({
   const { id } = await params;
   const event = await getEvent(id);
   if (!event) notFound();
+
+  const isAdmin = await isAdminAuthed();
 
   const start = new Date(String(event.date));
   const end = event.endDate ? new Date(String(event.endDate)) : start;
@@ -86,6 +90,23 @@ export default async function EventDetailPage({
               ? "✕ This event was rejected and won't appear on the home page."
               : ""}
         </div>
+      )}
+
+      {/* Admin controls (only when admin authed) */}
+      {isAdmin && <AdminControls event={event} />}
+
+      {/* Admin remarks (visible to everyone if set) */}
+      {event.requirements?.adminRemarks && (
+        <section className="mb-8">
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+            Admin Remarks
+          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <p className="text-sm text-amber-900 whitespace-pre-wrap">
+              {event.requirements.adminRemarks}
+            </p>
+          </div>
+        </section>
       )}
 
       {/* Poster */}

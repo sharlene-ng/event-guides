@@ -58,7 +58,6 @@ export default function PublicBookingPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
-    setSubmitting(true);
 
     const fd = new FormData(e.currentTarget);
     const startDate = fd.get("startDate") as string;
@@ -67,9 +66,18 @@ export default function PublicBookingPage() {
 
     if (endDate < startDate) {
       setError("End date can't be before start date.");
-      setSubmitting(false);
       return;
     }
+
+    if (!poster) {
+      setError("Please upload an event poster before submitting.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    const phone = (fd.get("ownerPhone") as string).trim();
+    const email = (fd.get("ownerEmail") as string).trim();
 
     const payload: Record<string, unknown> = {
       name: fd.get("name") as string,
@@ -80,20 +88,19 @@ export default function PublicBookingPage() {
       pax: Number(fd.get("pax") || 0),
       layout: fd.get("layout") as string,
       organizer: fd.get("eventOwner") as string,
-      organizerContact: fd.get("ownerContact") as string,
+      // Combine into one cell as "phone | email" for storage
+      organizerContact: [phone, email].filter(Boolean).join(" | "),
       projectType: "",
       pic: "",
       requirements: { notes: fd.get("notes") as string },
     };
 
-    if (poster) {
-      try {
-        payload.poster = await fileToBase64(poster);
-      } catch {
-        setError("Could not read poster file. Try a different image.");
-        setSubmitting(false);
-        return;
-      }
+    try {
+      payload.poster = await fileToBase64(poster);
+    } catch {
+      setError("Could not read poster file. Try a different image.");
+      setSubmitting(false);
+      return;
     }
 
     try {
@@ -239,12 +246,22 @@ export default function PublicBookingPage() {
               required
               placeholder="Person responsible for this event"
             />
-            <Field
-              label="Contact (Phone / Email) *"
-              name="ownerContact"
-              required
-              placeholder="So we can reach you about the booking"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field
+                label="Phone *"
+                name="ownerPhone"
+                type="tel"
+                required
+                placeholder="e.g. +60 12-345 6789"
+              />
+              <Field
+                label="Email *"
+                name="ownerEmail"
+                type="email"
+                required
+                placeholder="you@example.com"
+              />
+            </div>
           </Card>
 
           {/* Notes */}
@@ -258,9 +275,9 @@ export default function PublicBookingPage() {
           </Card>
 
           {/* Event poster */}
-          <Card label="Event Poster (Optional)">
+          <Card label="Event Poster *">
             <p className="text-sm text-gray-500 -mt-2">
-              Upload a poster or banner — JPG, PNG, max 5 MB.
+              Required. Upload a poster or banner — JPG, PNG, max 5 MB.
             </p>
             {posterPreview ? (
               <div className="relative inline-block">

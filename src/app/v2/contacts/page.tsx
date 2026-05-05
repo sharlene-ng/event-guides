@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { listContacts, type Contact } from "@/lib/sheets";
 import CopyableValue from "@/components/CopyableValue";
 import EmergencyCard from "@/components/EmergencyCard";
+import BookingFormResource from "@/components/BookingFormResource";
 
 export const dynamic = "force-dynamic";
 
@@ -143,6 +144,7 @@ export default async function V2ContactsPage() {
       {/* Resources (kept hardcoded — relevant links, not contacts) */}
       <Section label="Useful Resources">
         <div className="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100">
+          <BookingFormResource />
           <a
             href="https://docs.google.com/spreadsheets/d/15HHNs5L_sAbXqrSrjggBdHFgLqnHuz_uv9SttKZ7avo/copy"
             target="_blank"

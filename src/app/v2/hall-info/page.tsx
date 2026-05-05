@@ -117,7 +117,6 @@ export default async function V2HallInfoPage() {
           </p>
           <Link
             href="/v2/pricing"
-            target="_blank"
             className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -125,7 +124,7 @@ export default async function V2HallInfoPage() {
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Download / Print Rate Card
+            View / Download Rate Card →
           </Link>
         </div>
 

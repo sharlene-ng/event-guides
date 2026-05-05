@@ -46,27 +46,41 @@ const layouts = [
   },
   {
     value: "banquet",
-    label: "Banquet",
-    desc: "Round tables. Best for meals & social events.",
+    label: "Herringbone",
+    desc: "Angled tables in fishbone style. Great for dinners.",
     diagram: (
       <svg viewBox="0 0 100 70" className="w-full h-full">
         <rect x="20" y="6" width="60" height="6" rx="1" fill="currentColor" opacity="0.3" />
         <text x="50" y="11" textAnchor="middle" fontSize="3.5" fill="currentColor" opacity="0.7">STAGE</text>
-        {[
-          [25, 28], [50, 28], [75, 28],
-          [25, 52], [50, 52], [75, 52],
-        ].map(([cx, cy]) => (
-          <g key={`${cx}-${cy}`}>
-            <circle cx={cx} cy={cy} r="6" fill="none" stroke="currentColor" strokeWidth="0.8" opacity="0.5" />
-            {/* 6 chairs around */}
-            {[0, 60, 120, 180, 240, 300].map((deg) => {
-              const rad = (deg * Math.PI) / 180;
-              const x = cx + Math.cos(rad) * 8.5;
-              const y = cy + Math.sin(rad) * 8.5;
-              return <circle key={deg} cx={x} cy={y} r="1.5" fill="currentColor" opacity="0.85" />;
-            })}
+        {/* Two rows of angled tables — classic herringbone pattern */}
+        {[26, 50].map((cy) => (
+          <g key={cy}>
+            <rect x="14" y={cy} width="22" height="4" rx="0.5" fill="currentColor" opacity="0.45" transform={`rotate(30 25 ${cy + 2})`} />
+            <rect x="42" y={cy} width="22" height="4" rx="0.5" fill="currentColor" opacity="0.45" transform={`rotate(-30 53 ${cy + 2})`} />
+            <rect x="68" y={cy} width="22" height="4" rx="0.5" fill="currentColor" opacity="0.45" transform={`rotate(30 79 ${cy + 2})`} />
           </g>
         ))}
+        {/* Chairs along each table */}
+        {[28, 52].map((cy) =>
+          [25, 53, 79].map((cx, idx) => {
+            const angle = idx % 2 === 0 ? 30 : -30;
+            const rad = (angle * Math.PI) / 180;
+            return [-1, 1].map((side) => {
+              const dx = Math.cos(rad + Math.PI / 2) * 4 * side;
+              const dy = Math.sin(rad + Math.PI / 2) * 4 * side;
+              return (
+                <circle
+                  key={`${cx}-${cy}-${side}`}
+                  cx={cx + dx}
+                  cy={cy + dy}
+                  r="1.4"
+                  fill="currentColor"
+                  opacity="0.85"
+                />
+              );
+            });
+          }),
+        )}
       </svg>
     ),
   },

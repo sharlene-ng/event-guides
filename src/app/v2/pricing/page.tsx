@@ -1,4 +1,5 @@
 import { listPricing, type PricingRow } from "@/lib/sheets";
+import DownloadRateCard from "@/components/DownloadRateCard";
 
 export const dynamic = "force-dynamic";
 
@@ -42,15 +43,18 @@ export default async function PricingPage() {
         </div>
       )}
 
-      <p className="text-xs text-gray-500 mb-3 italic">
-        Prices live in your Google Sheet (
-        <span className="bg-gray-100 text-gray-700 px-1 rounded font-mono">
-          Pricing
-        </span>{" "}
-        tab). Edit there to update.
-      </p>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs text-gray-500 italic">
+          Prices live in your Google Sheet (
+          <span className="bg-gray-100 text-gray-700 px-1 rounded font-mono">
+            Pricing
+          </span>{" "}
+          tab). Edit there to update.
+        </p>
+        <DownloadRateCard targetSelector="#rate-card" />
+      </div>
 
-      <div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+      <div id="rate-card" className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
         {/* Hero header */}
         <div className="relative bg-black text-white px-8 py-10 overflow-hidden">
           <div

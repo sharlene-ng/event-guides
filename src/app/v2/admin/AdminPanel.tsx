@@ -13,7 +13,7 @@ const statusBadge: Record<string, string> = {
 const layoutLabel: Record<string, string> = {
   theater: "Theater",
   classroom: "Classroom",
-  banquet: "Banquet",
+  banquet: "Herringbone",
 };
 
 export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[] }) {

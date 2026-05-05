@@ -10,6 +10,7 @@ export type EventRequirements = {
   lift?: boolean;
   aircond?: boolean;
   notes?: string;
+  adminRemarks?: string;
 };
 
 export type SOPEvent = {
