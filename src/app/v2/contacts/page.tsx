@@ -1,5 +1,7 @@
 import { Fragment } from "react";
 import { listContacts, type Contact } from "@/lib/sheets";
+import CopyableValue from "@/components/CopyableValue";
+import EmergencyCard from "@/components/EmergencyCard";
 
 export const dynamic = "force-dynamic";
 
@@ -74,17 +76,11 @@ export default async function V2ContactsPage() {
             className={`grid gap-3 ${emergency.length >= 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}
           >
             {emergency.map((c) => (
-              <div
+              <EmergencyCard
                 key={c.role + c.phone}
-                className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-3"
-              >
-                <p className="text-rose-100 text-[10px] uppercase tracking-wide font-semibold">
-                  {c.role}
-                </p>
-                <p className="text-white font-bold text-xl mt-1">
-                  {c.phone || "—"}
-                </p>
-              </div>
+                role={c.role}
+                phone={c.phone}
+              />
             ))}
           </div>
         </div>
@@ -126,10 +122,14 @@ export default async function V2ContactsPage() {
                       {rows.map((v) => (
                         <div
                           key={v.role + v.phone}
-                          className="flex justify-between text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0"
+                          className="flex justify-between items-center text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0 gap-2"
                         >
-                          <span className="text-gray-700">{v.role}</span>
-                          <span className="text-gray-400">{v.phone || "—"}</span>
+                          <span className="text-gray-700 truncate">{v.role}</span>
+                          <CopyableValue
+                            value={v.phone}
+                            type="phone"
+                            className="text-gray-500 text-xs"
+                          />
                         </div>
                       ))}
                     </div>
@@ -223,9 +223,15 @@ function ContactTable({ contacts }: { contacts: Contact[] }) {
                     {c.role}
                   </td>
                   <td className="py-3 px-5 text-gray-700">{c.name || "—"}</td>
-                  <td className="py-3 px-5 text-blue-600">{c.phone || "—"}</td>
-                  <td className="py-3 px-5 text-gray-600 text-xs">
-                    {c.email || "—"}
+                  <td className="py-3 px-5">
+                    <CopyableValue
+                      value={c.phone}
+                      type="phone"
+                      className="text-blue-600 font-medium"
+                    />
+                  </td>
+                  <td className="py-3 px-5 text-xs">
+                    <CopyableValue value={c.email} type="email" className="text-gray-600" />
                   </td>
                 </tr>
                 {c.note && (
