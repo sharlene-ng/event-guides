@@ -44,7 +44,6 @@ export async function POST(req: NextRequest) {
         body.posterUrl = upload.posterUrl;
         body.posterViewUrl = upload.posterViewUrl;
       } catch (err) {
-        // Don't fail the whole submission if poster upload fails
         console.error("Poster upload failed:", err);
       }
       delete body.poster;
