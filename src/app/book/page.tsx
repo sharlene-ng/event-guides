@@ -3,10 +3,57 @@
 import { useState } from "react";
 import LayoutPicker from "@/components/LayoutPicker";
 
+const MAX_POSTER_SIZE = 5 * 1024 * 1024; // 5 MB
+
+function fileToBase64(file: File): Promise<{ base64: string; mimeType: string; filename: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Strip "data:image/jpeg;base64," prefix
+      const base64 = result.includes(",") ? result.split(",")[1] : result;
+      resolve({ base64, mimeType: file.type, filename: file.name });
+    };
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function PublicBookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<{ id: string; name: string } | null>(null);
+  const [poster, setPoster] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+
+  function handlePosterChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setError("");
+    const file = e.target.files?.[0] || null;
+    if (!file) {
+      setPoster(null);
+      setPosterPreview(null);
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setError("Poster must be an image file.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_POSTER_SIZE) {
+      setError("Poster too large — max 5 MB.");
+      e.target.value = "";
+      return;
+    }
+    setPoster(file);
+    const reader = new FileReader();
+    reader.onload = () => setPosterPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  function clearPoster() {
+    setPoster(null);
+    setPosterPreview(null);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,9 +71,9 @@ export default function PublicBookingPage() {
       return;
     }
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       name: fd.get("name") as string,
-      date: startDate, // start date stored in `date` for backwards compat
+      date: startDate,
       endDate,
       startTime: fd.get("startTime") as string,
       endTime: fd.get("endTime") as string,
@@ -34,11 +81,20 @@ export default function PublicBookingPage() {
       layout: fd.get("layout") as string,
       organizer: fd.get("eventOwner") as string,
       organizerContact: fd.get("ownerContact") as string,
-      // Project type, PIC, requirements left blank — admin sets after approval
       projectType: "",
       pic: "",
       requirements: { notes: fd.get("notes") as string },
     };
+
+    if (poster) {
+      try {
+        payload.poster = await fileToBase64(poster);
+      } catch {
+        setError("Could not read poster file. Try a different image.");
+        setSubmitting(false);
+        return;
+      }
+    }
 
     try {
       const res = await fetch("/api/events", {
@@ -199,6 +255,59 @@ export default function PublicBookingPage() {
               className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
               placeholder="Anything we should know — special requests, agenda highlights, etc."
             />
+          </Card>
+
+          {/* Event poster */}
+          <Card label="Event Poster (Optional)">
+            <p className="text-sm text-gray-500 -mt-2">
+              Upload a poster or banner — JPG, PNG, max 5 MB.
+            </p>
+            {posterPreview ? (
+              <div className="relative inline-block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={posterPreview}
+                  alt="Poster preview"
+                  className="max-h-64 rounded-lg border border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={clearPoster}
+                  className="absolute -top-2 -right-2 w-7 h-7 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center text-gray-500 hover:bg-rose-50 hover:text-rose-600"
+                  title="Remove poster"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+                {poster && (
+                  <p className="text-xs text-gray-500 mt-2 truncate">
+                    {poster.name} · {(poster.size / 1024).toFixed(0)} KB
+                  </p>
+                )}
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
+                <svg className="w-8 h-8 text-gray-400 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                <p className="text-sm font-medium text-gray-700">
+                  Click to choose an image
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  JPG, PNG up to 5 MB
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePosterChange}
+                  className="hidden"
+                />
+              </label>
+            )}
           </Card>
 
           {error && (

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createEvent, listEvents, type EventStatus } from "@/lib/sheets";
+import {
+  createEvent,
+  listEvents,
+  uploadPoster,
+  type EventStatus,
+} from "@/lib/sheets";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +23,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Basic validation — projectType, pic, requirements set by admin later
     const required = ["name", "date", "organizer", "layout"];
     for (const f of required) {
       if (!body[f]) {
@@ -27,6 +31,23 @@ export async function POST(req: NextRequest) {
           { status: 400 },
         );
       }
+    }
+
+    // If a poster image was attached, upload to Drive first
+    if (body.poster && body.poster.base64) {
+      try {
+        const upload = await uploadPoster({
+          base64: body.poster.base64,
+          filename: body.poster.filename || "poster.jpg",
+          mimeType: body.poster.mimeType || "image/jpeg",
+        });
+        body.posterUrl = upload.posterUrl;
+        body.posterViewUrl = upload.posterViewUrl;
+      } catch (err) {
+        // Don't fail the whole submission if poster upload fails
+        console.error("Poster upload failed:", err);
+      }
+      delete body.poster;
     }
 
     const event = await createEvent(body);

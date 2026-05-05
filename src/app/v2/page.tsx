@@ -173,29 +173,42 @@ function EventCard({ event }: { event: SOPEvent }) {
       href={`/v2/events/${event.id}`}
       className="group bg-white border border-gray-200 rounded-xl p-4 flex gap-4 hover:border-blue-300 hover:shadow-md transition-all"
     >
-      <div className="flex-shrink-0 w-14 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg py-2 relative">
-        <p className="text-[10px] uppercase tracking-wide text-blue-600 font-bold">
-          {month}
-        </p>
-        <p className="text-2xl font-bold text-blue-700 leading-none">{day}</p>
-        <p className="text-[10px] text-blue-500 mt-0.5">{dayName}</p>
-        {isMultiDay && (
-          <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 rounded-full">
-            +{Math.round((end.getTime() - start.getTime()) / 86400000)}d
-          </span>
-        )}
-      </div>
+      {event.posterUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={event.posterUrl}
+          alt={event.name}
+          className="flex-shrink-0 w-16 h-16 rounded-lg object-cover border border-gray-200"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <div className="flex-shrink-0 w-14 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg py-2 relative">
+          <p className="text-[10px] uppercase tracking-wide text-blue-600 font-bold">
+            {month}
+          </p>
+          <p className="text-2xl font-bold text-blue-700 leading-none">{day}</p>
+          <p className="text-[10px] text-blue-500 mt-0.5">{dayName}</p>
+          {isMultiDay && (
+            <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 rounded-full">
+              +{Math.round((end.getTime() - start.getTime()) / 86400000)}d
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="flex-1 min-w-0">
         <h3 className="font-bold text-gray-900 text-sm mb-1 truncate group-hover:text-blue-700">
           {event.name}
         </h3>
         <p className="text-xs text-gray-500 mb-2">
+          {month} {day}
           {isMultiDay && (
             <>
-              until {end.getDate()} {end.toLocaleString("default", { month: "short" })} ·{" "}
+              {" → "}
+              {end.getDate()} {end.toLocaleString("default", { month: "short" })}
             </>
           )}
+          {" · "}
           {event.startTime && `${event.startTime}`}
           {event.endTime && `–${event.endTime} · `}
           {event.pax} pax · {layoutLabel[String(event.layout)] || event.layout}

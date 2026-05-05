@@ -15,6 +15,17 @@ const inclusionGroups = [
   { key: "inclusion-tech", title: "Tech & Connectivity" },
 ];
 
+// Stats to hide from quick-stat grid (they're shown in the rate card section instead)
+const HIDDEN_STAT_KEYS = new Set([
+  "venue_name",
+  "location",
+  "floor_area",
+  "ceiling_height",
+  "stage_dimensions",
+  "internal_price",
+  "external_price",
+]);
+
 function findInfo(rows: HallInfoRow[], key: string): HallInfoRow | undefined {
   return rows.find((r) => r.key === key);
 }
@@ -39,16 +50,14 @@ export default async function V2HallInfoPage() {
   const location = findInfo(hallInfo, "location")?.value || "Kuala Lumpur";
   const capacity = findInfo(hallInfo, "capacity");
 
-  // Quick stats: render rows that exist (skip if all values are TBD or missing)
-  const stats = hallInfo
-    .filter((h) => !["venue_name", "location"].includes(h.key))
-    .map((h) => ({
-      label: h.key
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase()),
-      value: h.value,
-      unit: h.unit,
-    }));
+  const stats = hallInfo.filter(
+    (h) => !HIDDEN_STAT_KEYS.has(h.key) && h.value && h.value !== "TBD",
+  );
+
+  const internal = group(pricing, "internal")[0];
+  const external = group(pricing, "external")[0];
+  const internalAddons = group(pricing, "addon-internal");
+  const externalAddons = group(pricing, "addon-external");
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -80,53 +89,122 @@ export default async function V2HallInfoPage() {
         </div>
       </div>
 
-      <p className="text-xs text-gray-500 mb-3 italic">
-        Edit details in the{" "}
-        <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-xs">
-          HallInfo
-        </span>{" "}
-        and{" "}
-        <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-xs">
-          Pricing
-        </span>{" "}
-        tabs in your Google Sheet.
-      </p>
-
-      {/* Quick stats */}
+      {/* Quick stats — only renders if there are non-hidden non-TBD stats */}
       {stats.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
           {stats.map((s) => (
             <div
-              key={s.label}
+              key={s.key}
               className="bg-white border border-gray-200 rounded-xl p-4"
             >
               <p className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold mb-1">
-                {s.label}
+                {s.key
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase())}
               </p>
-              <p className="text-xl font-bold text-gray-900">
-                {s.value || "—"}
-              </p>
-              {s.unit && (
-                <p className="text-xs text-gray-500 mt-0.5">{s.unit}</p>
-              )}
+              <p className="text-xl font-bold text-gray-900">{s.value}</p>
+              {s.unit && <p className="text-xs text-gray-500 mt-0.5">{s.unit}</p>}
             </div>
           ))}
         </div>
       )}
 
-      {/* What's included (sourced from Pricing tab) */}
-      <div className="mb-8">
+      {/* Rate card — full pricing breakdown */}
+      <div className="mb-10">
         <div className="flex items-baseline justify-between mb-4">
           <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500">
-            What&apos;s Included
+            Rate Card
           </p>
           <Link
             href="/v2/pricing"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
-            See full rate card →
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download / Print Rate Card
           </Link>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Internal */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5">
+            <p className="text-amber-700 text-[10px] font-bold tracking-[0.2em] uppercase mb-2">
+              Internal
+            </p>
+            <p className="text-3xl font-serif font-light text-gray-900">
+              {internal?.value || "—"}
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              {internal?.unit || ""}
+            </p>
+            {internalAddons.length > 0 && (
+              <div className="border-t border-gray-100 pt-3">
+                <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-2">
+                  Add-on
+                </p>
+                <div className="space-y-1.5">
+                  {internalAddons.map((a) => (
+                    <div
+                      key={a.label}
+                      className="flex justify-between text-sm"
+                    >
+                      <span className="text-gray-700">{a.label}</span>
+                      <span className="text-gray-900 font-semibold">
+                        {a.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* External */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5">
+            <p className="text-gray-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-2">
+              External
+            </p>
+            <p className="text-3xl font-serif font-light text-gray-900">
+              {external?.value || "—"}
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              {external?.unit || ""}
+            </p>
+            {externalAddons.length > 0 && (
+              <div className="border-t border-gray-100 pt-3">
+                <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-2">
+                  Add-on
+                </p>
+                <div className="space-y-1.5">
+                  {externalAddons.map((a) => (
+                    <div
+                      key={a.label}
+                      className="flex justify-between text-sm"
+                    >
+                      <span className="text-gray-700">{a.label}</span>
+                      <span
+                        className={`font-semibold ${a.unit === "highlight" ? "text-blue-600" : "text-gray-900"}`}
+                      >
+                        {a.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* What's included */}
+      <div className="mb-8">
+        <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-4">
+          What&apos;s Included
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {inclusionGroups.map((g) => {
             const items = group(pricing, g.key);

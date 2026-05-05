@@ -88,6 +88,30 @@ export default async function EventDetailPage({
         </div>
       )}
 
+      {/* Poster */}
+      {event.posterUrl && (
+        <section className="mb-8">
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+            Event Poster
+          </p>
+          <a
+            href={event.posterViewUrl || event.posterUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition-colors"
+            title="Open in Google Drive"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={event.posterUrl}
+              alt={`${event.name} poster`}
+              className="w-full max-h-[600px] object-contain bg-gray-50"
+              referrerPolicy="no-referrer"
+            />
+          </a>
+        </section>
+      )}
+
       {/* Quick details */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         <Detail label="Pax" value={String(event.pax)} />

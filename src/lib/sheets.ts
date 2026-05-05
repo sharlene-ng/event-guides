@@ -31,6 +31,14 @@ export type SOPEvent = {
   approvedAt?: string;
   approvedBy?: string;
   checklistState?: Record<string, boolean>;
+  posterUrl?: string;        // direct image URL (Drive thumbnail)
+  posterViewUrl?: string;    // open-in-Drive URL
+};
+
+export type PosterUpload = {
+  base64: string;       // raw base64 (no data: prefix)
+  filename: string;
+  mimeType: string;
 };
 
 const API_URL = process.env.SHEETS_API_URL;
@@ -113,6 +121,22 @@ function normalizeEvent(e: SOPEvent): SOPEvent {
     organizer: String(e.organizer || ""),
     name: String(e.name || ""),
     pax: e.pax,
+    posterUrl: e.posterUrl ? String(e.posterUrl) : "",
+    posterViewUrl: e.posterViewUrl ? String(e.posterViewUrl) : "",
+  };
+}
+
+export async function uploadPoster(payload: PosterUpload): Promise<{
+  posterUrl: string;
+  posterViewUrl: string;
+}> {
+  const data = (await callPost("uploadPoster", payload)) as {
+    thumbnailUrl: string;
+    webViewLink: string;
+  };
+  return {
+    posterUrl: data.thumbnailUrl,
+    posterViewUrl: data.webViewLink,
   };
 }
 
