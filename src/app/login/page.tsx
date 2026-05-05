@@ -9,7 +9,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get("redirect") || "/v2";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +40,7 @@ function LoginForm() {
       <div>
         <label
           htmlFor="password"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5"
         >
           Password
         </label>
@@ -51,13 +51,13 @@ function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           required
           autoFocus
-          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900"
-          placeholder="Enter password"
+          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 bg-gray-50 focus:bg-white transition-colors"
+          placeholder="••••"
         />
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-md">
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm px-3 py-2 rounded-md">
           {error}
         </div>
       )}
@@ -65,7 +65,7 @@ function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors disabled:opacity-50 shadow-sm"
       >
         {loading ? "Signing in…" : "Sign in"}
       </button>
@@ -75,18 +75,24 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-blue-50 via-white to-amber-50">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">🔒</div>
-          <h1 className="text-2xl font-bold text-gray-900">Event Guides</h1>
+          <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 items-center justify-center mb-4 shadow-lg shadow-blue-200">
+            <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12h3l3-9 6 18 3-9h3" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-gray-900">BIG Hall Event Wiki</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Internal access only — please sign in
+            Internal access only
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <Suspense fallback={<div className="text-sm text-gray-400">Loading…</div>}>
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <Suspense
+            fallback={<div className="text-sm text-gray-400">Loading…</div>}
+          >
             <LoginForm />
           </Suspense>
         </div>

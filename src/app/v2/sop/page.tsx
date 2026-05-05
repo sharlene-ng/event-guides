@@ -1,290 +1,261 @@
+import Link from "next/link";
+
+const phases = [
+  {
+    num: "1",
+    title: "Approval & Calendar",
+    when: "Start here",
+    accent: "blue",
+    steps: [
+      {
+        label: "Get approval from Sharlene",
+        detail:
+          "Sharlene identifies whether it's a company, internal, or external (chargeable) project.",
+        required: true,
+      },
+      {
+        label: "Log in Google Calendar",
+        detail: "Add the event to both FD Calendar and AIA GE.",
+      },
+      {
+        label: "Invite yourself + all PICs",
+        detail:
+          "Create the calendar event and invite every Person-In-Charge so everyone has it scheduled.",
+      },
+    ],
+  },
+  {
+    num: "2",
+    title: "Email Building Management",
+    when: "≥ 1 week before",
+    accent: "indigo",
+    intro: {
+      label: "Send to",
+      value: "mercumkpmoffice@gmail.com",
+      href: "mailto:mercumkpmoffice@gmail.com",
+    },
+    steps: [
+      { label: "Event name", detail: "Clear, full name." },
+      {
+        label: "Event date & time",
+        detail: "Including setup and teardown windows if applicable.",
+      },
+      { label: "Estimated pax", detail: "Best estimate of attendee count." },
+      {
+        label: "Guest list (PDF)",
+        detail:
+          "Columns: Number, Name, Contact, NRIC (filled by visitor), Tickbox.",
+        required: true,
+      },
+      {
+        label: "Reserved parking (if needed)",
+        detail: "Date, time, car plate. Subject to availability.",
+      },
+      {
+        label: "Service lift (Bomba)",
+        detail: "Required for catering equipment, heavy boxes, or large setup.",
+      },
+      {
+        label: "Aircond (optional)",
+        detail: "If you need aircond outside normal hours.",
+      },
+    ],
+    template: {
+      url: "https://docs.google.com/spreadsheets/d/15HHNs5L_sAbXqrSrjggBdHFgLqnHuz_uv9SttKZ7avo/copy",
+      label: "Guest list template",
+    },
+  },
+  {
+    num: "3",
+    title: "Other Prep",
+    when: "Days before",
+    accent: "violet",
+    steps: [
+      {
+        label: "Print guest list & pass to security",
+        detail:
+          "Hand over the printed list so security can verify visitors at entry.",
+        required: true,
+      },
+      {
+        label: "Confirm reserved parking",
+        detail: "If applicable.",
+      },
+      { label: "Confirm aircond schedule", detail: "If applicable." },
+      {
+        label: "Confirm Bomba lift booking",
+        detail: "Coordinate timing with caterers.",
+      },
+    ],
+  },
+  {
+    num: "4",
+    title: "Event Day",
+    when: "On the day",
+    accent: "rose",
+    steps: [
+      {
+        label: "Setup & display",
+        detail:
+          "Lanyards, name tags, bunting, lobby TV, event hall layout — get it all up.",
+      },
+      {
+        label: "Comms",
+        detail: "Event reminder + announcement to FD Official Group Chat.",
+      },
+      {
+        label: "PICs in position",
+        detail:
+          "Registration PIC, AV PIC, cleaner if needed.",
+      },
+      {
+        label: "Refreshments & catering",
+        detail: "Food, coffee/tea, snacks, and crew food.",
+      },
+      {
+        label: "Other arrangements",
+        detail:
+          "Standby credit card machines (company & internal events) and any special arrangements.",
+      },
+    ],
+    cta: { href: "/v2/checklist", label: "Open interactive checklist →" },
+  },
+];
+
+const accentMap: Record<string, { bg: string; text: string; ring: string }> = {
+  blue: { bg: "bg-blue-600", text: "text-blue-600", ring: "ring-blue-100" },
+  indigo: { bg: "bg-indigo-600", text: "text-indigo-600", ring: "ring-indigo-100" },
+  violet: { bg: "bg-violet-600", text: "text-violet-600", ring: "ring-violet-100" },
+  rose: { bg: "bg-rose-600", text: "text-rose-600", ring: "ring-rose-100" },
+};
+
 export default function V2SOPPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Header */}
       <div className="mb-10">
+        <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full mb-3">
+          📋 Internal SOP
+        </span>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          📋 FD Event Planning SOP
+          BIG Hall Booking Guide
         </h1>
-        <p className="text-gray-600">
-          The full step-by-step guide — from getting approval to wrapping up the
-          event day.
+        <p className="text-gray-500 max-w-2xl">
+          Four phases — from getting approval to wrapping up the event day.
+          Follow each step in order.
         </p>
       </div>
 
-      <div className="space-y-10">
-        {/* Phase 1 */}
-        <section className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="bg-blue-600 px-6 py-4">
-            <h2 className="text-white font-bold text-xl">
-              Phase 1 · Approval & Calendar
-            </h2>
-            <p className="text-blue-100 text-sm mt-1">Start here</p>
-          </div>
-          <div className="p-6 space-y-4">
-            <Step
-              num="1.1"
-              title="Get approval from Sharlene"
-              desc="Sharlene identifies whether it's a company, internal, or external (chargeable) project. Don't proceed without her confirmation."
-              important
-            />
-            <Step
-              num="1.2"
-              title="Log the event in Google Calendar"
-              desc="Add the confirmed event to both calendars: FD Calendar and AIA GE."
-            />
-            <Step
-              num="1.3"
-              title="Invite yourself and all PICs"
-              desc="Create the calendar event and invite yourself + every Person-In-Charge (registration, AV, etc.) so everyone has it on their schedule."
-            />
-          </div>
-        </section>
-
-        {/* Phase 2 */}
-        <section className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="bg-green-600 px-6 py-4">
-            <h2 className="text-white font-bold text-xl">
-              Phase 2 · Email Building Management
-            </h2>
-            <p className="text-green-100 text-sm mt-1">
-              At least 1 week before the event
-            </p>
-          </div>
-          <div className="p-6 space-y-4">
-            <div className="bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-sm">
-              <div className="text-gray-400 mb-1">Send to:</div>
-              <a
-                href="mailto:mercumkpmoffice@gmail.com"
-                className="text-green-300 hover:underline"
-              >
-                mercumkpmoffice@gmail.com
-              </a>
-            </div>
-
-            <p className="text-sm font-semibold text-gray-900 mt-4">
-              Email must include:
-            </p>
-            <Step num="2.1" title="Event name" desc="Clear, full name of the event." />
-            <Step
-              num="2.2"
-              title="Event date & time"
-              desc="Start and end times, including setup and teardown windows if applicable."
-            />
-            <Step num="2.3" title="Estimated pax" desc="Best estimate of attendee count." />
-            <Step
-              num="2.4"
-              title="Guest list (PDF)"
-              desc="Columns: Number, Name, Contact Number, NRIC (filled by visitor), Tickbox. Use the official Google Sheet template below."
-              important
-            />
-            <Step
-              num="2.5"
-              title="Reserved parking (if needed)"
-              desc="Date, time, and car plate numbers. Subject to availability — request early."
-            />
-            <Step
-              num="2.6"
-              title="Service lift (Bomba lift)"
-              desc="Required for catering equipment, heavy boxes, or any large setup."
-            />
-            <Step
-              num="2.7"
-              title="Aircond (optional)"
-              desc="Mention if you need air-conditioning to be turned on outside normal hours."
-            />
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
-              <p className="text-sm font-semibold text-yellow-900 mb-2">
-                📄 Guest List Template
-              </p>
-              <a
-                href="https://docs.google.com/spreadsheets/d/15HHNs5L_sAbXqrSrjggBdHFgLqnHuz_uv9SttKZ7avo/copy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-yellow-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-yellow-700 transition-colors"
-              >
-                Make a copy →
-              </a>
-              <p className="text-xs text-yellow-700 mt-2">
-                Opens Google Sheets and prompts you to copy the template into your
-                Drive.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Phase 3 */}
-        <section className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="bg-purple-600 px-6 py-4">
-            <h2 className="text-white font-bold text-xl">
-              Phase 3 · Other Prep
-            </h2>
-            <p className="text-purple-100 text-sm mt-1">Days before the event</p>
-          </div>
-          <div className="p-6 space-y-4">
-            <Step
-              num="3.1"
-              title="Print guest list and pass to security"
-              desc="Hand over the printed guest list to building security so they can verify visitors at entry."
-              important
-            />
-            <Step
-              num="3.2"
-              title="Reserved parking (optional)"
-              desc="Confirm parking allocation with building management if you've requested it."
-            />
-            <Step
-              num="3.3"
-              title="Aircond (optional)"
-              desc="Confirm aircond schedule with building management."
-            />
-            <Step
-              num="3.4"
-              title="Catering / setup needing Bomba lift (optional)"
-              desc="Coordinate timing with caterers and confirm Bomba lift access."
-            />
-          </div>
-        </section>
-
-        {/* Phase 4 — Event Day */}
-        <section className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="bg-red-600 px-6 py-4">
-            <h2 className="text-white font-bold text-xl">
-              Phase 4 · Event Day
-            </h2>
-            <p className="text-red-100 text-sm mt-1">
-              Use the interactive checklist to tick items off
-            </p>
-          </div>
-          <div className="p-6">
-            <p className="text-sm text-gray-600 mb-6">
-              On the day, work through five areas: setup & display, comms,
-              people (PICs), refreshments & catering, and other arrangements.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                {
-                  icon: "🎀",
-                  title: "Setup & Display",
-                  items: [
-                    "Lanyard sleeve",
-                    "Lanyard strap",
-                    "Print lanyard nametag",
-                    "Bunting placement",
-                    "Lobby TV display",
-                    "Event hall layout",
-                  ],
-                },
-                {
-                  icon: "📣",
-                  title: "Comms",
-                  items: [
-                    "Event reminder",
-                    "Announcement to FD Official Group Chat",
-                  ],
-                },
-                {
-                  icon: "👥",
-                  title: "People (PICs)",
-                  items: [
-                    "Registration PIC",
-                    "AV PIC",
-                    "Cleaner needed?",
-                  ],
-                },
-                {
-                  icon: "🍱",
-                  title: "Refreshments & Catering",
-                  items: [
-                    "Food / catering",
-                    "Coffee / tea",
-                    "Candies, snacks?",
-                    "Crew food",
-                  ],
-                },
-                {
-                  icon: "💳",
-                  title: "Other",
-                  items: [
-                    "Standby credit card machines (company & internal events)",
-                    "Any special arrangements?",
-                  ],
-                },
-              ].map((g) => (
+      {/* Phases */}
+      <div className="space-y-8">
+        {phases.map((phase) => {
+          const accent = accentMap[phase.accent];
+          return (
+            <section
+              key={phase.num}
+              className="bg-white border border-gray-200 rounded-xl overflow-hidden"
+            >
+              {/* Phase header */}
+              <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-4">
                 <div
-                  key={g.title}
-                  className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm ${accent.bg}`}
                 >
-                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    <span>{g.icon}</span> {g.title}
-                  </h3>
-                  <ul className="space-y-1">
-                    {g.items.map((it) => (
-                      <li
-                        key={it}
-                        className="text-sm text-gray-600 flex items-start gap-2"
-                      >
-                        <span className="text-gray-400 mt-0.5">•</span>
-                        {it}
-                      </li>
-                    ))}
-                  </ul>
+                  {phase.num}
                 </div>
-              ))}
-            </div>
+                <div className="flex-1">
+                  <h2 className="font-bold text-gray-900">{phase.title}</h2>
+                  <p className="text-xs text-gray-500 mt-0.5 uppercase tracking-wide">
+                    {phase.when}
+                  </p>
+                </div>
+              </div>
 
-            <div className="mt-6 text-center">
-              <a
-                href="/v2/checklist"
-                className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Open interactive checklist →
-              </a>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
+              {/* Optional intro (e.g. email recipient) */}
+              {phase.intro && (
+                <div className="px-6 pt-5">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 flex items-baseline gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {phase.intro.label}
+                    </span>
+                    <a
+                      href={phase.intro.href}
+                      className="text-sm font-medium text-blue-600 hover:underline truncate"
+                    >
+                      {phase.intro.value}
+                    </a>
+                  </div>
+                </div>
+              )}
 
-function Step({
-  num,
-  title,
-  desc,
-  important,
-}: {
-  num: string;
-  title: string;
-  desc: string;
-  important?: boolean;
-}) {
-  return (
-    <div
-      className={`flex gap-4 p-4 rounded-lg border ${
-        important ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-100"
-      }`}
-    >
-      <span
-        className={`font-bold text-sm mt-0.5 w-10 flex-shrink-0 ${
-          important ? "text-red-600" : "text-blue-600"
-        }`}
-      >
-        {num}
-      </span>
-      <div>
-        <p
-          className={`font-semibold ${important ? "text-red-800" : "text-gray-900"}`}
-        >
-          {title}
-          {important && (
-            <span className="ml-2 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">
-              REQUIRED
-            </span>
-          )}
-        </p>
-        <p className="text-sm text-gray-600 mt-0.5">{desc}</p>
+              {/* Steps */}
+              <div className="px-6 py-5 space-y-3">
+                {phase.steps.map((step, i) => (
+                  <div
+                    key={i}
+                    className={`flex gap-3 px-4 py-3 rounded-lg border ${
+                      step.required
+                        ? "bg-rose-50/50 border-rose-200"
+                        : "bg-gray-50/50 border-gray-100"
+                    }`}
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-full bg-white border ${
+                        step.required ? "border-rose-300" : "border-gray-300"
+                      } flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
+                        step.required ? "text-rose-600" : "text-gray-500"
+                      }`}
+                    >
+                      {phase.num}.{i + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <p className="font-medium text-gray-900 text-sm">
+                          {step.label}
+                        </p>
+                        {step.required && (
+                          <span className="text-[10px] font-bold tracking-wide uppercase bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">
+                            Required
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">{step.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Optional template link */}
+              {phase.template && (
+                <div className="px-6 pb-5">
+                  <a
+                    href={phase.template.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-900 text-sm font-medium px-4 py-2 rounded-lg hover:bg-amber-100 transition-colors"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    📄 {phase.template.label} — make a copy
+                  </a>
+                </div>
+              )}
+
+              {/* Optional CTA */}
+              {phase.cta && (
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 text-center">
+                  <Link
+                    href={phase.cta.href}
+                    className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {phase.cta.label}
+                  </Link>
+                </div>
+              )}
+            </section>
+          );
+        })}
       </div>
     </div>
   );

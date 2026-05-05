@@ -3,12 +3,11 @@
 import { useState } from "react";
 
 type CheckItem = { id: string; label: string };
-type Section = { title: string; icon: string; items: CheckItem[] };
+type Section = { title: string; items: CheckItem[] };
 
 const setupSection: Section[] = [
   {
     title: "Setup & Display",
-    icon: "🎀",
     items: [
       { id: "s1", label: "Lanyard sleeve" },
       { id: "s2", label: "Lanyard strap" },
@@ -20,7 +19,6 @@ const setupSection: Section[] = [
   },
   {
     title: "Comms",
-    icon: "📣",
     items: [
       { id: "c1", label: "Event reminder" },
       { id: "c2", label: "Announcement to FD Official Group Chat" },
@@ -28,7 +26,6 @@ const setupSection: Section[] = [
   },
   {
     title: "People (PICs)",
-    icon: "👥",
     items: [
       { id: "p1", label: "Registration PIC assigned" },
       { id: "p2", label: "AV PIC assigned" },
@@ -37,7 +34,6 @@ const setupSection: Section[] = [
   },
   {
     title: "Refreshments & Catering",
-    icon: "🍱",
     items: [
       { id: "r1", label: "Food / catering" },
       { id: "r2", label: "Coffee / tea" },
@@ -47,7 +43,6 @@ const setupSection: Section[] = [
   },
   {
     title: "Other",
-    icon: "💳",
     items: [
       {
         id: "o1",
@@ -61,7 +56,6 @@ const setupSection: Section[] = [
 const prepSection: Section[] = [
   {
     title: "Approval & Calendar",
-    icon: "✅",
     items: [
       { id: "ap1", label: "Approval received from Sharlene" },
       { id: "ap2", label: "Project type identified (company / internal / external)" },
@@ -72,7 +66,6 @@ const prepSection: Section[] = [
   },
   {
     title: "Email to Building Management",
-    icon: "📧",
     items: [
       { id: "e1", label: "Email sent to mercumkpmoffice@gmail.com (≥1 week before)" },
       { id: "e2", label: "Event name included" },
@@ -86,7 +79,6 @@ const prepSection: Section[] = [
   },
   {
     title: "Other Prep",
-    icon: "🛠️",
     items: [
       { id: "pr1", label: "Guest list printed and passed to security" },
       { id: "pr2", label: "Parking confirmed (if applicable)" },
@@ -97,8 +89,8 @@ const prepSection: Section[] = [
 ];
 
 const tabs = [
-  { id: "prep", label: "Pre-Event Prep", icon: "📅", data: prepSection },
-  { id: "day", label: "Event Day", icon: "📍", data: setupSection },
+  { id: "prep", label: "Pre-Event", data: prepSection },
+  { id: "day", label: "Event Day", data: setupSection },
 ];
 
 export default function V2ChecklistPage() {
@@ -124,70 +116,90 @@ export default function V2ChecklistPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Header */}
       <div className="mb-8">
+        <span className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-medium px-2.5 py-1 rounded-full mb-3">
+          ✅ Interactive
+        </span>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          ✅ Event Checklist
+          Event Checklist
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-500">
           Tick off items as you complete them. Progress is per tab.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-200 pb-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-t-lg font-medium text-sm transition-colors ${
-              activeTab === tab.id
-                ? "bg-blue-600 text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {tab.icon} {tab.label}
-          </button>
-        ))}
+      <div className="border-b border-gray-200 mb-6 flex items-center gap-4">
+        {tabs.map((tab) => {
+          const tabItems = tab.data.flatMap((s) => s.items);
+          const tabDone = tabItems.filter((i) => checked[i.id]).length;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative flex items-center gap-2 px-1 py-3 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.label}
+              <span
+                className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
+                  activeTab === tab.id
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {tabDone}/{tabItems.length}
+              </span>
+              {activeTab === tab.id && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Progress */}
+      {/* Progress bar */}
       <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex items-center gap-4">
         <div className="flex-1">
-          <div className="flex justify-between text-sm mb-1">
-            <span className="font-medium text-gray-700">
+          <div className="flex justify-between text-xs mb-1.5">
+            <span className="font-medium text-gray-700 uppercase tracking-wide">
               {currentTab.label} Progress
             </span>
             <span className="text-gray-500">
-              {doneCount} / {totalCount} completed
+              {doneCount} of {totalCount}
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-100 rounded-full h-1.5">
             <div
-              className={`h-2 rounded-full transition-all ${
-                pct === 100 ? "bg-green-500" : "bg-blue-500"
+              className={`h-1.5 rounded-full transition-all ${
+                pct === 100 ? "bg-emerald-500" : "bg-blue-500"
               }`}
               style={{ width: `${pct}%` }}
             />
           </div>
         </div>
         <div
-          className={`text-xl font-bold w-14 text-right ${
-            pct === 100 ? "text-green-600" : "text-blue-600"
+          className={`text-2xl font-bold w-14 text-right ${
+            pct === 100 ? "text-emerald-600" : "text-blue-600"
           }`}
         >
           {pct}%
         </div>
         <button
           onClick={resetTab}
-          className="text-xs text-gray-400 hover:text-gray-600 underline"
+          className="text-xs text-gray-400 hover:text-gray-600"
         >
           Reset
         </button>
       </div>
 
-      {/* Checklist */}
-      <div className="space-y-6">
+      {/* Sections */}
+      <div className="space-y-4">
         {currentTab.data.map((section) => {
           const sectionDone = section.items.filter((i) => checked[i.id]).length;
           return (
@@ -195,11 +207,11 @@ export default function V2ChecklistPage() {
               key={section.title}
               className="bg-white border border-gray-200 rounded-xl overflow-hidden"
             >
-              <div className="px-6 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                <h2 className="font-semibold text-gray-800 flex items-center gap-2">
-                  <span>{section.icon}</span> {section.title}
+              <div className="px-5 py-3 border-b border-gray-100 flex justify-between items-center">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {section.title}
                 </h2>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-400">
                   {sectionDone}/{section.items.length}
                 </span>
               </div>
@@ -208,13 +220,13 @@ export default function V2ChecklistPage() {
                   <li
                     key={item.id}
                     onClick={() => toggle(item.id)}
-                    className="flex items-center gap-4 px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <div
                       className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                         checked[item.id]
-                          ? "bg-green-500 border-green-500"
-                          : "border-gray-300 hover:border-blue-400"
+                          ? "bg-emerald-500 border-emerald-500"
+                          : "border-gray-300"
                       }`}
                     >
                       {checked[item.id] && (
@@ -251,10 +263,10 @@ export default function V2ChecklistPage() {
       </div>
 
       {pct === 100 && (
-        <div className="mt-8 bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-          <div className="text-4xl mb-2">🎉</div>
-          <p className="font-bold text-green-800 text-lg">
-            All {currentTab.label} tasks completed!
+        <div className="mt-6 bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
+          <p className="text-2xl mb-1">🎉</p>
+          <p className="font-semibold text-emerald-800">
+            All {currentTab.label} tasks completed
           </p>
         </div>
       )}
