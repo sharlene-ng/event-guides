@@ -1,10 +1,58 @@
-export default function PricingPage() {
+import { listPricing, type PricingRow } from "@/lib/sheets";
+
+export const dynamic = "force-dynamic";
+
+const inclusionGroups = [
+  { key: "inclusion-venue", title: "Venue & Facilities" },
+  { key: "inclusion-display", title: "Display & Visuals" },
+  { key: "inclusion-audio", title: "Audio & PA System" },
+  { key: "inclusion-tech", title: "Tech & Connectivity" },
+];
+
+function group(rows: PricingRow[], section: string): PricingRow[] {
+  return rows
+    .filter((r) => r.section === section)
+    .sort((a, b) => (a.order || "").localeCompare(b.order || ""));
+}
+
+export default async function PricingPage() {
+  let rows: PricingRow[] = [];
+  let backendError: string | null = null;
+  try {
+    rows = await listPricing();
+  } catch (err) {
+    backendError = String(err);
+  }
+
+  const header = group(rows, "header")[0] || {
+    label: "Big Hall",
+    value: "Kuala Lumpur",
+    unit: "100 participants",
+  };
+  const internal = group(rows, "internal")[0];
+  const external = group(rows, "external")[0];
+  const internalAddons = group(rows, "addon-internal");
+  const externalAddons = group(rows, "addon-external");
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {backendError && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm px-4 py-3 rounded-lg mb-6">
+          ⚠ Could not load pricing: {backendError}
+        </div>
+      )}
+
+      <p className="text-xs text-gray-500 mb-3 italic">
+        Prices live in your Google Sheet (
+        <span className="bg-gray-100 text-gray-700 px-1 rounded font-mono">
+          Pricing
+        </span>{" "}
+        tab). Edit there to update.
+      </p>
+
       <div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-200">
         {/* Hero header */}
         <div className="relative bg-black text-white px-8 py-10 overflow-hidden">
-          {/* subtle grid texture */}
           <div
             className="absolute inset-0 opacity-10"
             style={{
@@ -13,7 +61,6 @@ export default function PricingPage() {
               backgroundSize: "32px 32px",
             }}
           />
-          {/* corner bracket */}
           <div className="absolute top-6 right-8 border-t-2 border-r-2 border-amber-400/60 w-16 h-16 rounded-tr-lg" />
 
           <div className="relative">
@@ -21,14 +68,20 @@ export default function PricingPage() {
               — VENUE RATE CARD
             </p>
             <h1 className="text-5xl sm:text-6xl font-serif font-light tracking-tight mb-4">
-              Big Hall
+              {header.label}
             </h1>
             <div className="flex items-center gap-3 text-sm">
-              <span className="bg-amber-400 text-black font-semibold px-3 py-1 rounded-full text-xs">
-                100 participants
-              </span>
-              <span className="text-gray-400">|</span>
-              <span className="text-gray-300">Kuala Lumpur</span>
+              {header.unit && (
+                <span className="bg-amber-400 text-black font-semibold px-3 py-1 rounded-full text-xs">
+                  {header.unit}
+                </span>
+              )}
+              {header.value && (
+                <>
+                  <span className="text-gray-400">|</span>
+                  <span className="text-gray-300">{header.value}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -41,15 +94,28 @@ export default function PricingPage() {
               — INTERNAL
             </p>
             <div className="font-serif text-5xl font-light text-gray-900 mb-1">
-              RM 1,500
+              {internal?.value || "—"}
             </div>
-            <p className="text-amber-700 text-sm mb-6">per day</p>
-            <div className="border-t border-amber-200 pt-4">
-              <p className="text-gray-500 text-xs font-bold tracking-[0.2em] mb-3">
-                ADD ON
-              </p>
-              <PriceRow label="Technician onsite" price="+ RM 500/day" />
-            </div>
+            <p className="text-amber-700 text-sm mb-6">
+              {internal?.unit || ""}
+            </p>
+            {internalAddons.length > 0 && (
+              <div className="border-t border-amber-200 pt-4">
+                <p className="text-gray-500 text-xs font-bold tracking-[0.2em] mb-3">
+                  ADD ON
+                </p>
+                <div className="space-y-2">
+                  {internalAddons.map((a) => (
+                    <PriceRow
+                      key={a.label + a.value}
+                      label={a.label}
+                      price={a.value}
+                      emphasize={a.unit === "highlight"}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* External */}
@@ -58,23 +124,28 @@ export default function PricingPage() {
               — EXTERNAL
             </p>
             <div className="font-serif text-5xl font-light text-gray-900 mb-1">
-              RM 3,000
+              {external?.value || "—"}
             </div>
-            <p className="text-gray-500 text-sm mb-6">9 hours per day</p>
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-gray-500 text-xs font-bold tracking-[0.2em] mb-3">
-                ADD ON
-              </p>
-              <div className="space-y-2">
-                <PriceRow label="Additional hour" price="+ RM 200/hr" />
-                <PriceRow label="Technician onsite" price="+ RM 500/day" />
-                <PriceRow
-                  label="Security deposit"
-                  price="+ RM 2,000"
-                  emphasize
-                />
+            <p className="text-gray-500 text-sm mb-6">
+              {external?.unit || ""}
+            </p>
+            {externalAddons.length > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <p className="text-gray-500 text-xs font-bold tracking-[0.2em] mb-3">
+                  ADD ON
+                </p>
+                <div className="space-y-2">
+                  {externalAddons.map((a) => (
+                    <PriceRow
+                      key={a.label + a.value}
+                      label={a.label}
+                      price={a.value}
+                      emphasize={a.unit === "highlight"}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -89,46 +160,21 @@ export default function PricingPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8">
-            <InclusionGroup
-              title="Venue & Facilities"
-              items={[
-                "Registration area (Entrance)",
-                "Dining area",
-                "Restrooms (Outside hall)",
-                "Tables and chairs",
-              ]}
-            />
-            <InclusionGroup
-              title="Display & Visuals"
-              items={[
-                "2× LED screens",
-                'TV display (55" & 65" units)',
-                '32" TV prompter (1 unit)',
-                "Spotlight lighting",
-              ]}
-            />
-            <InclusionGroup
-              title="Audio & PA System"
-              items={[
-                "Wireless handheld microphones (2 units)",
-                "Wireless headset microphones (2 units)",
-                "PA system with speakers",
-                "LIVE camera",
-              ]}
-            />
-            <InclusionGroup
-              title="Tech & Connectivity"
-              items={[
-                "Wi-Fi",
-                "HDMI & VGA cables",
-                "Extension cords & power strips",
-                "Clicker / presenter remote",
-              ]}
-            />
+            {inclusionGroups.map((g) => {
+              const items = group(rows, g.key);
+              if (items.length === 0) return null;
+              return (
+                <InclusionGroup
+                  key={g.key}
+                  title={g.title}
+                  items={items.map((i) => i.label)}
+                />
+              );
+            })}
           </div>
         </div>
 
-        {/* Footer note */}
+        {/* Footer */}
         <div className="bg-amber-50/40 border-t border-amber-200 px-8 py-4 text-center">
           <p className="text-xs text-amber-800/80 tracking-wide">
             <span className="text-amber-500">◆</span> All rates are quoted in
@@ -137,25 +183,6 @@ export default function PricingPage() {
             change without prior notice <span className="text-amber-500">◆</span>
           </p>
         </div>
-      </div>
-
-      {/* Quick reference card */}
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <SummaryCard
-          icon="💡"
-          title="Internal events"
-          desc="Flat RM 1,500/day. Best for company & internal use."
-        />
-        <SummaryCard
-          icon="🤝"
-          title="External events"
-          desc="RM 3,000 for 9 hrs. Refundable RM 2,000 security deposit."
-        />
-        <SummaryCard
-          icon="🛠️"
-          title="Add-ons available"
-          desc="Technician (RM 500/day), extra hours (RM 200/hr)."
-        />
       </div>
     </div>
   );
@@ -202,24 +229,6 @@ function InclusionGroup({ title, items }: { title: string; items: string[] }) {
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function SummaryCard({
-  icon,
-  title,
-  desc,
-}: {
-  icon: string;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4">
-      <div className="text-2xl mb-2">{icon}</div>
-      <h3 className="font-bold text-gray-900 text-sm mb-1">{title}</h3>
-      <p className="text-gray-600 text-xs">{desc}</p>
     </div>
   );
 }

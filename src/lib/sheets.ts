@@ -155,3 +155,68 @@ export async function saveChecklist(
   };
   return normalizeEvent(data.event);
 }
+
+// ============ CONTACTS ============
+
+export type Contact = {
+  section: string; // emergency, approver, building, pic, vendor-catering, etc.
+  role: string;
+  name: string;
+  phone: string;
+  email: string;
+  note: string;
+  order: string;
+};
+
+export async function listContacts(): Promise<Contact[]> {
+  const data = (await callGet("listContacts")) as { contacts: Contact[] };
+  return (data.contacts || []).map((c) => ({
+    section: String(c.section || ""),
+    role: String(c.role || ""),
+    name: String(c.name || ""),
+    phone: String(c.phone || ""),
+    email: String(c.email || ""),
+    note: String(c.note || ""),
+    order: String(c.order || ""),
+  }));
+}
+
+// ============ PRICING ============
+
+export type PricingRow = {
+  section: string; // header, internal, external, addon-internal, addon-external, inclusion-*
+  label: string;
+  value: string;
+  unit: string;
+  order: string;
+};
+
+export async function listPricing(): Promise<PricingRow[]> {
+  const data = (await callGet("listPricing")) as { pricing: PricingRow[] };
+  return (data.pricing || []).map((p) => ({
+    section: String(p.section || ""),
+    label: String(p.label || ""),
+    value: String(p.value || ""),
+    unit: String(p.unit || ""),
+    order: String(p.order || ""),
+  }));
+}
+
+// ============ HALL INFO ============
+
+export type HallInfoRow = {
+  key: string;
+  value: string;
+  unit: string;
+  order: string;
+};
+
+export async function listHallInfo(): Promise<HallInfoRow[]> {
+  const data = (await callGet("listHallInfo")) as { hallInfo: HallInfoRow[] };
+  return (data.hallInfo || []).map((h) => ({
+    key: String(h.key || ""),
+    value: String(h.value || ""),
+    unit: String(h.unit || ""),
+    order: String(h.order || ""),
+  }));
+}
