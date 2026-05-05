@@ -77,15 +77,25 @@ export default async function V2HallInfoPage() {
             backgroundSize: "22px 22px",
           }}
         />
-        <div className="relative">
-          <p className="text-blue-100 text-xs font-semibold tracking-[0.2em] uppercase mb-3">
-            Hall Info
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">{venueName}</h1>
-          <p className="text-blue-100">
-            {location}
-            {capacity && ` · Up to ${capacity.value} ${capacity.unit || "pax"}`}
-          </p>
+        <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <p className="text-blue-100 text-xs font-semibold tracking-[0.2em] uppercase mb-3">
+              Hall Info
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">{venueName}</h1>
+            <p className="text-blue-100">
+              {location}
+              {capacity && ` · Up to ${capacity.value} ${capacity.unit || "pax"}`}
+            </p>
+          </div>
+          <Link
+            href="/book"
+            target="_blank"
+            className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-50 shadow-md transition-colors text-sm self-start sm:self-end"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Book This Hall
+          </Link>
         </div>
       </div>
 

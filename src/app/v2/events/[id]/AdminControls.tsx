@@ -174,7 +174,7 @@ export default function AdminControls({ event }: { event: SOPEvent }) {
             options={[
               { value: "theater", label: "Theater" },
               { value: "classroom", label: "Classroom" },
-              { value: "banquet", label: "Herringbone" },
+              { value: "banquet", label: "Fishbone" },
             ]}
           />
         </div>

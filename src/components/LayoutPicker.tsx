@@ -46,7 +46,7 @@ const layouts = [
   },
   {
     value: "banquet",
-    label: "Herringbone",
+    label: "Fishbone",
     desc: "Angled tables in fishbone style. Great for dinners.",
     diagram: (
       <svg viewBox="0 0 100 70" className="w-full h-full">

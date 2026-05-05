@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const layoutLabel: Record<string, string> = {
   theater: "Theater seats",
   classroom: "Classroom",
-  banquet: "Herringbone (fishbone) style",
+  banquet: "Fishbone style",
 };
 
 const projectTypeLabel: Record<string, string> = {

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const layoutLabel: Record<string, string> = {
   theater: "Theater",
   classroom: "Classroom",
-  banquet: "Herringbone",
+  banquet: "Fishbone",
 };
 
 function parseLocalDate(dateStr: string): Date {
@@ -166,81 +166,65 @@ function EventCard({ event }: { event: SOPEvent }) {
 
   const day = start.getDate();
   const month = start.toLocaleString("default", { month: "short" });
+  const dayName = start.toLocaleString("default", { weekday: "short" });
 
   return (
     <Link
       href={`/v2/events/${event.id}`}
-      className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow-md transition-all flex flex-col"
+      className="group bg-white border border-gray-200 rounded-xl p-4 flex gap-4 hover:border-blue-300 hover:shadow-md transition-all"
     >
-      {/* Large poster (or date block fallback) */}
-      <div className="relative aspect-[16/9] bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
-        {event.posterUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={event.posterUrl}
-            alt={event.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-blue-300">
-            <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
-          </div>
-        )}
-        {/* Date pill */}
-        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg px-2.5 py-1.5 shadow-sm">
-          <p className="text-[10px] uppercase tracking-wide text-blue-600 font-bold leading-none">
-            {month}
-          </p>
-          <p className="text-lg font-bold text-blue-700 leading-none mt-0.5">
-            {day}
-          </p>
-        </div>
+      {/* Date block (left) */}
+      <div className="flex-shrink-0 w-14 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg py-2 relative">
+        <p className="text-[10px] uppercase tracking-wide text-blue-600 font-bold">
+          {month}
+        </p>
+        <p className="text-2xl font-bold text-blue-700 leading-none">{day}</p>
+        <p className="text-[10px] text-blue-500 mt-0.5">{dayName}</p>
         {isMultiDay && (
-          <div className="absolute top-3 right-3 bg-amber-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-sm">
-            +{Math.round((end.getTime() - start.getTime()) / 86400000)} days
-          </div>
+          <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 rounded-full">
+            +{Math.round((end.getTime() - start.getTime()) / 86400000)}d
+          </span>
         )}
       </div>
 
-      {/* Body */}
-      <div className="flex-1 p-4">
-        <h3 className="font-bold text-gray-900 text-base mb-1 truncate group-hover:text-blue-700">
+      {/* Info (middle) */}
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-gray-900 text-sm mb-1 truncate group-hover:text-blue-700">
           {event.name}
         </h3>
-        <p className="text-xs text-gray-500 mb-3">
-          {isMultiDay ? (
+        <p className="text-xs text-gray-500 mb-2">
+          {isMultiDay && (
             <>
-              {month} {day} → {end.getDate()}{" "}
-              {end.toLocaleString("default", { month: "short" })}
-            </>
-          ) : (
-            <>
-              {start.toLocaleDateString("en-MY", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              })}
+              until {end.getDate()} {end.toLocaleString("default", { month: "short" })} ·{" "}
             </>
           )}
-          {event.startTime && ` · ${event.startTime}`}
-          {event.endTime && `–${event.endTime}`}
-          {" · "}
+          {event.startTime && `${event.startTime}`}
+          {event.endTime && `–${event.endTime} · `}
           {event.pax} pax · {layoutLabel[String(event.layout)] || event.layout}
         </p>
         <div className="flex items-center gap-2 text-xs">
           {event.pic && (
-            <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-medium">
-              👤 {event.pic}
-            </span>
+            <>
+              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                👤 PIC: {event.pic}
+              </span>
+              <span className="text-gray-300">·</span>
+            </>
           )}
           <span className="text-gray-500 truncate">{event.organizer}</span>
         </div>
       </div>
+
+      {/* Poster thumbnail (right) */}
+      {event.posterUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={event.posterUrl}
+          alt={event.name}
+          className="flex-shrink-0 w-16 h-16 rounded-lg object-cover border border-gray-200"
+          referrerPolicy="no-referrer"
+        />
+      )}
     </Link>
   );
 }
