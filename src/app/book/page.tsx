@@ -95,7 +95,7 @@ export default function PublicBookingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600 text-white">
+      <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center gap-2.5 mb-6">
             <div className="w-9 h-9 rounded-lg bg-white/20 backdrop-blur flex items-center justify-center">

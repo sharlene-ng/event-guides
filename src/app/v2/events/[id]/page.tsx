@@ -56,7 +56,7 @@ export default async function EventDetailPage({
       </Link>
 
       {/* Header card */}
-      <div className="bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600 text-white rounded-2xl p-6 sm:p-8 mb-6 shadow-sm">
+      <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white rounded-2xl p-6 sm:p-8 mb-6 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
           <span
             className={`text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded border bg-white/20 border-white/30 text-white`}

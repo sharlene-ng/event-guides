@@ -59,7 +59,7 @@ export default async function V2HallInfoPage() {
       )}
 
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-8 sm:p-10 text-white mb-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-8 sm:p-10 text-white mb-8">
         <div
           className="absolute inset-0 opacity-20"
           style={{
