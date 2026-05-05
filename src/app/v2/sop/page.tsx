@@ -1,6 +1,18 @@
 import Link from "next/link";
 
-const phases = [
+type Step = { label: string; detail: string; required?: boolean };
+type Phase = {
+  num: string;
+  title: string;
+  when: string;
+  accent: string;
+  steps: Step[];
+  intro?: { label: string; value: string; href: string };
+  template?: { url: string; label: string };
+  cta?: { href: string; label: string };
+};
+
+const phases: Phase[] = [
   {
     num: "1",
     title: "Approval & Calendar",
