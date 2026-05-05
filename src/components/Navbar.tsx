@@ -25,7 +25,8 @@ export default function Navbar() {
   const isV2 = pathname.startsWith("/v2");
   const links = isV2 ? v2Links : v1Links;
 
-  if (pathname === "/login") return null;
+  // Hide navbar on login + public booking form
+  if (pathname === "/login" || pathname === "/book") return null;
 
   async function handleLogout() {
     await fetch("/api/logout", { method: "POST" });

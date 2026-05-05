@@ -175,22 +175,30 @@ export default async function V2Home() {
 }
 
 function EventCard({ event }: { event: SOPEvent }) {
-  const date = new Date(String(event.date));
-  const day = date.getDate();
-  const month = date.toLocaleString("default", { month: "short" });
-  const dayName = date.toLocaleString("default", { weekday: "short" });
+  const start = new Date(String(event.date));
+  const end = event.endDate ? new Date(String(event.endDate)) : start;
+  const isMultiDay = end.toDateString() !== start.toDateString();
+
+  const day = start.getDate();
+  const month = start.toLocaleString("default", { month: "short" });
+  const dayName = start.toLocaleString("default", { weekday: "short" });
 
   return (
     <Link
       href={`/v2/events/${event.id}`}
       className="group bg-white border border-gray-200 rounded-xl p-4 flex gap-4 hover:border-blue-300 hover:shadow-md transition-all"
     >
-      <div className="flex-shrink-0 w-14 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg py-2">
+      <div className="flex-shrink-0 w-14 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg py-2 relative">
         <p className="text-[10px] uppercase tracking-wide text-blue-600 font-bold">
           {month}
         </p>
         <p className="text-2xl font-bold text-blue-700 leading-none">{day}</p>
         <p className="text-[10px] text-blue-500 mt-0.5">{dayName}</p>
+        {isMultiDay && (
+          <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 rounded-full">
+            +{Math.round((end.getTime() - start.getTime()) / 86400000)}d
+          </span>
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -198,15 +206,24 @@ function EventCard({ event }: { event: SOPEvent }) {
           {event.name}
         </h3>
         <p className="text-xs text-gray-500 mb-2">
+          {isMultiDay && (
+            <>
+              until {end.getDate()} {end.toLocaleString("default", { month: "short" })} ·{" "}
+            </>
+          )}
           {event.startTime && `${event.startTime}`}
           {event.endTime && `–${event.endTime} · `}
           {event.pax} pax · {layoutLabel[String(event.layout)] || event.layout}
         </p>
         <div className="flex items-center gap-2 text-xs">
-          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-            👤 {event.pic || event.organizer}
-          </span>
-          <span className="text-gray-300">·</span>
+          {event.pic && (
+            <>
+              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                👤 PIC: {event.pic}
+              </span>
+              <span className="text-gray-300">·</span>
+            </>
+          )}
           <span className="text-gray-500 truncate">{event.organizer}</span>
         </div>
       </div>

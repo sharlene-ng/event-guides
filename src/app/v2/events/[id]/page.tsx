@@ -32,13 +32,18 @@ export default async function EventDetailPage({
   const event = await getEvent(id);
   if (!event) notFound();
 
-  const date = new Date(String(event.date));
-  const dateStr = date.toLocaleDateString("en-MY", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const start = new Date(String(event.date));
+  const end = event.endDate ? new Date(String(event.endDate)) : start;
+  const isMultiDay = end.toDateString() !== start.toDateString();
+
+  const dateStr = isMultiDay
+    ? `${start.toLocaleDateString("en-MY", { weekday: "short", month: "long", day: "numeric" })} → ${end.toLocaleDateString("en-MY", { weekday: "short", month: "long", day: "numeric", year: "numeric" })}`
+    : start.toLocaleDateString("en-MY", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -90,8 +95,8 @@ export default async function EventDetailPage({
           label="Layout"
           value={layoutLabel[String(event.layout)] || String(event.layout)}
         />
-        <Detail label="Organizer" value={event.organizer} />
-        <Detail label="PIC" value={event.pic || "—"} />
+        <Detail label="Event Owner" value={event.organizer} />
+        <Detail label="Internal PIC" value={event.pic || "—"} />
       </div>
 
       {/* Requirements */}
@@ -130,7 +135,7 @@ export default async function EventDetailPage({
       {event.organizerContact && (
         <section className="mb-8">
           <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
-            Organizer Contact
+            Owner Contact
           </p>
           <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-700">
             {event.organizerContact}

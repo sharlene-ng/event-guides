@@ -6,6 +6,7 @@ const PUBLIC_PREFIXES = [
   "/api/logout",
   "/_next",
   "/favicon",
+  "/book", // public booking form for outside guests
 ];
 
 async function expectedHash(password: string): Promise<string> {
@@ -24,8 +25,13 @@ export async function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
 
-  // Allow login + auth API + Next.js internals
+  // Allow login + auth API + Next.js internals + public booking form
   if (PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
+  // Allow POST to /api/events from the public booking form
+  if (req.method === "POST" && pathname === "/api/events") {
     return NextResponse.next();
   }
 

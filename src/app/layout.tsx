@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,9 +24,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-gray-50 text-gray-900 font-sans antialiased">
         <Navbar />
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-gray-200 py-4 text-center text-xs text-gray-400">
-          BIG Hall Event Wiki · Internal Use Only
-        </footer>
+        <Footer />
       </body>
     </html>
   );

@@ -15,13 +15,14 @@ export type EventRequirements = {
 export type SOPEvent = {
   id: string;
   name: string;
-  date: string;
+  date: string;       // start date (YYYY-MM-DD)
+  endDate?: string;   // end date (YYYY-MM-DD) — same as date for single day
   startTime: string;
   endTime: string;
   pax: number | string;
   layout: EventLayout | string;
-  organizer: string;
-  organizerContact: string;
+  organizer: string;          // displayed as "Event Owner"
+  organizerContact: string;   // displayed as "Owner Contact"
   projectType: ProjectType | string;
   pic: string;
   requirements: EventRequirements;
@@ -99,9 +100,12 @@ function normalizeTime(v: unknown): string {
 }
 
 function normalizeEvent(e: SOPEvent): SOPEvent {
+  const startDate = normalizeDate(e.date);
+  const endDate = normalizeDate(e.endDate) || startDate;
   return {
     ...e,
-    date: normalizeDate(e.date),
+    date: startDate,
+    endDate,
     startTime: normalizeTime(e.startTime),
     endTime: normalizeTime(e.endTime),
     organizerContact: e.organizerContact == null ? "" : String(e.organizerContact),
