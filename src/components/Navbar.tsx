@@ -13,9 +13,11 @@ const v1Links = [
 
 const v2Links = [
   { href: "/v2", label: "Home" },
-  { href: "/v2/sop", label: "Full SOP" },
-  { href: "/v2/checklist", label: "Event Day" },
+  { href: "/v2/pricing", label: "Pricing" },
+  { href: "/v2/hall-info", label: "Hall Info" },
   { href: "/v2/hall-rules", label: "Hall Rules" },
+  { href: "/v2/sop", label: "Booking Guide" },
+  { href: "/v2/checklist", label: "Checklist" },
   { href: "/v2/contacts", label: "Contacts" },
 ];
 
