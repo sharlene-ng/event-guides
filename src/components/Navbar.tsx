@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const v1Links = [
   { href: "/", label: "Home" },
@@ -23,8 +23,18 @@ const v2Links = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const isV2 = pathname.startsWith("/v2");
   const links = isV2 ? v2Links : v1Links;
+
+  // Hide navbar on the login page
+  if (pathname === "/login") return null;
+
+  async function handleLogout() {
+    await fetch("/api/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
@@ -53,24 +63,34 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Version toggle */}
-          <div className="flex bg-gray-100 rounded-md p-0.5 ml-4">
-            <Link
-              href="/"
-              className={`px-2 py-1 text-xs font-semibold rounded ${
-                !isV2 ? "bg-white text-gray-900 shadow" : "text-gray-500"
-              }`}
+          <div className="flex items-center gap-3 ml-4">
+            {/* Version toggle */}
+            <div className="flex bg-gray-100 rounded-md p-0.5">
+              <Link
+                href="/"
+                className={`px-2 py-1 text-xs font-semibold rounded ${
+                  !isV2 ? "bg-white text-gray-900 shadow" : "text-gray-500"
+                }`}
+              >
+                v1
+              </Link>
+              <Link
+                href="/v2"
+                className={`px-2 py-1 text-xs font-semibold rounded ${
+                  isV2 ? "bg-white text-gray-900 shadow" : "text-gray-500"
+                }`}
+              >
+                v2
+              </Link>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+              title="Sign out"
             >
-              v1
-            </Link>
-            <Link
-              href="/v2"
-              className={`px-2 py-1 text-xs font-semibold rounded ${
-                isV2 ? "bg-white text-gray-900 shadow" : "text-gray-500"
-              }`}
-            >
-              v2
-            </Link>
+              Logout
+            </button>
           </div>
         </div>
       </div>
