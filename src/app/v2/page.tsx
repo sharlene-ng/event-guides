@@ -1,238 +1,215 @@
 import Link from "next/link";
+import { listEvents, type SOPEvent } from "@/lib/sheets";
+
+export const dynamic = "force-dynamic";
 
 const sections = [
-  {
-    href: "/v2/pricing",
-    title: "Pricing",
-    desc: "Internal & external rates, add-ons, inclusions",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="1" x2="12" y2="23" />
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-      </svg>
-    ),
-    accent: "bg-emerald-50 text-emerald-600",
-  },
-  {
-    href: "/v2/hall-info",
-    title: "Hall Info",
-    desc: "Capacity, equipment, layout & specs",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 21h18" />
-        <path d="M5 21V7l7-4 7 4v14" />
-        <path d="M9 9h1M9 12h1M9 15h1M14 9h1M14 12h1M14 15h1" />
-      </svg>
-    ),
-    accent: "bg-blue-50 text-blue-600",
-  },
-  {
-    href: "/v2/hall-rules",
-    title: "Hall Rules",
-    desc: "Things to remember when using the hall",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="9" y1="13" x2="15" y2="13" />
-        <line x1="9" y1="17" x2="15" y2="17" />
-      </svg>
-    ),
-    accent: "bg-amber-50 text-amber-600",
-  },
-  {
-    href: "/v2/sop",
-    title: "Booking Guide",
-    desc: "Step-by-step from approval to event day",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-      </svg>
-    ),
-    accent: "bg-indigo-50 text-indigo-600",
-  },
-  {
-    href: "/v2/checklist",
-    title: "Event Checklist",
-    desc: "Pre-event prep & event day — tick as you go",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="9 11 12 14 22 4" />
-        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-      </svg>
-    ),
-    accent: "bg-violet-50 text-violet-600",
-  },
-  {
-    href: "/v2/contacts",
-    title: "Contacts",
-    desc: "Approver, building management, PICs, vendors",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-      </svg>
-    ),
-    accent: "bg-rose-50 text-rose-600",
-  },
+  { href: "/v2/hall-info", title: "Hall Info", desc: "Capacity, equipment, layouts, pricing", icon: "🏛️" },
+  { href: "/v2/sop", title: "Booking Guide", desc: "Step-by-step from approval to event day", icon: "📋" },
+  { href: "/v2/checklist", title: "Checklist", desc: "Generic event-day reference", icon: "✅" },
+  { href: "/v2/contacts", title: "Contacts", desc: "Approver, building mgmt, PICs, vendors", icon: "📞" },
 ];
 
-const phases = [
-  {
-    num: "1",
-    label: "Approval & Calendar",
-    when: "Start here",
-    items: [
-      "Get approval from Sharlene (identifies project type)",
-      "Log in Google Calendar: FD Calendar + AIA GE",
-      "Invite yourself + all PICs",
-    ],
-  },
-  {
-    num: "2",
-    label: "Email Building Management",
-    when: "≥ 1 week before",
-    items: [
-      "Email mercumkpmoffice@gmail.com",
-      "Include guest list, parking, lift, aircond requests",
-    ],
-  },
-  {
-    num: "3",
-    label: "Other Prep",
-    when: "Days before",
-    items: [
-      "Print guest list and pass to security",
-      "Confirm parking, aircond, Bomba lift bookings",
-    ],
-  },
-  {
-    num: "4",
-    label: "Event Day",
-    when: "On the day",
-    items: [
-      "Setup & display, comms, PICs",
-      "Refreshments, credit card machines",
-    ],
-  },
-];
+const layoutLabel: Record<string, string> = {
+  theater: "Theater",
+  classroom: "Classroom",
+  banquet: "Banquet",
+};
 
-export default function V2Home() {
+function isUpcoming(date: string): boolean {
+  if (!date) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const eventDate = new Date(date);
+  return eventDate >= today;
+}
+
+export default async function V2Home() {
+  let upcomingEvents: SOPEvent[] = [];
+  let pastEvents: SOPEvent[] = [];
+  let backendError: string | null = null;
+
+  try {
+    const all = await listEvents("approved");
+    upcomingEvents = all
+      .filter((e) => isUpcoming(String(e.date)))
+      .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    pastEvents = all
+      .filter((e) => !isUpcoming(String(e.date)))
+      .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+      .slice(0, 5);
+  } catch (err) {
+    backendError = String(err);
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600 p-8 sm:p-12 text-white mb-10 shadow-sm">
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 30% 50%, white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
-        <div className="relative">
-          <p className="text-cyan-100 text-xs font-semibold tracking-[0.2em] uppercase mb-3">
-            Internal Wiki
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-            BIG Hall Event Planning
-          </h1>
-          <p className="text-cyan-50 text-base sm:text-lg max-w-2xl mb-6">
-            Everything you need to host events in the BIG Hall — pricing,
-            booking flow, checklists, and contacts. Start with approval, then
-            work through each phase.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <span className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-3 py-1 text-xs font-medium">
-              📍 Kuala Lumpur
-            </span>
-            <span className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-3 py-1 text-xs font-medium">
-              👥 100 participants
-            </span>
-            <span className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-3 py-1 text-xs font-medium">
-              💰 from RM 1,500/day
-            </span>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600 p-8 sm:p-10 text-white mb-8 shadow-sm">
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 30% 50%, white 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+        />
+        <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+          <div>
+            <p className="text-cyan-100 text-xs font-semibold tracking-[0.2em] uppercase mb-3">
+              Internal Wiki
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+              BIG Hall Event Planning
+            </h1>
+            <p className="text-cyan-50 text-sm sm:text-base max-w-xl">
+              Upcoming events, booking guide, and resources. Submit a new event
+              for approval.
+            </p>
           </div>
+          <Link
+            href="/v2/submit"
+            className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-50 shadow-md transition-colors text-sm"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Submit New Event
+          </Link>
         </div>
       </div>
 
-      {/* Section: Quick links */}
-      <div className="mb-12">
+      {backendError && (
+        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm px-4 py-3 rounded-lg mb-6">
+          ⚠ Could not load events from database: {backendError}
+        </div>
+      )}
+
+      {/* Upcoming events */}
+      <section className="mb-12">
+        <div className="flex items-baseline justify-between mb-4">
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500">
+            Upcoming Events ({upcomingEvents.length})
+          </p>
+          <Link
+            href="/v2/submit"
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Submit new →
+          </Link>
+        </div>
+
+        {upcomingEvents.length === 0 ? (
+          <div className="bg-white border border-dashed border-gray-300 rounded-xl p-10 text-center">
+            <div className="text-3xl mb-2">📅</div>
+            <p className="text-gray-700 font-medium mb-1">No upcoming events</p>
+            <p className="text-gray-500 text-sm mb-4">
+              Submit your first event to get started.
+            </p>
+            <Link
+              href="/v2/submit"
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700"
+            >
+              Submit Event
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {upcomingEvents.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Past events */}
+      {pastEvents.length > 0 && (
+        <section className="mb-12">
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-4">
+            Recent Past Events
+          </p>
+          <div className="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100">
+            {pastEvents.map((e) => (
+              <Link
+                key={e.id}
+                href={`/v2/events/${e.id}`}
+                className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors"
+              >
+                <div className="text-xs text-gray-400 font-mono w-24 flex-shrink-0">
+                  {e.date}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-sm truncate">
+                    {e.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {e.organizer} · {e.pax} pax · {layoutLabel[String(e.layout)] || e.layout}
+                  </p>
+                </div>
+                <span className="text-gray-300">→</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Wiki sections */}
+      <section>
         <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-4">
           Wiki Sections
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {sections.map((s) => (
             <Link
               key={s.href}
               href={s.href}
-              className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition-all"
+              className="bg-white border border-gray-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-md transition-all"
             >
-              <div className="flex items-start gap-4">
-                <div className={`w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 ${s.accent}`}>
-                  <div className="w-5 h-5">{s.icon}</div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h2 className="font-semibold text-gray-900">{s.title}</h2>
-                    <svg className="w-4 h-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-500 text-sm">{s.desc}</p>
-                </div>
-              </div>
+              <div className="text-2xl mb-2">{s.icon}</div>
+              <h3 className="font-semibold text-gray-900 text-sm">{s.title}</h3>
+              <p className="text-xs text-gray-500 mt-1">{s.desc}</p>
             </Link>
           ))}
         </div>
-      </div>
-
-      {/* Section: Event flow */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8">
-        <div className="flex items-baseline justify-between mb-6">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-1">
-              Event Flow — 4 Phases
-            </p>
-            <h2 className="text-xl font-bold text-gray-900">
-              From booking to wrap-up
-            </h2>
-          </div>
-          <Link
-            href="/v2/sop"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-          >
-            Full guide →
-          </Link>
-        </div>
-
-        <div className="space-y-0">
-          {phases.map((p, i) => (
-            <div key={p.num} className="flex gap-4">
-              <div className="flex flex-col items-center">
-                <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
-                  {p.num}
-                </div>
-                {i < phases.length - 1 && (
-                  <div className="w-px flex-1 bg-gray-200 my-2" />
-                )}
-              </div>
-              <div className={i < phases.length - 1 ? "pb-6 flex-1" : "flex-1"}>
-                <div className="flex items-baseline gap-3 mb-2 flex-wrap">
-                  <h3 className="font-semibold text-gray-900">{p.label}</h3>
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                    {p.when}
-                  </span>
-                </div>
-                <ul className="space-y-1">
-                  {p.items.map((item) => (
-                    <li key={item} className="text-sm text-gray-600 flex items-start gap-2">
-                      <span className="text-gray-300 mt-0.5">•</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      </section>
     </div>
+  );
+}
+
+function EventCard({ event }: { event: SOPEvent }) {
+  const date = new Date(String(event.date));
+  const day = date.getDate();
+  const month = date.toLocaleString("default", { month: "short" });
+  const dayName = date.toLocaleString("default", { weekday: "short" });
+
+  return (
+    <Link
+      href={`/v2/events/${event.id}`}
+      className="group bg-white border border-gray-200 rounded-xl p-4 flex gap-4 hover:border-blue-300 hover:shadow-md transition-all"
+    >
+      <div className="flex-shrink-0 w-14 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg py-2">
+        <p className="text-[10px] uppercase tracking-wide text-blue-600 font-bold">
+          {month}
+        </p>
+        <p className="text-2xl font-bold text-blue-700 leading-none">{day}</p>
+        <p className="text-[10px] text-blue-500 mt-0.5">{dayName}</p>
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-gray-900 text-sm mb-1 truncate group-hover:text-blue-700">
+          {event.name}
+        </h3>
+        <p className="text-xs text-gray-500 mb-2">
+          {event.startTime && `${event.startTime}`}
+          {event.endTime && `–${event.endTime} · `}
+          {event.pax} pax · {layoutLabel[String(event.layout)] || event.layout}
+        </p>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+            👤 {event.pic || event.organizer}
+          </span>
+          <span className="text-gray-300">·</span>
+          <span className="text-gray-500 truncate">{event.organizer}</span>
+        </div>
+      </div>
+    </Link>
   );
 }

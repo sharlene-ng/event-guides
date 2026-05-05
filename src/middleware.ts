@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_PREFIXES = ["/login", "/api/login", "/api/logout", "/_next", "/favicon"];
+const PUBLIC_PREFIXES = [
+  "/login",
+  "/api/login",
+  "/api/logout",
+  "/_next",
+  "/favicon",
+];
 
 async function expectedHash(password: string): Promise<string> {
   const data = new TextEncoder().encode(password);

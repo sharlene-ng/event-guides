@@ -13,9 +13,7 @@ const v1Links = [
 
 const v2Links = [
   { href: "/v2", label: "Home" },
-  { href: "/v2/pricing", label: "Pricing" },
   { href: "/v2/hall-info", label: "Hall Info" },
-  { href: "/v2/hall-rules", label: "Hall Rules" },
   { href: "/v2/sop", label: "Booking Guide" },
   { href: "/v2/checklist", label: "Checklist" },
   { href: "/v2/contacts", label: "Contacts" },
@@ -85,7 +83,25 @@ export default function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {isV2 && (
+              <>
+                <Link
+                  href="/v2/submit"
+                  className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-blue-700"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                  New Event
+                </Link>
+                <Link
+                  href="/v2/admin"
+                  className="text-xs text-gray-400 hover:text-amber-600"
+                  title="Admin"
+                >
+                  🔐
+                </Link>
+              </>
+            )}
             <div className="flex bg-gray-100 rounded-md p-0.5">
               <Link
                 href="/"
