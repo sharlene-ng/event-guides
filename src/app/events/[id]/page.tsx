@@ -137,11 +137,15 @@ export default async function EventDetailPage({
       )}
 
       {/* Quick details */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
         <Detail label="Pax" value={String(event.pax)} />
         <Detail
           label="Layout"
           value={layoutLabel[String(event.layout)] || String(event.layout)}
+        />
+        <Detail
+          label="Speaker"
+          value={event.requirements?.speakerName || "—"}
         />
         <Detail label="Event Owner" value={event.organizer} />
         <Detail label="Internal PIC" value={event.pic || "—"} />
