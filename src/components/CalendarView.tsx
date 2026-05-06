@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { SOPEvent } from "@/lib/sheets";
+import { getColorBar } from "@/lib/colors";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -243,12 +244,13 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
                 const top = HEADER_AREA + b.lane * (BAR_HEIGHT + BAR_GAP);
                 const radiusLeft = b.startsBeforeWeek ? 0 : 4;
                 const radiusRight = b.endsAfterWeek ? 0 : 4;
+                const colorCls = getColorBar(b.event.requirements?.color);
                 return (
                   <Link
                     key={`${wi}-${idx}-${b.event.id}`}
                     href={`/v2/events/${b.event.id}`}
                     title={`${b.event.name}${b.event.startTime ? ` · ${b.event.startTime}` : ""}`}
-                    className="absolute bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-medium truncate px-1.5 leading-none flex items-center"
+                    className={`absolute text-[10px] font-medium truncate px-1.5 leading-none flex items-center border ${colorCls}`}
                     style={{
                       left,
                       width: `calc(${width} - 4px)`,
@@ -285,12 +287,15 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
       {/* Legend */}
       <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-4 text-[11px] text-gray-500">
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-4 h-2 rounded bg-blue-600" />
+          <span className="w-4 h-2 rounded bg-blue-200 border border-blue-300" />
           Booked
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-600" />
           Today
+        </span>
+        <span className="text-gray-400 text-[10px]">
+          · Tap an event to open
         </span>
       </div>
     </div>

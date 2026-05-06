@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SOPEvent } from "@/lib/sheets";
+import { EVENT_COLORS, DEFAULT_COLOR } from "@/lib/colors";
 
 export default function AdminControls({ event }: { event: SOPEvent }) {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function AdminControls({ event }: { event: SOPEvent }) {
   const [organizerContact, setOrganizerContact] = useState(event.organizerContact);
   const [projectType, setProjectType] = useState(String(event.projectType));
   const [pic, setPic] = useState(event.pic);
+  const [color, setColor] = useState(event.requirements?.color || DEFAULT_COLOR);
 
   async function handleSave() {
     setBusy(true);
@@ -42,6 +44,7 @@ export default function AdminControls({ event }: { event: SOPEvent }) {
         requirements: {
           ...event.requirements,
           adminRemarks: remarksDraft,
+          color,
         },
       };
       const res = await fetch("/api/admin/update", {
@@ -85,11 +88,36 @@ export default function AdminControls({ event }: { event: SOPEvent }) {
     }
   }
 
+  async function quickSaveColor(newColor: string) {
+    setColor(newColor);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: event.id,
+          fields: {
+            requirements: {
+              ...event.requirements,
+              color: newColor,
+            },
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) router.refresh();
+      else alert(data.error || "Could not save");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!editing) {
     return (
       <section className="mb-8">
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-4">
+          <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">
               🔐 Admin
             </p>
@@ -99,6 +127,29 @@ export default function AdminControls({ event }: { event: SOPEvent }) {
             >
               ✎ Edit event info
             </button>
+          </div>
+
+          {/* Quick color picker */}
+          <div>
+            <label className="block text-[10px] font-semibold uppercase tracking-wide text-amber-800 mb-2">
+              Calendar Color
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {EVENT_COLORS.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => quickSaveColor(c.value)}
+                  className={`w-8 h-8 rounded-full border-2 transition-all ${c.swatch} ${
+                    color === c.value
+                      ? "ring-2 ring-offset-2 ring-blue-500 scale-110"
+                      : "hover:scale-105"
+                  } disabled:opacity-50`}
+                  title={c.label}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Inline remarks editor */}
@@ -197,6 +248,27 @@ export default function AdminControls({ event }: { event: SOPEvent }) {
             ]}
           />
           <FormField label="Internal PIC" value={pic} onChange={setPic} />
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-semibold uppercase tracking-wide text-amber-800 mb-2">
+            Calendar Color
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            {EVENT_COLORS.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => setColor(c.value)}
+                className={`w-8 h-8 rounded-full border-2 transition-all ${c.swatch} ${
+                  color === c.value
+                    ? "ring-2 ring-offset-2 ring-blue-500 scale-110"
+                    : "hover:scale-105"
+                }`}
+                title={c.label}
+              />
+            ))}
+          </div>
         </div>
 
         <div>

@@ -19,6 +19,7 @@ export type EventRequirements = {
   speakerName?: string;
   speakerContact?: string;
   layoutNotes?: string;
+  color?: string;             // calendar bar color: 'blue', 'emerald', etc.
 };
 
 export type SOPEvent = {
