@@ -38,8 +38,8 @@ type EventBar = {
   endsAfterWeek: boolean;
 };
 
-const ROW_HEIGHT = 92; // px
-const HEADER_AREA = 24; // px reserved for date number at top of cell
+const ROW_HEIGHT = 88; // px
+const HEADER_AREA = 22; // px reserved for date number at top of cell
 const BAR_HEIGHT = 18; // px
 const BAR_GAP = 2; // px
 
@@ -154,7 +154,7 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <div>
@@ -187,8 +187,8 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
         </div>
       </div>
 
-      {/* Day-name header */}
-      <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-100">
+      {/* Day-name header — sticky so it stays visible when scrolling */}
+      <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
         {DAY_LABELS.map((d) => (
           <div
             key={d}
@@ -223,7 +223,7 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
                 return (
                   <div
                     key={di}
-                    className={`px-1.5 pt-1.5 ${di < 6 ? "border-r border-gray-100" : ""} ${inMonth ? "bg-white" : "bg-gray-50/50"}`}
+                    className={`px-1 pt-1 ${di < 6 ? "border-r border-gray-100" : ""} ${inMonth ? "bg-white" : "bg-gray-50/50"}`}
                   >
                     <span
                       className={`text-xs font-semibold inline-flex items-center justify-center w-5 h-5 rounded-full ${
