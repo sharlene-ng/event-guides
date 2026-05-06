@@ -40,6 +40,7 @@ export default async function V2Home() {
   let backendError: string | null = null;
 
   try {
+    // Only "approved" — not cancelled / rejected
     allApproved = await listEvents("approved");
   } catch (err) {
     backendError = String(err);

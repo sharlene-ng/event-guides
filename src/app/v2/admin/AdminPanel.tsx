@@ -8,6 +8,7 @@ const statusBadge: Record<string, string> = {
   pending: "bg-amber-100 text-amber-800 border-amber-200",
   approved: "bg-emerald-100 text-emerald-800 border-emerald-200",
   rejected: "bg-rose-100 text-rose-800 border-rose-200",
+  cancelled: "bg-gray-200 text-gray-700 border-gray-300",
 };
 
 const layoutLabel: Record<string, string> = {
@@ -16,10 +17,12 @@ const layoutLabel: Record<string, string> = {
   banquet: "Fishbone",
 };
 
+type StatusFilter = "pending" | "approved" | "rejected" | "cancelled" | "all";
+
 export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[] }) {
   const router = useRouter();
   const [events, setEvents] = useState<SOPEvent[]>(initialEvents);
-  const [filter, setFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
+  const [filter, setFilter] = useState<StatusFilter>("pending");
   const [busy, setBusy] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -29,9 +32,13 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
     pending: events.filter((e) => e.status === "pending").length,
     approved: events.filter((e) => e.status === "approved").length,
     rejected: events.filter((e) => e.status === "rejected").length,
+    cancelled: events.filter((e) => e.status === "cancelled").length,
   };
 
-  async function changeStatus(id: string, status: "approved" | "rejected" | "pending") {
+  async function changeStatus(
+    id: string,
+    status: "approved" | "rejected" | "pending" | "cancelled",
+  ) {
     setBusy(id);
     try {
       const res = await fetch("/api/admin/approve", {
@@ -97,7 +104,7 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
 
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6 flex items-center gap-4">
-        {(["pending", "approved", "rejected", "all"] as const).map((tab) => (
+        {(["pending", "approved", "cancelled", "rejected", "all"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}
@@ -183,7 +190,19 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                     </button>
                   </>
                 )}
-                {e.status !== "pending" && (
+                {e.status === "approved" && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Cancel "${e.name}"?`))
+                        changeStatus(e.id, "cancelled");
+                    }}
+                    disabled={busy === e.id}
+                    className="text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Cancel event
+                  </button>
+                )}
+                {(e.status === "rejected" || e.status === "cancelled") && (
                   <button
                     onClick={() => changeStatus(e.id, "pending")}
                     disabled={busy === e.id}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import LayoutPicker from "@/components/LayoutPicker";
+import TimeSelect from "@/components/TimeSelect";
 
 const MAX_POSTER_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -78,6 +79,10 @@ export default function PublicBookingPage() {
 
     const phone = (fd.get("ownerPhone") as string).trim();
     const email = (fd.get("ownerEmail") as string).trim();
+    const parkingRequested = fd.get("parking") === "on";
+    const parkingVehicles = parkingRequested
+      ? Math.max(1, Number(fd.get("parkingVehicles") || 1))
+      : 0;
 
     const payload: Record<string, unknown> = {
       name: fd.get("name") as string,
@@ -88,11 +93,16 @@ export default function PublicBookingPage() {
       pax: Number(fd.get("pax") || 0),
       layout: fd.get("layout") as string,
       organizer: fd.get("eventOwner") as string,
-      // Combine into one cell as "phone | email" for storage
       organizerContact: [phone, email].filter(Boolean).join(" | "),
       projectType: "",
       pic: "",
-      requirements: { notes: fd.get("notes") as string },
+      requirements: {
+        notes: fd.get("notes") as string,
+        speakers: fd.get("speakers") as string,
+        layoutNotes: fd.get("layoutNotes") as string,
+        parking: parkingRequested,
+        parkingVehicles,
+      },
     };
 
     try {
@@ -225,8 +235,8 @@ export default function PublicBookingPage() {
               Leave end date empty for single-day events.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Start Time" name="startTime" type="time" />
-              <Field label="End Time" name="endTime" type="time" />
+              <TimeSelect label="Start Time" name="startTime" />
+              <TimeSelect label="End Time" name="endTime" />
             </div>
           </Card>
 
@@ -236,6 +246,19 @@ export default function PublicBookingPage() {
               Pick the seating arrangement that fits your event.
             </p>
             <LayoutPicker name="layout" />
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                Layout Notes (Optional)
+              </label>
+              <input
+                name="layoutNotes"
+                placeholder="e.g. 8 people per table, VIP table at front"
+                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white transition-colors"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Useful for grouping — how many per table, special seating, etc.
+              </p>
+            </div>
           </Card>
 
           {/* Owner */}
@@ -263,6 +286,22 @@ export default function PublicBookingPage() {
               />
             </div>
           </Card>
+
+          {/* Speakers */}
+          <Card label="Speakers (Optional)">
+            <p className="text-sm text-gray-500 -mt-2">
+              List speakers, panelists, or VIPs.
+            </p>
+            <textarea
+              name="speakers"
+              rows={3}
+              className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
+              placeholder="e.g. John Tan — CEO, ABC Corp&#10;Jane Lee — Keynote speaker"
+            />
+          </Card>
+
+          {/* Parking */}
+          <ParkingSection />
 
           {/* Notes */}
           <Card label="Notes (Optional)">
@@ -347,6 +386,44 @@ export default function PublicBookingPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+function ParkingSection() {
+  const [requested, setRequested] = useState(false);
+  return (
+    <Card label="Parking (Optional)">
+      <label className="flex items-center gap-2.5 cursor-pointer">
+        <input
+          type="checkbox"
+          name="parking"
+          checked={requested}
+          onChange={(e) => setRequested(e.target.checked)}
+          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        <span className="text-sm font-medium text-gray-800">
+          🅿️ Reserve parking spaces
+        </span>
+      </label>
+      {requested && (
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+            Number of Vehicles
+          </label>
+          <input
+            name="parkingVehicles"
+            type="number"
+            min={1}
+            max={20}
+            defaultValue={2}
+            className="w-32 px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
+          />
+        </div>
+      )}
+      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+        ⚠ Subject to availability — building management will confirm.
+      </p>
+    </Card>
   );
 }
 

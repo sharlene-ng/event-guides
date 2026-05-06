@@ -23,6 +23,7 @@ const statusBadge: Record<string, string> = {
   pending: "bg-amber-100 text-amber-800 border-amber-200",
   approved: "bg-emerald-100 text-emerald-800 border-emerald-200",
   rejected: "bg-rose-100 text-rose-800 border-rose-200",
+  cancelled: "bg-gray-200 text-gray-800 border-gray-300",
 };
 
 export default async function EventDetailPage({
@@ -88,7 +89,9 @@ export default async function EventDetailPage({
             ? "⏳ This event is awaiting approval from Sharlene."
             : event.status === "rejected"
               ? "✕ This event was rejected and won't appear on the home page."
-              : ""}
+              : event.status === "cancelled"
+                ? "✕ This event has been cancelled."
+                : ""}
         </div>
       )}
 
@@ -144,18 +147,55 @@ export default async function EventDetailPage({
         <Detail label="Internal PIC" value={event.pic || "—"} />
       </div>
 
-      {/* Requirements */}
+      {/* Speakers */}
+      {event.requirements?.speakers && (
+        <section className="mb-8">
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+            Speakers
+          </p>
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {event.requirements.speakers}
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Layout notes */}
+      {event.requirements?.layoutNotes && (
+        <section className="mb-8">
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+            Layout Notes
+          </p>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-700">
+            {event.requirements.layoutNotes}
+          </div>
+        </section>
+      )}
+
+      {/* Add-ons */}
       {event.requirements &&
-        Object.values(event.requirements).some(
-          (v) => typeof v === "boolean" && v,
-        ) && (
+        (event.requirements.catering ||
+          event.requirements.parking ||
+          event.requirements.lift ||
+          event.requirements.aircond) && (
           <section className="mb-8">
             <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
               Requested Add-ons
             </p>
             <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-wrap gap-2">
               {event.requirements.catering && <Pill>🍱 Catering</Pill>}
-              {event.requirements.parking && <Pill>🅿️ Reserved parking</Pill>}
+              {event.requirements.parking && (
+                <Pill>
+                  🅿️ Parking
+                  {event.requirements.parkingVehicles
+                    ? ` × ${event.requirements.parkingVehicles}`
+                    : ""}{" "}
+                  <span className="text-amber-700 ml-1 text-[10px]">
+                    (subject to availability)
+                  </span>
+                </Pill>
+              )}
               {event.requirements.lift && <Pill>🛗 Bomba lift</Pill>}
               {event.requirements.aircond && <Pill>❄️ Aircond</Pill>}
             </div>

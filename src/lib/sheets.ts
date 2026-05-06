@@ -1,16 +1,19 @@
 // Google Sheets backend client (via Apps Script web app)
 
-export type EventStatus = "pending" | "approved" | "rejected";
+export type EventStatus = "pending" | "approved" | "rejected" | "cancelled";
 export type EventLayout = "theater" | "classroom" | "banquet";
 export type ProjectType = "company" | "internal" | "external";
 
 export type EventRequirements = {
   catering?: boolean;
   parking?: boolean;
+  parkingVehicles?: number;
   lift?: boolean;
   aircond?: boolean;
   notes?: string;
   adminRemarks?: string;
+  speakers?: string;
+  layoutNotes?: string;
 };
 
 export type SOPEvent = {
@@ -108,6 +111,16 @@ function normalizeTime(v: unknown): string {
   return String(v);
 }
 
+function transformPosterUrl(url: string): string {
+  // Drive thumbnail URLs sometimes fail to embed; lh3 format is more reliable
+  if (!url) return "";
+  const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m) {
+    return `https://lh3.googleusercontent.com/d/${m[1]}=w800`;
+  }
+  return url;
+}
+
 function normalizeEvent(e: SOPEvent): SOPEvent {
   const startDate = normalizeDate(e.date);
   const endDate = normalizeDate(e.endDate) || startDate;
@@ -122,7 +135,7 @@ function normalizeEvent(e: SOPEvent): SOPEvent {
     organizer: String(e.organizer || ""),
     name: String(e.name || ""),
     pax: e.pax,
-    posterUrl: e.posterUrl ? String(e.posterUrl) : "",
+    posterUrl: e.posterUrl ? transformPosterUrl(String(e.posterUrl)) : "",
     posterViewUrl: e.posterViewUrl ? String(e.posterViewUrl) : "",
   };
 }

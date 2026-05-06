@@ -1,5 +1,34 @@
 "use client";
 
+// Shared visual constants for all 3 layouts
+const STAGE_PROPS = { x: 35, y: 6, width: 30, height: 4, rx: 0.5 };
+const TABLE_OPACITY = 0.5;
+const CHAIR_OPACITY = 0.7;
+const CHAIR_R = 1.4;
+
+function Stage() {
+  return (
+    <>
+      <rect
+        {...STAGE_PROPS}
+        fill="currentColor"
+        opacity="0.4"
+      />
+      <text
+        x="50"
+        y="9.5"
+        textAnchor="middle"
+        fontSize="2.5"
+        fill="currentColor"
+        opacity="0.7"
+        fontWeight="600"
+      >
+        STAGE
+      </text>
+    </>
+  );
+}
+
 const layouts = [
   {
     value: "theater",
@@ -7,17 +36,20 @@ const layouts = [
     desc: "Rows facing the front. Best for talks & presentations.",
     diagram: (
       <svg viewBox="0 0 100 70" className="w-full h-full">
-        {/* Stage */}
-        <rect x="20" y="6" width="60" height="6" rx="1" fill="currentColor" opacity="0.3" />
-        <text x="50" y="11" textAnchor="middle" fontSize="3.5" fill="currentColor" opacity="0.7">STAGE</text>
-        {/* Rows of dots */}
-        {[20, 30, 40, 50, 60].map((y) => (
-          <g key={y}>
-            {[15, 25, 35, 45, 55, 65, 75, 85].map((x) => (
-              <circle key={x} cx={x} cy={y} r="2.2" fill="currentColor" opacity="0.85" />
-            ))}
-          </g>
-        ))}
+        <Stage />
+        {/* 5 rows × 8 chairs facing the stage */}
+        {[22, 32, 42, 52, 62].map((y) =>
+          [16, 26, 36, 46, 56, 66, 76, 84].map((x) => (
+            <circle
+              key={`${x}-${y}`}
+              cx={x}
+              cy={y}
+              r={1.7}
+              fill="currentColor"
+              opacity={CHAIR_OPACITY + 0.15}
+            />
+          )),
+        )}
       </svg>
     ),
   },
@@ -27,20 +59,32 @@ const layouts = [
     desc: "Rows of tables with chairs. Great for workshops.",
     diagram: (
       <svg viewBox="0 0 100 70" className="w-full h-full">
-        <rect x="20" y="6" width="60" height="6" rx="1" fill="currentColor" opacity="0.3" />
-        <text x="50" y="11" textAnchor="middle" fontSize="3.5" fill="currentColor" opacity="0.7">FRONT</text>
-        {[22, 38, 54].map((y) => (
-          <g key={y}>
-            {/* tables */}
-            <rect x="12" y={y} width="22" height="4" rx="1" fill="currentColor" opacity="0.4" />
-            <rect x="40" y={y} width="22" height="4" rx="1" fill="currentColor" opacity="0.4" />
-            <rect x="68" y={y} width="22" height="4" rx="1" fill="currentColor" opacity="0.4" />
-            {/* chairs */}
-            {[16, 22, 28].map((x) => <circle key={x} cx={x} cy={y + 8} r="2" fill="currentColor" opacity="0.85" />)}
-            {[44, 50, 56].map((x) => <circle key={x} cx={x} cy={y + 8} r="2" fill="currentColor" opacity="0.85" />)}
-            {[72, 78, 84].map((x) => <circle key={x} cx={x} cy={y + 8} r="2" fill="currentColor" opacity="0.85" />)}
-          </g>
-        ))}
+        <Stage />
+        {[20, 38, 56].map((y) =>
+          [10, 39, 68].map((x) => (
+            <g key={`${x}-${y}`}>
+              <rect
+                x={x}
+                y={y}
+                width={22}
+                height={4}
+                rx={0.5}
+                fill="currentColor"
+                opacity={TABLE_OPACITY}
+              />
+              {[x + 4, x + 11, x + 18].map((cx) => (
+                <circle
+                  key={cx}
+                  cx={cx}
+                  cy={y + 8}
+                  r={CHAIR_R}
+                  fill="currentColor"
+                  opacity={CHAIR_OPACITY}
+                />
+              ))}
+            </g>
+          )),
+        )}
       </svg>
     ),
   },
@@ -50,13 +94,7 @@ const layouts = [
     desc: "Angled tables pointing toward the stage. Great for dinners.",
     diagram: (
       <svg viewBox="0 0 100 70" className="w-full h-full">
-        {/* Stage at top center */}
-        <rect x="40" y="6" width="20" height="5" rx="0.5" fill="currentColor" opacity="0.5" />
-        {/* Stage chairs (small dots) */}
-        <circle cx="46" cy="14" r="1.2" fill="currentColor" opacity="0.6" />
-        <circle cx="54" cy="14" r="1.2" fill="currentColor" opacity="0.6" />
-
-        {/* 4 tables in V-shape pointing toward the stage */}
+        <Stage />
         {[
           { cx: 30, cy: 28, angle: -30 },
           { cx: 70, cy: 28, angle: 30 },
@@ -77,10 +115,10 @@ const layouts = [
                 y={cy - tableH / 2}
                 width={tableW}
                 height={tableH}
-                rx="0.5"
+                rx={0.5}
                 transform={`rotate(${angle} ${cx} ${cy})`}
                 fill="currentColor"
-                opacity="0.85"
+                opacity={TABLE_OPACITY}
               />
               {[-1, 1].flatMap((side) =>
                 positions.map((t, i) => {
@@ -91,9 +129,9 @@ const layouts = [
                       key={`${side}-${i}`}
                       cx={x}
                       cy={y}
-                      r="1.3"
+                      r={CHAIR_R}
                       fill="currentColor"
-                      opacity="0.6"
+                      opacity={CHAIR_OPACITY}
                     />
                   );
                 }),
@@ -134,9 +172,10 @@ export default function LayoutPicker({
               <p className="text-xs text-gray-500">{l.desc}</p>
             </div>
           </div>
-          {/* Sibling of input — peer-checked works */}
           <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-blue-500 items-center justify-center hidden peer-checked:flex shadow-md pointer-events-none">
-            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
           </div>
         </label>
       ))}
