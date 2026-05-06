@@ -13,7 +13,8 @@ const statusBadge: Record<string, string> = {
   cancelled: "bg-gray-200 text-gray-700 border-gray-300",
 };
 
-// "approved" is stored as the internal value but displayed as "Confirmed"
+// "approved" is stored as the internal value but displayed as "Confirmed".
+// Internal-only mapping — do not change values.
 const statusLabel: Record<string, string> = {
   pending: "Pending",
   approved: "Confirmed",
