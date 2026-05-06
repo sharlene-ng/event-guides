@@ -295,6 +295,7 @@ export default async function EventDetailPage({
           <EventChecklist
             eventId={event.id}
             initialState={event.checklistState || {}}
+            canEdit={isAdmin}
           />
         </section>
       )}
