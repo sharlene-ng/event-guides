@@ -11,10 +11,6 @@ function parseLocalDate(dateStr: string): Date {
   return new Date(y, (m || 1) - 1, d || 1);
 }
 
-function dateKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 function sameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -23,6 +19,24 @@ function sameDay(a: Date, b: Date): boolean {
   );
 }
 
+function dayDiff(a: Date, b: Date): number {
+  const ms = b.getTime() - a.getTime();
+  return Math.round(ms / 86400000);
+}
+
+type EventBar = {
+  event: SOPEvent;
+  startCol: number; // 0-6 within week
+  endCol: number; // 0-6 within week (inclusive)
+  startsBeforeWeek: boolean;
+  endsAfterWeek: boolean;
+};
+
+const ROW_HEIGHT = 92; // px
+const HEADER_AREA = 24; // px reserved for date number at top of cell
+const BAR_HEIGHT = 18; // px
+const BAR_GAP = 2; // px
+
 export default function CalendarView({ events }: { events: SOPEvent[] }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -30,61 +44,100 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
     new Date(today.getFullYear(), today.getMonth(), 1),
   );
 
-  // Map every date in event ranges to event(s)
-  const eventsByDate = useMemo(() => {
-    const map: Record<string, SOPEvent[]> = {};
-    events.forEach((e) => {
-      if (!e.date) return;
-      const start = parseLocalDate(String(e.date));
-      const end = e.endDate
-        ? parseLocalDate(String(e.endDate))
-        : start;
-      const d = new Date(start);
-      while (d <= end) {
-        const key = dateKey(d);
-        if (!map[key]) map[key] = [];
-        map[key].push(e);
-        d.setDate(d.getDate() + 1);
-      }
-    });
-    return map;
-  }, [events]);
-
-  const monthName = cursor.toLocaleString("default", {
-    month: "long",
-    year: "numeric",
-  });
-
-  // Build the month grid (always 6 rows × 7 cols = 42 cells)
-  const cells = useMemo(() => {
+  // Build the 6-week grid for the visible month
+  const weeks = useMemo(() => {
     const firstOfMonth = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const startDay = firstOfMonth.getDay(); // 0 = Sun
-    const out: { date: Date; inMonth: boolean }[] = [];
-
-    for (let i = startDay - 1; i >= 0; i--) {
-      const d = new Date(firstOfMonth);
-      d.setDate(-i);
-      out.push({ date: d, inMonth: false });
-    }
+    const startDay = firstOfMonth.getDay();
     const daysInMonth = new Date(
       cursor.getFullYear(),
       cursor.getMonth() + 1,
       0,
     ).getDate();
+
+    const cells: { date: Date; inMonth: boolean }[] = [];
+    for (let i = startDay - 1; i >= 0; i--) {
+      const d = new Date(firstOfMonth);
+      d.setDate(-i);
+      cells.push({ date: d, inMonth: false });
+    }
     for (let i = 1; i <= daysInMonth; i++) {
-      out.push({
+      cells.push({
         date: new Date(cursor.getFullYear(), cursor.getMonth(), i),
         inMonth: true,
       });
     }
-    while (out.length < 42) {
-      const last = out[out.length - 1].date;
+    while (cells.length < 42) {
+      const last = cells[cells.length - 1].date;
       const next = new Date(last);
       next.setDate(next.getDate() + 1);
-      out.push({ date: next, inMonth: false });
+      cells.push({ date: next, inMonth: false });
     }
+
+    const out: { date: Date; inMonth: boolean }[][] = [];
+    for (let i = 0; i < 42; i += 7) out.push(cells.slice(i, i + 7));
     return out;
   }, [cursor]);
+
+  // For each week, pre-compute the event bars + lane assignments
+  const weekBars = useMemo(() => {
+    return weeks.map((week) => {
+      const weekStart = week[0].date;
+      const weekEnd = week[6].date;
+
+      const intersecting = events.filter((e) => {
+        if (!e.date) return false;
+        const start = parseLocalDate(String(e.date));
+        const end = e.endDate ? parseLocalDate(String(e.endDate)) : start;
+        return end >= weekStart && start <= weekEnd;
+      });
+
+      // Sort: longer events first, then earlier start
+      intersecting.sort((a, b) => {
+        const aS = parseLocalDate(String(a.date));
+        const aE = a.endDate ? parseLocalDate(String(a.endDate)) : aS;
+        const bS = parseLocalDate(String(b.date));
+        const bE = b.endDate ? parseLocalDate(String(b.endDate)) : bS;
+        const aLen = dayDiff(aS, aE);
+        const bLen = dayDiff(bS, bE);
+        if (aLen !== bLen) return bLen - aLen;
+        return aS.getTime() - bS.getTime();
+      });
+
+      const bars: (EventBar & { lane: number })[] = [];
+      const lanesEnd: number[] = []; // ending col index per lane
+
+      for (const event of intersecting) {
+        const eStart = parseLocalDate(String(event.date));
+        const eEnd = event.endDate ? parseLocalDate(String(event.endDate)) : eStart;
+
+        const visibleStart = eStart < weekStart ? weekStart : eStart;
+        const visibleEnd = eEnd > weekEnd ? weekEnd : eEnd;
+
+        const startCol = dayDiff(weekStart, visibleStart);
+        const endCol = dayDiff(weekStart, visibleEnd);
+
+        // Find lane
+        let lane = lanesEnd.findIndex((endIdx) => endIdx < startCol);
+        if (lane === -1) lane = lanesEnd.length;
+        lanesEnd[lane] = endCol;
+
+        bars.push({
+          event,
+          startCol,
+          endCol,
+          startsBeforeWeek: eStart < weekStart,
+          endsAfterWeek: eEnd > weekEnd,
+          lane,
+        });
+      }
+      return bars;
+    });
+  }, [weeks, events]);
+
+  const monthName = cursor.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
 
   function move(delta: number) {
     setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1));
@@ -101,7 +154,7 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
         <div>
           <h2 className="font-bold text-gray-900 text-lg">{monthName}</h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            BIG Hall availability — coloured cells are booked
+            BIG Hall availability — coloured bars are bookings
           </p>
         </div>
         <div className="flex items-center gap-1">
@@ -140,63 +193,90 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
         ))}
       </div>
 
-      {/* Cells */}
-      <div className="grid grid-cols-7">
-        {cells.map(({ date, inMonth }, i) => {
-          const key = dateKey(date);
-          const dayEvents = eventsByDate[key] || [];
-          const isToday = sameDay(date, today);
-          const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-          const hasBooking = dayEvents.length > 0;
-
+      {/* Weeks */}
+      <div>
+        {weeks.map((week, wi) => {
+          const bars = weekBars[wi];
+          const maxLane = bars.reduce((m, b) => Math.max(m, b.lane + 1), 0);
+          const overflow = bars.filter((b) => b.lane >= 3); // hide >3 lanes
+          const visibleBars = bars.filter((b) => b.lane < 3);
+          const minHeight = Math.max(
+            ROW_HEIGHT,
+            HEADER_AREA + Math.min(maxLane, 3) * (BAR_HEIGHT + BAR_GAP) + 8,
+          );
           return (
             <div
-              key={i}
-              className={`min-h-[72px] sm:min-h-[88px] p-1.5 border-r border-b border-gray-100 last:border-r-0 ${i >= cells.length - 7 ? "border-b-0" : ""} ${(i + 1) % 7 === 0 ? "border-r-0" : ""} ${
-                inMonth
-                  ? hasBooking
-                    ? "bg-blue-50"
-                    : "bg-white"
-                  : "bg-gray-50/50"
-              }`}
+              key={wi}
+              className={`relative grid grid-cols-7 ${wi < weeks.length - 1 ? "border-b border-gray-100" : ""}`}
+              style={{ minHeight }}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span
-                  className={`text-xs font-semibold inline-flex items-center justify-center w-5 h-5 rounded-full ${
-                    isToday
-                      ? "bg-blue-600 text-white"
-                      : !inMonth
-                        ? "text-gray-300"
-                        : isWeekend
-                          ? "text-gray-400"
-                          : "text-gray-700"
-                  }`}
-                >
-                  {date.getDate()}
-                </span>
-                {hasBooking && (
-                  <span className="text-[9px] font-bold text-blue-600">
-                    {dayEvents.length}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-0.5">
-                {dayEvents.slice(0, 2).map((e) => (
-                  <Link
-                    key={e.id + key}
-                    href={`/v2/events/${e.id}`}
-                    className="block bg-blue-600 hover:bg-blue-700 text-white text-[10px] truncate rounded px-1.5 py-0.5 leading-tight"
-                    title={`${e.name}${e.startTime ? ` · ${e.startTime}` : ""}`}
+              {/* Day cells */}
+              {week.map(({ date, inMonth }, di) => {
+                const isToday = sameDay(date, today);
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                return (
+                  <div
+                    key={di}
+                    className={`px-1.5 pt-1.5 ${di < 6 ? "border-r border-gray-100" : ""} ${inMonth ? "bg-white" : "bg-gray-50/50"}`}
                   >
-                    {e.name}
-                  </Link>
-                ))}
-                {dayEvents.length > 2 && (
-                  <div className="text-[9px] text-blue-600 font-semibold pl-1.5">
-                    +{dayEvents.length - 2} more
+                    <span
+                      className={`text-xs font-semibold inline-flex items-center justify-center w-5 h-5 rounded-full ${
+                        isToday
+                          ? "bg-blue-600 text-white"
+                          : !inMonth
+                            ? "text-gray-300"
+                            : isWeekend
+                              ? "text-gray-400"
+                              : "text-gray-700"
+                      }`}
+                    >
+                      {date.getDate()}
+                    </span>
                   </div>
-                )}
-              </div>
+                );
+              })}
+
+              {/* Event bars (absolutely positioned) */}
+              {visibleBars.map((b, idx) => {
+                const left = `${(b.startCol / 7) * 100}%`;
+                const width = `${((b.endCol - b.startCol + 1) / 7) * 100}%`;
+                const top = HEADER_AREA + b.lane * (BAR_HEIGHT + BAR_GAP);
+                const radiusLeft = b.startsBeforeWeek ? 0 : 4;
+                const radiusRight = b.endsAfterWeek ? 0 : 4;
+                return (
+                  <Link
+                    key={`${wi}-${idx}-${b.event.id}`}
+                    href={`/v2/events/${b.event.id}`}
+                    title={`${b.event.name}${b.event.startTime ? ` · ${b.event.startTime}` : ""}`}
+                    className="absolute bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-medium truncate px-1.5 leading-none flex items-center"
+                    style={{
+                      left,
+                      width: `calc(${width} - 4px)`,
+                      marginLeft: 2,
+                      top,
+                      height: BAR_HEIGHT,
+                      borderRadius: `${radiusLeft}px ${radiusRight}px ${radiusRight}px ${radiusLeft}px`,
+                    }}
+                  >
+                    {b.event.name}
+                  </Link>
+                );
+              })}
+
+              {/* "+N more" indicator if events overflow */}
+              {overflow.length > 0 && (
+                <div
+                  className="absolute text-[10px] text-blue-600 font-semibold px-1.5"
+                  style={{
+                    left: 0,
+                    right: 0,
+                    bottom: 4,
+                    textAlign: "right",
+                  }}
+                >
+                  +{overflow.length} more
+                </div>
+              )}
             </div>
           );
         })}
@@ -205,11 +285,7 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
       {/* Legend */}
       <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-4 text-[11px] text-gray-500">
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-white border border-gray-300" />
-          Available
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-blue-50 border border-blue-200" />
+          <span className="w-4 h-2 rounded bg-blue-600" />
           Booked
         </span>
         <span className="inline-flex items-center gap-1.5">

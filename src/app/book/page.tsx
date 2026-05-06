@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DayPicker, type DateRange } from "react-day-picker";
+import "react-day-picker/style.css";
 import LayoutPicker from "@/components/LayoutPicker";
 import TimeSelect from "@/components/TimeSelect";
 
 const MAX_POSTER_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_VEHICLES = 2;
+const ASPECT_TOLERANCE = 0.08; // ±8% from 16:9
 
 type Vehicle = { plate: string; model: string; color: string };
 type BookedRange = { start: string; end: string; name: string };
@@ -24,12 +28,28 @@ function fileToBase64(
   });
 }
 
-function dateInRanges(date: string, ranges: BookedRange[]): BookedRange | null {
-  if (!date) return null;
-  for (const r of ranges) {
-    if (date >= r.start && date <= r.end) return r;
-  }
-  return null;
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+}
+
+function toDateString(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function validateAspect(file: File): Promise<{ ok: boolean; ratio: number }> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const ratio = img.width / img.height;
+      const expected = 16 / 9;
+      const ok = Math.abs(ratio - expected) / expected <= ASPECT_TOLERANCE;
+      resolve({ ok, ratio });
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => resolve({ ok: false, ratio: 0 });
+    img.src = URL.createObjectURL(file);
+  });
 }
 
 export default function PublicBookingPage() {
@@ -44,9 +64,8 @@ export default function PublicBookingPage() {
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
-  // Date selection state
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // Date range selection (DayPicker)
+  const [range, setRange] = useState<DateRange | undefined>();
 
   // Booked dates from API
   const [bookedRanges, setBookedRanges] = useState<BookedRange[]>([]);
@@ -66,10 +85,16 @@ export default function PublicBookingPage() {
       .catch(() => {});
   }, []);
 
-  const startConflict = dateInRanges(startDate, bookedRanges);
-  const endConflict = dateInRanges(endDate, bookedRanges);
+  // Build disabled date ranges for the DayPicker
+  const disabledRanges = bookedRanges.map((r) => ({
+    from: parseLocalDate(r.start),
+    to: parseLocalDate(r.end),
+  }));
+  // Also disable past dates
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  function processFile(file: File) {
+  async function processFile(file: File) {
     setError("");
     if (!file.type.startsWith("image/")) {
       setError("Poster must be an image file.");
@@ -77,6 +102,14 @@ export default function PublicBookingPage() {
     }
     if (file.size > MAX_POSTER_SIZE) {
       setError("Poster too large — max 5 MB.");
+      return;
+    }
+    const aspect = await validateAspect(file);
+    if (!aspect.ok) {
+      const w = file.name;
+      setError(
+        `Poster must be 16:9 ratio (current: ${aspect.ratio.toFixed(2)}:1). Common 16:9 sizes: 1920×1080, 1280×720. File: ${w}`,
+      );
       return;
     }
     setPoster(file);
@@ -104,7 +137,9 @@ export default function PublicBookingPage() {
   }
 
   function addVehicle() {
-    setVehicles((v) => [...v, { plate: "", model: "", color: "" }]);
+    setVehicles((v) =>
+      v.length >= MAX_VEHICLES ? v : [...v, { plate: "", model: "", color: "" }],
+    );
   }
 
   function removeVehicle(idx: number) {
@@ -122,21 +157,13 @@ export default function PublicBookingPage() {
     setError("");
 
     const fd = new FormData(e.currentTarget);
-    const start = (fd.get("startDate") as string) || startDate;
-    const endRaw = (fd.get("endDate") as string) || endDate;
-    const end = endRaw || start;
 
-    if (end < start) {
-      setError("End date can't be before start date.");
+    if (!range?.from) {
+      setError("Please pick a date for the event.");
       return;
     }
-
-    if (startConflict || endConflict) {
-      setError(
-        `That date is already booked (${(startConflict || endConflict)?.name}). Please pick a different date.`,
-      );
-      return;
-    }
+    const start = toDateString(range.from);
+    const end = range.to ? toDateString(range.to) : start;
 
     if (!poster) {
       setError("Please upload an event poster before submitting.");
@@ -289,61 +316,43 @@ export default function PublicBookingPage() {
 
           {/* Date & time */}
           <Card label="Date & Time">
-            {bookedRanges.length > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-xs font-semibold text-amber-900 mb-1.5 uppercase tracking-wide">
-                  Already booked
-                </p>
-                <ul className="text-xs text-amber-800 space-y-0.5">
-                  {bookedRanges.map((r, i) => (
-                    <li key={i}>
-                      {r.start === r.end ? r.start : `${r.start} → ${r.end}`}{" "}
-                      <span className="text-amber-600">— {r.name}</span>
-                    </li>
-                  ))}
-                </ul>
+            <p className="text-sm text-gray-500 -mt-2">
+              Click a single day, or click two days for a range. Greyed-out
+              days are already booked.
+            </p>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 sm:p-4 flex justify-center">
+              <DayPicker
+                mode="range"
+                selected={range}
+                onSelect={setRange}
+                disabled={[{ before: today }, ...disabledRanges]}
+                showOutsideDays
+                modifiersClassNames={{
+                  selected: "rdp-selected",
+                  range_start: "rdp-range-start",
+                  range_end: "rdp-range-end",
+                  range_middle: "rdp-range-middle",
+                  today: "rdp-today",
+                  disabled: "rdp-disabled",
+                }}
+              />
+            </div>
+
+            {range?.from && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm text-blue-800">
+                <strong>Selected: </strong>
+                {range.to && range.to.toDateString() !== range.from.toDateString()
+                  ? `${range.from.toLocaleDateString("en-MY", { month: "short", day: "numeric", year: "numeric" })} → ${range.to.toLocaleDateString("en-MY", { month: "short", day: "numeric", year: "numeric" })}`
+                  : range.from.toLocaleDateString("en-MY", {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
               </div>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                  Start Date *
-                </label>
-                <input
-                  type="date"
-                  name="startDate"
-                  required
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className={`w-full px-3.5 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white transition-colors ${startConflict ? "border-rose-300 bg-rose-50" : "border-gray-200"}`}
-                />
-                {startConflict && (
-                  <p className="text-xs text-rose-600 mt-1">
-                    ⚠ Booked: {startConflict.name}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  name="endDate"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className={`w-full px-3.5 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white transition-colors ${endConflict ? "border-rose-300 bg-rose-50" : "border-gray-200"}`}
-                />
-                {endConflict && (
-                  <p className="text-xs text-rose-600 mt-1">
-                    ⚠ Booked: {endConflict.name}
-                  </p>
-                )}
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 -mt-2">
-              Leave end date empty for single-day events.
-            </p>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <TimeSelect label="Start Time" name="startTime" />
               <TimeSelect label="End Time" name="endTime" />
@@ -449,13 +458,19 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={addVehicle}
-                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-2.5 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
-                >
-                  + Add another vehicle
-                </button>
+                {vehicles.length < MAX_VEHICLES ? (
+                  <button
+                    type="button"
+                    onClick={addVehicle}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg py-2.5 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                  >
+                    + Add another vehicle
+                  </button>
+                ) : (
+                  <p className="text-xs text-gray-400 text-center">
+                    Maximum {MAX_VEHICLES} vehicles
+                  </p>
+                )}
               </div>
             )}
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
@@ -477,8 +492,8 @@ export default function PublicBookingPage() {
           <Card label="Event Poster *">
             <p className="text-sm text-gray-500 -mt-2">
               <span className="font-medium text-gray-700">Required</span> ·
-              Recommended <strong>16:9 ratio</strong> (will be displayed at the
-              entrance) · JPG/PNG, max 5 MB
+              Must be <strong>16:9 ratio</strong> (e.g. 1920×1080) — will be
+              displayed at the entrance · JPG/PNG, max 5 MB
             </p>
             {posterPreview ? (
               <div className="relative inline-block">
@@ -536,7 +551,7 @@ export default function PublicBookingPage() {
                   {dragOver ? "Drop image here" : "Drag & drop or click to choose"}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  16:9 recommended · JPG, PNG up to 5 MB
+                  16:9 required · JPG, PNG up to 5 MB
                 </p>
                 <input
                   type="file"

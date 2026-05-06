@@ -9,3 +9,36 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+/* React DayPicker — match the app's blue palette */
+.rdp-root {
+  --rdp-accent-color: #2563eb;
+  --rdp-accent-background-color: #dbeafe;
+  --rdp-day-height: 38px;
+  --rdp-day-width: 38px;
+}
+
+.rdp-disabled {
+  text-decoration: line-through;
+  color: #9ca3af;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rdp-today:not(.rdp-selected) .rdp-day_button {
+  font-weight: 700;
+  color: #2563eb;
+  border: 1px solid #93c5fd;
+}
+
+.rdp-range_start .rdp-day_button,
+.rdp-range_end .rdp-day_button {
+  background-color: #2563eb !important;
+  color: white !important;
+  border-radius: 8px;
+}
+
+.rdp-range_middle .rdp-day_button {
+  background-color: #dbeafe;
+  color: #1e3a8a;
+}
