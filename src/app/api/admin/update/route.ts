@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthed } from "@/lib/admin";
 
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
     if (!data.ok) {
       return NextResponse.json(data, { status: 500 });
     }
+    revalidatePath("/");
     return NextResponse.json({ ok: true, event: data.event });
   } catch (err) {
     return NextResponse.json(

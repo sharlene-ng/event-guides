@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { updateEventStatus } from "@/lib/sheets";
 import { isAdminAuthed } from "@/lib/admin";
@@ -29,6 +30,7 @@ export async function POST(req: NextRequest) {
       body.status,
       body.approvedBy || "Sharlene",
     );
+    revalidatePath("/");
     return NextResponse.json({ ok: true, event });
   } catch (err) {
     return NextResponse.json(
