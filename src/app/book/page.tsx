@@ -104,14 +104,6 @@ export default function PublicBookingPage() {
       setError("Poster too large — max 5 MB.");
       return;
     }
-    const aspect = await validateAspect(file);
-    if (!aspect.ok) {
-      const w = file.name;
-      setError(
-        `Poster must be 16:9 ratio (current: ${aspect.ratio.toFixed(2)}:1). Common 16:9 sizes: 1920×1080, 1280×720. File: ${w}`,
-      );
-      return;
-    }
     setPoster(file);
     const reader = new FileReader();
     reader.onload = () => setPosterPreview(reader.result as string);
@@ -492,8 +484,7 @@ export default function PublicBookingPage() {
           <Card label="Event Poster *">
             <p className="text-sm text-gray-500 -mt-2">
               <span className="font-medium text-gray-700">Required</span> ·
-              Must be <strong>16:9 ratio</strong> (e.g. 1920×1080) — will be
-              displayed at the entrance · JPG/PNG, max 5 MB
+              Will be displayed at the entrance · JPG/PNG, max 5 MB. 16:9 ratio recommended.
             </p>
             {posterPreview ? (
               <div className="relative inline-block">
@@ -551,7 +542,7 @@ export default function PublicBookingPage() {
                   {dragOver ? "Drop image here" : "Drag & drop or click to choose"}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  16:9 required · JPG, PNG up to 5 MB
+                  JPG, PNG up to 5 MB
                 </p>
                 <input
                   type="file"
