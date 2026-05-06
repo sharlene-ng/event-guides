@@ -11,15 +11,15 @@ const sectionConfig: Record<
   { label: string; icon: string; type: "table" | "vendors" }
 > = {
   approver: { label: "Approver — Start Here", icon: "⭐", type: "table" },
+  coordinator: { label: "Vendor Coordinators", icon: "🤝", type: "table" },
   building: { label: "Building Management", icon: "🏗️", type: "table" },
   pic: { label: "Event Day PICs", icon: "👥", type: "table" },
+  "vendor-wireman": { label: "⚡ Wireman / Electrical", icon: "⚡", type: "vendors" },
+  "vendor-av": { label: "🎤 AV System", icon: "🎤", type: "vendors" },
+  "vendor-internet": { label: "📡 Internet", icon: "📡", type: "vendors" },
   "vendor-catering": { label: "🍱 Catering", icon: "🍱", type: "vendors" },
   "vendor-coffee": { label: "☕ Coffee / Tea", icon: "☕", type: "vendors" },
-  "vendor-lanyard": {
-    label: "🎀 Lanyard / Printing",
-    icon: "🎀",
-    type: "vendors",
-  },
+  "vendor-lanyard": { label: "🎀 Lanyard / Printing", icon: "🎀", type: "vendors" },
   "vendor-cc": { label: "💳 Credit Card Machine", icon: "💳", type: "vendors" },
 };
 
