@@ -197,83 +197,19 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                   {layoutLabel[String(e.layout)] || e.layout}
                 </p>
               </div>
-              <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
-                {e.status === "pending" && (
-                  <>
-                    <button
-                      onClick={() => changeStatus(e.id, "approved")}
-                      disabled={busy === e.id}
-                      className="bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50"
-                    >
-                      Confirm
-                    </button>
-                    <button
-                      onClick={() => changeStatus(e.id, "reserved")}
-                      disabled={busy === e.id}
-                      className="bg-sky-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-sky-700 disabled:opacity-50"
-                    >
-                      Reserve (TBC)
-                    </button>
-                    <button
-                      onClick={() => changeStatus(e.id, "rejected")}
-                      disabled={busy === e.id}
-                      className="bg-rose-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-rose-700 disabled:opacity-50"
-                    >
-                      Reject
-                    </button>
-                  </>
-                )}
-                {e.status === "reserved" && (
-                  <>
-                    <button
-                      onClick={() => changeStatus(e.id, "approved")}
-                      disabled={busy === e.id}
-                      className="bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50"
-                    >
-                      Confirm
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm(`Cancel "${e.name}"?`))
-                          changeStatus(e.id, "cancelled");
-                      }}
-                      disabled={busy === e.id}
-                      className="text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                )}
-                {e.status === "approved" && (
-                  <>
-                    <button
-                      onClick={() => changeStatus(e.id, "reserved")}
-                      disabled={busy === e.id}
-                      className="text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-md hover:bg-sky-100 disabled:opacity-50"
-                    >
-                      Move to Reserved
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm(`Cancel "${e.name}"?`))
-                          changeStatus(e.id, "cancelled");
-                      }}
-                      disabled={busy === e.id}
-                      className="text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      Cancel event
-                    </button>
-                  </>
-                )}
-                {(e.status === "rejected" || e.status === "cancelled") && (
-                  <button
-                    onClick={() => changeStatus(e.id, "pending")}
-                    disabled={busy === e.id}
-                    className="text-xs text-gray-400 hover:text-gray-700 disabled:opacity-50"
-                  >
-                    ↺ Reset to pending
-                  </button>
-                )}
+              <div className="flex-shrink-0">
+                <StatusSelect
+                  current={e.status}
+                  busy={busy === e.id}
+                  onChange={(next) => {
+                    if (next === e.status) return;
+                    if (next === "cancelled" || next === "rejected") {
+                      const verb = next === "cancelled" ? "Cancel" : "Reject";
+                      if (!confirm(`${verb} "${e.name}"?`)) return;
+                    }
+                    changeStatus(e.id, next);
+                  }}
+                />
               </div>
             </div>
 
@@ -442,6 +378,48 @@ function EditForm({
         </button>
       </div>
     </div>
+  );
+}
+
+type EventStatusValue =
+  | "pending"
+  | "approved"
+  | "reserved"
+  | "rejected"
+  | "cancelled";
+
+const STATUS_OPTIONS: { value: EventStatusValue; label: string; ring: string }[] = [
+  { value: "pending", label: "Pending", ring: "ring-amber-300" },
+  { value: "approved", label: "Confirmed", ring: "ring-emerald-300" },
+  { value: "reserved", label: "Reserved (TBC)", ring: "ring-sky-300" },
+  { value: "cancelled", label: "Cancelled", ring: "ring-gray-300" },
+  { value: "rejected", label: "Rejected", ring: "ring-rose-300" },
+];
+
+function StatusSelect({
+  current,
+  busy,
+  onChange,
+}: {
+  current: string;
+  busy: boolean;
+  onChange: (next: EventStatusValue) => void;
+}) {
+  const ring =
+    STATUS_OPTIONS.find((o) => o.value === current)?.ring || "ring-gray-300";
+  return (
+    <select
+      value={current}
+      disabled={busy}
+      onChange={(e) => onChange(e.target.value as EventStatusValue)}
+      className={`text-xs font-semibold bg-white border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-50 disabled:opacity-50 focus:outline-none focus:ring-2 ${ring}`}
+    >
+      {STATUS_OPTIONS.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
   );
 }
 
