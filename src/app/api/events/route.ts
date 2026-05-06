@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const required = ["name", "date", "organizer", "layout"];
+    const required = ["name", "date", "layout"];
     for (const f of required) {
       if (!body[f]) {
         return NextResponse.json(

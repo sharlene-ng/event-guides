@@ -183,11 +183,6 @@ export default function PublicBookingPage() {
     const start = toDateString(range.from);
     const end = range.to ? toDateString(range.to) : start;
 
-    if (!poster) {
-      setError("Please upload an event poster before submitting.");
-      return;
-    }
-
     setSubmitting(true);
 
     const phone = (fd.get("ownerPhone") as string).trim();
@@ -220,13 +215,15 @@ export default function PublicBookingPage() {
       },
     };
 
-    try {
-      const optimized = await compressImageIfNeeded(poster);
-      payload.poster = await fileToBase64(optimized);
-    } catch {
-      setError("Could not read poster file. Try a different image.");
-      setSubmitting(false);
-      return;
+    if (poster) {
+      try {
+        const optimized = await compressImageIfNeeded(poster);
+        payload.poster = await fileToBase64(optimized);
+      } catch {
+        setError("Could not read poster file. Try a different image.");
+        setSubmitting(false);
+        return;
+      }
     }
 
     try {
@@ -401,16 +398,15 @@ export default function PublicBookingPage() {
           </Card>
 
           {/* Owner */}
-          <Card label="Project Owner">
+          <Card label="Project Owner (Optional)">
             <Field
-              label="Your Name *"
+              label="Your Name"
               name="eventOwner"
-              required
               placeholder="Person responsible for this event"
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Phone *" name="ownerPhone" type="tel" required placeholder="e.g. +60 12-345 6789" />
-              <Field label="Email *" name="ownerEmail" type="email" required placeholder="you@example.com" />
+              <Field label="Phone" name="ownerPhone" type="tel" placeholder="e.g. +60 12-345 6789" />
+              <Field label="Email" name="ownerEmail" type="email" placeholder="you@example.com" />
             </div>
           </Card>
 
@@ -509,9 +505,8 @@ export default function PublicBookingPage() {
           </Card>
 
           {/* Event poster */}
-          <Card label="Event Poster *">
+          <Card label="Event Poster (Optional)">
             <p className="text-sm text-gray-500 -mt-2">
-              <span className="font-medium text-gray-700">Required</span> ·
               Will be displayed at the entrance. 16:9 ratio recommended.
             </p>
             {posterPreview ? (
