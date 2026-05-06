@@ -1,39 +1,8 @@
 import Link from "next/link";
 import { listEvents, listHolidays, type Holiday, type SOPEvent } from "@/lib/sheets";
-import CalendarView from "@/components/CalendarView";
+import HomeTabs from "@/components/HomeTabs";
 
 export const revalidate = 60; // re-fetch from Sheets at most every 60 s
-
-const layoutLabel: Record<string, string> = {
-  theater: "Theater",
-  classroom: "Classroom",
-  banquet: "Fishbone",
-};
-
-function parseLocalDate(dateStr: string): Date {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, (m || 1) - 1, d || 1);
-}
-
-function isUpcoming(date: string): boolean {
-  if (!date) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return parseLocalDate(date) >= today;
-}
-
-function monthKey(date: string): string {
-  const d = parseLocalDate(date);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function monthLabel(key: string): string {
-  const [y, m] = key.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleString("default", {
-    month: "long",
-    year: "numeric",
-  });
-}
 
 export default async function V2Home() {
   let allVisible: SOPEvent[] = [];
@@ -51,20 +20,6 @@ export default async function V2Home() {
   } catch (err) {
     backendError = String(err);
   }
-
-  const upcoming = allVisible
-    .filter((e) => isUpcoming(String(e.date)))
-    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
-
-  // Group upcoming events by month
-  const grouped = upcoming.reduce<Record<string, SOPEvent[]>>((acc, e) => {
-    const k = monthKey(String(e.date));
-    if (!acc[k]) acc[k] = [];
-    acc[k].push(e);
-    return acc;
-  }, {});
-
-  const monthKeys = Object.keys(grouped).sort();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -106,141 +61,7 @@ export default async function V2Home() {
         </div>
       )}
 
-      {/* Upcoming events grouped by month */}
-      <section className="mb-12">
-        <div className="flex items-baseline justify-between mb-4">
-          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500">
-            Upcoming Events ({upcoming.length})
-          </p>
-          <Link
-            href="/submit"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-          >
-            Submit new →
-          </Link>
-        </div>
-
-        {upcoming.length === 0 ? (
-          <div className="bg-white border border-dashed border-gray-300 rounded-xl p-10 text-center">
-            <div className="text-3xl mb-2">📅</div>
-            <p className="text-gray-700 font-medium mb-1">No upcoming events</p>
-            <p className="text-gray-500 text-sm mb-4">
-              Submit your first event to get started.
-            </p>
-            <Link
-              href="/submit"
-              className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700"
-            >
-              Submit Event
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {monthKeys.map((key) => (
-              <div key={key}>
-                <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-baseline gap-2">
-                  {monthLabel(key)}
-                  <span className="text-xs font-medium text-gray-400">
-                    · {grouped[key].length} event{grouped[key].length !== 1 ? "s" : ""}
-                  </span>
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {grouped[key].map((e) => (
-                    <EventCard key={e.id} event={e} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Calendar */}
-      <section>
-        <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
-          Hall Availability
-        </p>
-        <CalendarView events={allVisible} holidays={holidays} />
-      </section>
+      <HomeTabs events={allVisible} holidays={holidays} />
     </div>
-  );
-}
-
-function EventCard({ event }: { event: SOPEvent }) {
-  const start = parseLocalDate(String(event.date));
-  const end = event.endDate ? parseLocalDate(String(event.endDate)) : start;
-  const isMultiDay = end.toDateString() !== start.toDateString();
-
-  const day = start.getDate();
-  const month = start.toLocaleString("default", { month: "short" });
-  const dayName = start.toLocaleString("default", { weekday: "short" });
-
-  return (
-    <Link
-      href={`/events/${event.id}`}
-      className="group bg-white border border-gray-200 rounded-xl p-4 flex gap-4 hover:border-blue-300 hover:shadow-md transition-all"
-    >
-      {/* Date block (left) */}
-      <div className="flex-shrink-0 w-14 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg py-2 relative">
-        <p className="text-[10px] uppercase tracking-wide text-blue-600 font-bold">
-          {month}
-        </p>
-        <p className="text-2xl font-bold text-blue-700 leading-none">{day}</p>
-        <p className="text-[10px] text-blue-500 mt-0.5">{dayName}</p>
-        {isMultiDay && (
-          <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 rounded-full">
-            +{Math.round((end.getTime() - start.getTime()) / 86400000)}d
-          </span>
-        )}
-      </div>
-
-      {/* Info (middle) */}
-      <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-gray-900 text-sm mb-1 truncate group-hover:text-blue-700">
-          {event.name}
-        </h3>
-        <p className="text-xs text-gray-500 mb-2">
-          {isMultiDay ? (
-            <>
-              {start.toLocaleString("default", { month: "short" })}{" "}
-              {start.getDate()}–
-              {start.getMonth() !== end.getMonth() &&
-                `${end.toLocaleString("default", { month: "short" })} `}
-              {end.getDate()}
-              {" · "}
-              {Math.round((end.getTime() - start.getTime()) / 86400000) + 1} days
-              {" · "}
-            </>
-          ) : (
-            <>1 day · </>
-          )}
-          {event.startTime && `${event.startTime}`}
-          {event.endTime && `–${event.endTime} · `}
-          {event.pax} pax · {layoutLabel[String(event.layout)] || event.layout}
-        </p>
-        <div className="flex items-center gap-2 text-xs">
-          {event.pic && (
-            <>
-              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                👤 PIC: {event.pic}
-              </span>
-              <span className="text-gray-300">·</span>
-            </>
-          )}
-          <span className="text-gray-500 truncate">{event.organizer}</span>
-        </div>
-      </div>
-
-      {/* Poster thumbnail (right) */}
-      {event.posterUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={event.posterUrl}
-          alt={event.name}
-          className="flex-shrink-0 w-16 h-16 rounded-lg object-cover border border-gray-200"
-          referrerPolicy="no-referrer"
-        />
-      )}
-    </Link>
   );
 }
