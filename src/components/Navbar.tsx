@@ -4,15 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const v1Links = [
-  { href: "/", label: "Home" },
-  { href: "/sop", label: "Full SOP" },
-  { href: "/checklist", label: "Checklists" },
-  { href: "/hall-info", label: "Hall Info" },
-  { href: "/contacts", label: "Contacts" },
-];
-
-const v2Links = [
+const links = [
   { href: "/v2", label: "Home" },
   { href: "/v2/hall-info", label: "Hall Info" },
   { href: "/v2/sop", label: "Booking Guide" },
@@ -23,8 +15,6 @@ const v2Links = [
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const isV2 = pathname.startsWith("/v2");
-  const links = isV2 ? v2Links : v1Links;
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -50,7 +40,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-6">
           {/* Brand */}
-          <Link href={isV2 ? "/v2" : "/"} className="flex items-center gap-2.5 flex-shrink-0">
+          <Link href="/v2" className="flex items-center gap-2.5 flex-shrink-0">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
               <svg
                 className="w-5 h-5 text-white"
@@ -75,9 +65,7 @@ export default function Navbar() {
             {links.map((link) => {
               const active =
                 pathname === link.href ||
-                (link.href !== "/" &&
-                  link.href !== "/v2" &&
-                  pathname.startsWith(link.href));
+                (link.href !== "/v2" && pathname.startsWith(link.href));
               return (
                 <Link
                   key={link.href}
@@ -96,70 +84,49 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {isV2 && (
-              <>
-                <Link
-                  href="/v2/submit"
-                  className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-blue-700"
-                >
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                  New Event
-                </Link>
+            <Link
+              href="/v2/submit"
+              className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-blue-700"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+              New Event
+            </Link>
 
-                {isAdmin ? (
-                  <Link
-                    href="/v2/admin"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 px-2.5 py-1.5 rounded-md transition-colors"
-                    title="You are signed in as Admin · click for approval panel"
-                  >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                    Admin
-                  </Link>
-                ) : (
-                  <span
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1.5 rounded-md"
-                    title="Read-only access — sign in as Admin to make changes"
-                  >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="8.5" cy="7" r="4" />
-                      <path d="M20 8v6M23 11h-6" />
-                    </svg>
-                    Team
-                  </span>
-                )}
-                {!isAdmin && (
-                  <Link
-                    href="/v2/admin"
-                    className="text-xs text-gray-400 hover:text-amber-700"
-                    title="Sign in as Admin"
-                  >
-                    🔐
-                  </Link>
-                )}
-              </>
+            {isAdmin ? (
+              <Link
+                href="/v2/admin"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 px-2.5 py-1.5 rounded-md transition-colors"
+                title="You are signed in as Admin · click for approval panel"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Admin
+              </Link>
+            ) : (
+              <span
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1.5 rounded-md"
+                title="Read-only access — sign in as Admin to make changes"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="8.5" cy="7" r="4" />
+                  <path d="M20 8v6M23 11h-6" />
+                </svg>
+                Team
+              </span>
             )}
-            <div className="flex bg-gray-100 rounded-md p-0.5">
+            {!isAdmin && (
               <Link
-                href="/"
-                className={`px-2 py-1 text-[11px] font-semibold rounded ${
-                  !isV2 ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
-                }`}
+                href="/v2/admin"
+                className="text-xs text-gray-400 hover:text-amber-700"
+                title="Sign in as Admin"
               >
-                v1
+                🔐
               </Link>
-              <Link
-                href="/v2"
-                className={`px-2 py-1 text-[11px] font-semibold rounded ${
-                  isV2 ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
-                }`}
-              >
-                v2
-              </Link>
-            </div>
+            )}
+
             <button
               onClick={handleLogout}
               className="text-xs text-gray-400 hover:text-gray-700"
