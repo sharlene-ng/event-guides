@@ -147,8 +147,8 @@ export default async function EventDetailPage({
           label="Speaker"
           value={event.requirements?.speakerName || "—"}
         />
-        <Detail label="Event Owner" value={event.organizer} />
-        <Detail label="Internal PIC" value={event.pic || "—"} />
+        <Detail label="Project Owner" value={event.organizer} />
+        <Detail label="Event PIC" value={event.pic || "—"} />
       </div>
 
       {/* Speaker (new structured fields) */}

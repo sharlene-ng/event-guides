@@ -5,7 +5,12 @@ import { useMemo, useState } from "react";
 import type { SOPEvent } from "@/lib/sheets";
 import { getColorBar } from "@/lib/colors";
 
-const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// Map JS getDay() (0=Sun..6=Sat) to a Mon-first column index (0=Mon..6=Sun)
+function dayCol(date: Date): number {
+  return (date.getDay() + 6) % 7;
+}
 
 function parseLocalDate(dateStr: string): Date {
   const [y, m, d] = dateStr.split("-").map(Number);
@@ -48,7 +53,7 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
   // Build the 6-week grid for the visible month
   const weeks = useMemo(() => {
     const firstOfMonth = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const startDay = firstOfMonth.getDay();
+    const startDay = dayCol(firstOfMonth); // 0..6 with Mon=0
     const daysInMonth = new Date(
       cursor.getFullYear(),
       cursor.getMonth() + 1,

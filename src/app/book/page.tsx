@@ -347,6 +347,7 @@ export default function PublicBookingPage() {
                 onSelect={setRange}
                 disabled={[{ before: today }, ...disabledRanges]}
                 showOutsideDays
+                weekStartsOn={1}
                 modifiersClassNames={{
                   selected: "rdp-selected",
                   range_start: "rdp-range-start",
@@ -400,7 +401,7 @@ export default function PublicBookingPage() {
           </Card>
 
           {/* Owner */}
-          <Card label="Event Owner">
+          <Card label="Project Owner">
             <Field
               label="Your Name *"
               name="eventOwner"

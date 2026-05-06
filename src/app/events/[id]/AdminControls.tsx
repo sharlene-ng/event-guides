@@ -229,7 +229,7 @@ export default function AdminControls({ event }: { event: SOPEvent }) {
             ]}
           />
         </div>
-        <FormField label="Event Owner" value={organizer} onChange={setOrganizer} />
+        <FormField label="Project Owner" value={organizer} onChange={setOrganizer} />
         <FormField
           label="Owner Contact"
           value={organizerContact}
@@ -247,7 +247,7 @@ export default function AdminControls({ event }: { event: SOPEvent }) {
               { value: "external", label: "External (chargeable)" },
             ]}
           />
-          <FormField label="Internal PIC" value={pic} onChange={setPic} />
+          <FormField label="Event PIC" value={pic} onChange={setPic} />
         </div>
 
         <div>

@@ -31,7 +31,7 @@ export type SOPEvent = {
   endTime: string;
   pax: number | string;
   layout: EventLayout | string;
-  organizer: string;          // displayed as "Event Owner"
+  organizer: string;          // displayed as "Project Owner"
   organizerContact: string;   // displayed as "Owner Contact"
   projectType: ProjectType | string;
   pic: string;

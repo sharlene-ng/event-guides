@@ -216,9 +216,9 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
 
             {/* Owner details */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
-              <Detail label="Event Owner" value={e.organizer} />
+              <Detail label="Project Owner" value={e.organizer} />
               <Detail label="Owner Contact" value={e.organizerContact || "—"} />
-              <Detail label="Internal PIC" value={e.pic || "—"} />
+              <Detail label="Event PIC" value={e.pic || "—"} />
             </div>
 
             {/* Notes */}
@@ -326,7 +326,7 @@ function EditForm({
 
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">
-            Internal PIC
+            Event PIC
           </label>
           <input
             value={pic}

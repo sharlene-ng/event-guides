@@ -12,7 +12,7 @@ const sectionConfig: Record<
 > = {
   approver: { label: "Calendar Booking Approver", icon: "⭐", type: "table" },
   building: { label: "Building Management", icon: "🏗️", type: "table" },
-  pic: { label: "Internal PIC", icon: "👥", type: "table" },
+  pic: { label: "Event PIC", icon: "👥", type: "table" },
   "vendor-maintenance": { label: "🛠️ Office Maintenance", icon: "🛠️", type: "vendors" },
   "vendor-wireman": { label: "⚡ Wireman / Electrical", icon: "⚡", type: "vendors" },
   "vendor-av": { label: "🎤 AV System", icon: "🎤", type: "vendors" },
