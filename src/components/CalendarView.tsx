@@ -247,7 +247,7 @@ export default function CalendarView({
                     key={di}
                     className={`px-1 pt-1 ${di < 6 ? "border-r border-gray-100" : ""} ${
                       isHoliday
-                        ? "bg-rose-50/70"
+                        ? "bg-gray-100"
                         : inMonth
                           ? "bg-white"
                           : "bg-gray-50/50"
@@ -260,11 +260,9 @@ export default function CalendarView({
                             ? "bg-blue-600 text-white"
                             : !inMonth
                               ? "text-gray-300"
-                              : isHoliday
-                                ? "text-rose-700"
-                                : isWeekend
-                                  ? "text-gray-400"
-                                  : "text-gray-700"
+                              : isWeekend
+                                ? "text-gray-400"
+                                : "text-gray-700"
                         }`}
                       >
                         {date.getDate()}
@@ -290,31 +288,50 @@ export default function CalendarView({
                 const radiusLeft = b.startsBeforeWeek ? 0 : 4;
                 const radiusRight = b.endsAfterWeek ? 0 : 4;
                 const colorCls = getColorBar(b.event.requirements?.color);
+                // Pull the text-* class out of colorCls so we can apply it
+                // to the (full-opacity) content layer, while the (faded)
+                // background layer keeps the bg / border / hover classes.
+                const textCls = colorCls.match(/text-\S+/)?.[0] || "";
                 const isReserved = b.event.status === "reserved";
+                const radius = `${radiusLeft}px ${radiusRight}px ${radiusRight}px ${radiusLeft}px`;
                 return (
                   <Link
                     key={`${wi}-${idx}-${b.event.id}`}
                     href={`/events/${b.event.id}`}
                     title={`${b.event.name}${isReserved ? " (Reserved · TBC)" : ""}${b.event.startTime ? ` · ${b.event.startTime}` : ""}`}
-                    className={`absolute text-[10px] font-medium truncate px-1.5 leading-none flex items-center gap-1 border ${
-                      isReserved ? "border-dashed border-red-500" : ""
-                    } ${colorCls}`}
+                    className="absolute flex items-center"
                     style={{
                       left,
                       width: `calc(${width} - 4px)`,
                       marginLeft: 2,
                       top,
                       height: BAR_HEIGHT,
-                      borderRadius: `${radiusLeft}px ${radiusRight}px ${radiusRight}px ${radiusLeft}px`,
-                      borderWidth: isReserved ? 1.5 : 1,
                     }}
                   >
-                    {isReserved && (
-                      <span className="text-[8px] font-bold uppercase tracking-wide bg-red-600 text-white rounded px-1 py-px leading-none flex-shrink-0">
-                        TBC
-                      </span>
-                    )}
-                    <span className="truncate">{b.event.name}</span>
+                    {/* Faded fill layer — only this gets opacity */}
+                    <span
+                      aria-hidden="true"
+                      className={`absolute inset-0 border ${colorCls} ${
+                        isReserved
+                          ? "border-dashed border-red-500 opacity-40"
+                          : ""
+                      }`}
+                      style={{
+                        borderRadius: radius,
+                        borderWidth: isReserved ? 1.5 : 1,
+                      }}
+                    />
+                    {/* Content layer — stays at full opacity */}
+                    <span
+                      className={`relative flex items-center gap-1 px-1.5 leading-none w-full text-[10px] font-medium truncate ${textCls}`}
+                    >
+                      {isReserved && (
+                        <span className="text-[8px] font-bold uppercase tracking-wide bg-red-600 text-white rounded px-1 py-px leading-none flex-shrink-0">
+                          TBC
+                        </span>
+                      )}
+                      <span className="truncate">{b.event.name}</span>
+                    </span>
                   </Link>
                 );
               })}
@@ -353,8 +370,8 @@ export default function CalendarView({
           Reserved (TBC)
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-4 h-2 rounded bg-rose-50 border border-rose-200" />
-          Public holiday
+          <span className="w-4 h-2 rounded bg-gray-100 border border-gray-200" />
+          <span className="text-rose-600">Public holiday</span>
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-600" />
