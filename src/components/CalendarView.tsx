@@ -297,7 +297,7 @@ export default function CalendarView({
                     href={`/events/${b.event.id}`}
                     title={`${b.event.name}${isReserved ? " (Reserved · TBC)" : ""}${b.event.startTime ? ` · ${b.event.startTime}` : ""}`}
                     className={`absolute text-[10px] font-medium truncate px-1.5 leading-none flex items-center gap-1 border ${
-                      isReserved ? "border-dashed opacity-80" : ""
+                      isReserved ? "border-dashed border-red-500" : ""
                     } ${colorCls}`}
                     style={{
                       left,
@@ -310,7 +310,7 @@ export default function CalendarView({
                     }}
                   >
                     {isReserved && (
-                      <span className="text-[8px] font-bold uppercase tracking-wide bg-white/60 rounded px-1 py-px leading-none flex-shrink-0">
+                      <span className="text-[8px] font-bold uppercase tracking-wide bg-red-600 text-white rounded px-1 py-px leading-none flex-shrink-0">
                         TBC
                       </span>
                     )}
@@ -345,7 +345,11 @@ export default function CalendarView({
           Confirmed
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-4 h-2 rounded bg-blue-200 border border-dashed border-blue-400" />
+          <span className="inline-flex items-center bg-blue-200 border border-dashed border-red-500 rounded px-0.5 h-3">
+            <span className="text-[7px] font-bold uppercase bg-red-600 text-white rounded px-0.5 leading-none">
+              TBC
+            </span>
+          </span>
           Reserved (TBC)
         </span>
         <span className="inline-flex items-center gap-1.5">
