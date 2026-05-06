@@ -26,6 +26,52 @@ function fileToBase64(
   });
 }
 
+// Resize and re-encode large images so they fit Vercel's request body limit
+// (~4.5 MB after base64 inflation, so target a smaller raw size)
+async function compressImageIfNeeded(file: File): Promise<File> {
+  const SIZE_THRESHOLD = 1.5 * 1024 * 1024; // 1.5 MB raw — comfortably under limit after base64
+  if (file.size <= SIZE_THRESHOLD) return file;
+  if (!file.type.startsWith("image/")) return file;
+
+  const dataUrl: string = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as string);
+    r.onerror = () => reject(new Error("read failed"));
+    r.readAsDataURL(file);
+  });
+
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new window.Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("decode failed"));
+    i.src = dataUrl;
+  });
+
+  // Resize so the longest edge is at most 1920 px
+  const MAX_DIM = 1920;
+  let { width, height } = img;
+  if (Math.max(width, height) > MAX_DIM) {
+    const ratio = MAX_DIM / Math.max(width, height);
+    width = Math.round(width * ratio);
+    height = Math.round(height * ratio);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+  ctx.drawImage(img, 0, 0, width, height);
+
+  // JPEG at 0.82 quality strikes a good balance for posters
+  const blob: Blob | null = await new Promise((resolve) =>
+    canvas.toBlob((b) => resolve(b), "image/jpeg", 0.82),
+  );
+  if (!blob) return file;
+
+  const newName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+  return new File([blob], newName, { type: "image/jpeg" });
+}
+
 function parseLocalDate(s: string): Date {
   const [y, m, d] = s.split("-").map(Number);
   return new Date(y, (m || 1) - 1, d || 1);
@@ -175,7 +221,8 @@ export default function PublicBookingPage() {
     };
 
     try {
-      payload.poster = await fileToBase64(poster);
+      const optimized = await compressImageIfNeeded(poster);
+      payload.poster = await fileToBase64(optimized);
     } catch {
       setError("Could not read poster file. Try a different image.");
       setSubmitting(false);
