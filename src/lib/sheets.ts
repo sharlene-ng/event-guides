@@ -4,15 +4,20 @@ export type EventStatus = "pending" | "approved" | "rejected" | "cancelled";
 export type EventLayout = "theater" | "classroom" | "banquet";
 export type ProjectType = "company" | "internal" | "external";
 
+export type Vehicle = { plate: string; model: string; color: string };
+
 export type EventRequirements = {
   catering?: boolean;
   parking?: boolean;
   parkingVehicles?: number;
+  vehicles?: Vehicle[];
   lift?: boolean;
   aircond?: boolean;
   notes?: string;
   adminRemarks?: string;
-  speakers?: string;
+  speakers?: string;          // legacy textarea
+  speakerName?: string;
+  speakerContact?: string;
   layoutNotes?: string;
 };
 
@@ -112,11 +117,13 @@ function normalizeTime(v: unknown): string {
 }
 
 function transformPosterUrl(url: string): string {
-  // Drive thumbnail URLs sometimes fail to embed; lh3 format is more reliable
+  // Route through our /api/poster/{id} proxy — bypasses Drive CORS/auth issues
   if (!url) return "";
-  const m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const m =
+    url.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+    url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   if (m) {
-    return `https://lh3.googleusercontent.com/d/${m[1]}=w800`;
+    return `/api/poster/${m[1]}`;
   }
   return url;
 }

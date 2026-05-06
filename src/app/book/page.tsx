@@ -1,17 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LayoutPicker from "@/components/LayoutPicker";
 import TimeSelect from "@/components/TimeSelect";
 
 const MAX_POSTER_SIZE = 5 * 1024 * 1024; // 5 MB
 
-function fileToBase64(file: File): Promise<{ base64: string; mimeType: string; filename: string }> {
+type Vehicle = { plate: string; model: string; color: string };
+type BookedRange = { start: string; end: string; name: string };
+
+function fileToBase64(
+  file: File,
+): Promise<{ base64: string; mimeType: string; filename: string }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
-      // Strip "data:image/jpeg;base64," prefix
       const base64 = result.includes(",") ? result.split(",")[1] : result;
       resolve({ base64, mimeType: file.type, filename: file.name });
     };
@@ -20,29 +24,59 @@ function fileToBase64(file: File): Promise<{ base64: string; mimeType: string; f
   });
 }
 
+function dateInRanges(date: string, ranges: BookedRange[]): BookedRange | null {
+  if (!date) return null;
+  for (const r of ranges) {
+    if (date >= r.start && date <= r.end) return r;
+  }
+  return null;
+}
+
 export default function PublicBookingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState<{ id: string; name: string } | null>(null);
+  const [success, setSuccess] = useState<{ id: string; name: string } | null>(
+    null,
+  );
+
+  // Poster state
   const [poster, setPoster] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
-  function handlePosterChange(e: React.ChangeEvent<HTMLInputElement>) {
+  // Date selection state
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  // Booked dates from API
+  const [bookedRanges, setBookedRanges] = useState<BookedRange[]>([]);
+
+  // Parking state
+  const [parkingRequested, setParkingRequested] = useState(false);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([
+    { plate: "", model: "", color: "" },
+  ]);
+
+  useEffect(() => {
+    fetch("/api/booked-dates")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.ok && Array.isArray(d.ranges)) setBookedRanges(d.ranges);
+      })
+      .catch(() => {});
+  }, []);
+
+  const startConflict = dateInRanges(startDate, bookedRanges);
+  const endConflict = dateInRanges(endDate, bookedRanges);
+
+  function processFile(file: File) {
     setError("");
-    const file = e.target.files?.[0] || null;
-    if (!file) {
-      setPoster(null);
-      setPosterPreview(null);
-      return;
-    }
     if (!file.type.startsWith("image/")) {
       setError("Poster must be an image file.");
-      e.target.value = "";
       return;
     }
     if (file.size > MAX_POSTER_SIZE) {
       setError("Poster too large — max 5 MB.");
-      e.target.value = "";
       return;
     }
     setPoster(file);
@@ -51,9 +85,36 @@ export default function PublicBookingPage() {
     reader.readAsDataURL(file);
   }
 
+  function handlePosterChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] || null;
+    if (!file) return;
+    processFile(file);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  }
+
   function clearPoster() {
     setPoster(null);
     setPosterPreview(null);
+  }
+
+  function addVehicle() {
+    setVehicles((v) => [...v, { plate: "", model: "", color: "" }]);
+  }
+
+  function removeVehicle(idx: number) {
+    setVehicles((v) => v.filter((_, i) => i !== idx));
+  }
+
+  function updateVehicle(idx: number, field: keyof Vehicle, value: string) {
+    setVehicles((v) =>
+      v.map((veh, i) => (i === idx ? { ...veh, [field]: value } : veh)),
+    );
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -61,12 +122,19 @@ export default function PublicBookingPage() {
     setError("");
 
     const fd = new FormData(e.currentTarget);
-    const startDate = fd.get("startDate") as string;
-    const endDateRaw = fd.get("endDate") as string;
-    const endDate = endDateRaw || startDate;
+    const start = (fd.get("startDate") as string) || startDate;
+    const endRaw = (fd.get("endDate") as string) || endDate;
+    const end = endRaw || start;
 
-    if (endDate < startDate) {
+    if (end < start) {
       setError("End date can't be before start date.");
+      return;
+    }
+
+    if (startConflict || endConflict) {
+      setError(
+        `That date is already booked (${(startConflict || endConflict)?.name}). Please pick a different date.`,
+      );
       return;
     }
 
@@ -79,15 +147,15 @@ export default function PublicBookingPage() {
 
     const phone = (fd.get("ownerPhone") as string).trim();
     const email = (fd.get("ownerEmail") as string).trim();
-    const parkingRequested = fd.get("parking") === "on";
-    const parkingVehicles = parkingRequested
-      ? Math.max(1, Number(fd.get("parkingVehicles") || 1))
-      : 0;
+
+    const cleanedVehicles = parkingRequested
+      ? vehicles.filter((v) => v.plate || v.model || v.color)
+      : [];
 
     const payload: Record<string, unknown> = {
       name: fd.get("name") as string,
-      date: startDate,
-      endDate,
+      date: start,
+      endDate: end,
       startTime: fd.get("startTime") as string,
       endTime: fd.get("endTime") as string,
       pax: Number(fd.get("pax") || 0),
@@ -98,10 +166,12 @@ export default function PublicBookingPage() {
       pic: "",
       requirements: {
         notes: fd.get("notes") as string,
-        speakers: fd.get("speakers") as string,
+        speakerName: fd.get("speakerName") as string,
+        speakerContact: fd.get("speakerContact") as string,
         layoutNotes: fd.get("layoutNotes") as string,
         parking: parkingRequested,
-        parkingVehicles,
+        parkingVehicles: cleanedVehicles.length,
+        vehicles: cleanedVehicles,
       },
     };
 
@@ -167,7 +237,6 @@ export default function PublicBookingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-      {/* Header */}
       <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center gap-2.5 mb-6">
@@ -189,7 +258,6 @@ export default function PublicBookingPage() {
         </div>
       </div>
 
-      {/* Form */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Event details */}
@@ -200,7 +268,6 @@ export default function PublicBookingPage() {
               required
               placeholder="e.g. Annual Members Gala"
             />
-
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
                 Number of Attendees (Pax) *
@@ -212,7 +279,7 @@ export default function PublicBookingPage() {
                 max={100}
                 required
                 placeholder="Up to 100"
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white transition-colors"
+                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
               />
               <p className="text-xs text-gray-400 mt-1">
                 BIG Hall capacity is 100 people.
@@ -222,14 +289,57 @@ export default function PublicBookingPage() {
 
           {/* Date & time */}
           <Card label="Date & Time">
+            {bookedRanges.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-xs font-semibold text-amber-900 mb-1.5 uppercase tracking-wide">
+                  Already booked
+                </p>
+                <ul className="text-xs text-amber-800 space-y-0.5">
+                  {bookedRanges.map((r, i) => (
+                    <li key={i}>
+                      {r.start === r.end ? r.start : `${r.start} → ${r.end}`}{" "}
+                      <span className="text-amber-600">— {r.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Start Date *" name="startDate" type="date" required />
-              <Field
-                label="End Date"
-                name="endDate"
-                type="date"
-                placeholder="Same as start if single day"
-              />
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Start Date *
+                </label>
+                <input
+                  type="date"
+                  name="startDate"
+                  required
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className={`w-full px-3.5 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white transition-colors ${startConflict ? "border-rose-300 bg-rose-50" : "border-gray-200"}`}
+                />
+                {startConflict && (
+                  <p className="text-xs text-rose-600 mt-1">
+                    ⚠ Booked: {startConflict.name}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className={`w-full px-3.5 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white transition-colors ${endConflict ? "border-rose-300 bg-rose-50" : "border-gray-200"}`}
+                />
+                {endConflict && (
+                  <p className="text-xs text-rose-600 mt-1">
+                    ⚠ Booked: {endConflict.name}
+                  </p>
+                )}
+              </div>
             </div>
             <p className="text-xs text-gray-400 -mt-2">
               Leave end date empty for single-day events.
@@ -253,7 +363,7 @@ export default function PublicBookingPage() {
               <input
                 name="layoutNotes"
                 placeholder="e.g. 8 people per table, VIP table at front"
-                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white transition-colors"
+                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
               />
               <p className="text-xs text-gray-400 mt-1">
                 Useful for grouping — how many per table, special seating, etc.
@@ -270,38 +380,88 @@ export default function PublicBookingPage() {
               placeholder="Person responsible for this event"
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field
-                label="Phone *"
-                name="ownerPhone"
-                type="tel"
-                required
-                placeholder="e.g. +60 12-345 6789"
-              />
-              <Field
-                label="Email *"
-                name="ownerEmail"
-                type="email"
-                required
-                placeholder="you@example.com"
-              />
+              <Field label="Phone *" name="ownerPhone" type="tel" required placeholder="e.g. +60 12-345 6789" />
+              <Field label="Email *" name="ownerEmail" type="email" required placeholder="you@example.com" />
             </div>
           </Card>
 
-          {/* Speakers */}
-          <Card label="Speakers (Optional)">
-            <p className="text-sm text-gray-500 -mt-2">
-              List speakers, panelists, or VIPs.
-            </p>
-            <textarea
-              name="speakers"
-              rows={3}
-              className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
-              placeholder="e.g. John Tan — CEO, ABC Corp&#10;Jane Lee — Keynote speaker"
-            />
+          {/* Speaker */}
+          <Card label="Speaker (Optional)">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Speaker Name" name="speakerName" placeholder="e.g. Dr Lim" />
+              <Field label="Speaker Contact" name="speakerContact" placeholder="Phone or email" />
+            </div>
           </Card>
 
           {/* Parking */}
-          <ParkingSection />
+          <Card label="Parking (Optional)">
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={parkingRequested}
+                onChange={(e) => setParkingRequested(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-800">
+                🅿️ Reserve parking spaces
+              </span>
+            </label>
+            {parkingRequested && (
+              <div className="space-y-3">
+                {vehicles.map((v, i) => (
+                  <div
+                    key={i}
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-gray-600">
+                        Vehicle {i + 1}
+                      </p>
+                      {vehicles.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeVehicle(i)}
+                          className="text-xs text-rose-500 hover:text-rose-700"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <input
+                        placeholder="Car plate (e.g. ABC1234)"
+                        value={v.plate}
+                        onChange={(e) => updateVehicle(i, "plate", e.target.value.toUpperCase())}
+                        className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                      />
+                      <input
+                        placeholder="Model (e.g. Honda Civic)"
+                        value={v.model}
+                        onChange={(e) => updateVehicle(i, "model", e.target.value)}
+                        className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                      <input
+                        placeholder="Color (e.g. Black)"
+                        value={v.color}
+                        onChange={(e) => updateVehicle(i, "color", e.target.value)}
+                        className="px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addVehicle}
+                  className="w-full border-2 border-dashed border-gray-300 rounded-lg py-2.5 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                >
+                  + Add another vehicle
+                </button>
+              </div>
+            )}
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+              ⚠ Subject to availability — building management will confirm.
+            </p>
+          </Card>
 
           {/* Notes */}
           <Card label="Notes (Optional)">
@@ -316,7 +476,9 @@ export default function PublicBookingPage() {
           {/* Event poster */}
           <Card label="Event Poster *">
             <p className="text-sm text-gray-500 -mt-2">
-              Required. Upload a poster or banner — JPG, PNG, max 5 MB.
+              <span className="font-medium text-gray-700">Required</span> ·
+              Recommended <strong>16:9 ratio</strong> (will be displayed at the
+              entrance) · JPG/PNG, max 5 MB
             </p>
             {posterPreview ? (
               <div className="relative inline-block">
@@ -344,17 +506,37 @@ export default function PublicBookingPage() {
                 )}
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
-                <svg className="w-8 h-8 text-gray-400 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <label
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                className={`flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                  dragOver
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-400 hover:bg-blue-50/30"
+                }`}
+              >
+                <svg
+                  className={`w-8 h-8 mb-2 ${dragOver ? "text-blue-500" : "text-gray-400"}`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                   <circle cx="8.5" cy="8.5" r="1.5" />
                   <polyline points="21 15 16 10 5 21" />
                 </svg>
                 <p className="text-sm font-medium text-gray-700">
-                  Click to choose an image
+                  {dragOver ? "Drop image here" : "Drag & drop or click to choose"}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  JPG, PNG up to 5 MB
+                  16:9 recommended · JPG, PNG up to 5 MB
                 </p>
                 <input
                   type="file"
@@ -389,44 +571,6 @@ export default function PublicBookingPage() {
   );
 }
 
-function ParkingSection() {
-  const [requested, setRequested] = useState(false);
-  return (
-    <Card label="Parking (Optional)">
-      <label className="flex items-center gap-2.5 cursor-pointer">
-        <input
-          type="checkbox"
-          name="parking"
-          checked={requested}
-          onChange={(e) => setRequested(e.target.checked)}
-          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-        />
-        <span className="text-sm font-medium text-gray-800">
-          🅿️ Reserve parking spaces
-        </span>
-      </label>
-      {requested && (
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-            Number of Vehicles
-          </label>
-          <input
-            name="parkingVehicles"
-            type="number"
-            min={1}
-            max={20}
-            defaultValue={2}
-            className="w-32 px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
-          />
-        </div>
-      )}
-      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-        ⚠ Subject to availability — building management will confirm.
-      </p>
-    </Card>
-  );
-}
-
 function Card({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
@@ -438,7 +582,9 @@ function Card({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-function Field(props: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+function Field(
+  props: React.InputHTMLAttributes<HTMLInputElement> & { label: string },
+) {
   const { label, ...rest } = props;
   return (
     <div>

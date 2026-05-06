@@ -147,8 +147,29 @@ export default async function EventDetailPage({
         <Detail label="Internal PIC" value={event.pic || "—"} />
       </div>
 
-      {/* Speakers */}
-      {event.requirements?.speakers && (
+      {/* Speaker (new structured fields) */}
+      {(event.requirements?.speakerName || event.requirements?.speakerContact) && (
+        <section className="mb-8">
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+            Speaker
+          </p>
+          <div className="bg-white border border-gray-200 rounded-xl p-4">
+            {event.requirements.speakerName && (
+              <p className="text-sm font-semibold text-gray-900">
+                {event.requirements.speakerName}
+              </p>
+            )}
+            {event.requirements.speakerContact && (
+              <p className="text-xs text-gray-500 mt-0.5">
+                {event.requirements.speakerContact}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Legacy speakers textarea (older submissions) */}
+      {event.requirements?.speakers && !event.requirements?.speakerName && (
         <section className="mb-8">
           <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
             Speakers
@@ -201,6 +222,43 @@ export default async function EventDetailPage({
             </div>
           </section>
         )}
+
+      {/* Vehicles */}
+      {event.requirements?.vehicles && event.requirements.vehicles.length > 0 && (
+        <section className="mb-8">
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+            Vehicle Details
+          </p>
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50">
+                  <th className="text-left py-2 px-4 text-[10px] uppercase tracking-wide text-gray-500 font-semibold">
+                    Plate
+                  </th>
+                  <th className="text-left py-2 px-4 text-[10px] uppercase tracking-wide text-gray-500 font-semibold">
+                    Model
+                  </th>
+                  <th className="text-left py-2 px-4 text-[10px] uppercase tracking-wide text-gray-500 font-semibold">
+                    Color
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {event.requirements.vehicles.map((v, i) => (
+                  <tr key={i}>
+                    <td className="py-2 px-4 font-mono text-gray-900">
+                      {v.plate || "—"}
+                    </td>
+                    <td className="py-2 px-4 text-gray-700">{v.model || "—"}</td>
+                    <td className="py-2 px-4 text-gray-700">{v.color || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {/* Notes */}
       {event.requirements?.notes && (

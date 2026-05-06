@@ -7,6 +7,8 @@ const PUBLIC_PREFIXES = [
   "/_next",
   "/favicon",
   "/book", // public booking form for outside guests
+  "/api/booked-dates", // public — used by /book to highlight unavailable dates
+  "/api/poster", // public image proxy for posters
 ];
 
 async function expectedHash(password: string): Promise<string> {
