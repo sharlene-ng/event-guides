@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SOPEvent } from "@/lib/sheets";
@@ -7,8 +8,18 @@ import type { SOPEvent } from "@/lib/sheets";
 const statusBadge: Record<string, string> = {
   pending: "bg-amber-100 text-amber-800 border-amber-200",
   approved: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  reserved: "bg-sky-100 text-sky-800 border-sky-200 border-dashed",
   rejected: "bg-rose-100 text-rose-800 border-rose-200",
   cancelled: "bg-gray-200 text-gray-700 border-gray-300",
+};
+
+// "approved" is stored as the internal value but displayed as "Confirmed"
+const statusLabel: Record<string, string> = {
+  pending: "Pending",
+  approved: "Confirmed",
+  reserved: "Reserved",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
 };
 
 const layoutLabel: Record<string, string> = {
@@ -17,7 +28,13 @@ const layoutLabel: Record<string, string> = {
   banquet: "Fishbone",
 };
 
-type StatusFilter = "pending" | "approved" | "rejected" | "cancelled" | "all";
+type StatusFilter =
+  | "pending"
+  | "approved"
+  | "reserved"
+  | "rejected"
+  | "cancelled"
+  | "all";
 
 export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[] }) {
   const router = useRouter();
@@ -31,13 +48,14 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
   const counts = {
     pending: events.filter((e) => e.status === "pending").length,
     approved: events.filter((e) => e.status === "approved").length,
+    reserved: events.filter((e) => e.status === "reserved").length,
     rejected: events.filter((e) => e.status === "rejected").length,
     cancelled: events.filter((e) => e.status === "cancelled").length,
   };
 
   async function changeStatus(
     id: string,
-    status: "approved" | "rejected" | "pending" | "cancelled",
+    status: "approved" | "reserved" | "rejected" | "pending" | "cancelled",
   ) {
     setBusy(id);
     try {
@@ -94,27 +112,35 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
             Review submissions, fill in admin-only fields, approve or reject.
           </p>
         </div>
-        <button
-          onClick={logout}
-          className="text-xs text-gray-400 hover:text-gray-700"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/holidays"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+          >
+            Public holidays →
+          </Link>
+          <button
+            onClick={logout}
+            className="text-xs text-gray-400 hover:text-gray-700"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6 flex items-center gap-4">
-        {(["pending", "approved", "cancelled", "rejected", "all"] as const).map((tab) => (
+        {(["pending", "approved", "reserved", "cancelled", "rejected", "all"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}
-            className={`relative flex items-center gap-2 px-1 py-3 text-sm font-medium capitalize transition-colors ${
+            className={`relative flex items-center gap-2 px-1 py-3 text-sm font-medium transition-colors ${
               filter === tab
                 ? "text-blue-600"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            {tab}
+            {tab === "all" ? "All" : statusLabel[tab]}
             {tab !== "all" && (
               <span
                 className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
@@ -135,7 +161,7 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
 
       {filtered.length === 0 && (
         <div className="bg-white border border-dashed border-gray-300 rounded-xl p-12 text-center text-gray-400 text-sm">
-          No {filter !== "all" ? filter : ""} events.
+          No {filter !== "all" ? statusLabel[filter].toLowerCase() : ""} events.
         </div>
       )}
 
@@ -155,7 +181,7 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                   <span
                     className={`text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded border ${statusBadge[e.status]}`}
                   >
-                    {e.status}
+                    {statusLabel[e.status] || e.status}
                   </span>
                   {e.projectType && (
                     <span className="text-[10px] uppercase tracking-wide bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded">
@@ -171,7 +197,7 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                   {layoutLabel[String(e.layout)] || e.layout}
                 </p>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
                 {e.status === "pending" && (
                   <>
                     <button
@@ -179,7 +205,14 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                       disabled={busy === e.id}
                       className="bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50"
                     >
-                      Approve
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => changeStatus(e.id, "reserved")}
+                      disabled={busy === e.id}
+                      className="bg-sky-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-sky-700 disabled:opacity-50"
+                    >
+                      Reserve (TBC)
                     </button>
                     <button
                       onClick={() => changeStatus(e.id, "rejected")}
@@ -190,17 +223,47 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                     </button>
                   </>
                 )}
+                {e.status === "reserved" && (
+                  <>
+                    <button
+                      onClick={() => changeStatus(e.id, "approved")}
+                      disabled={busy === e.id}
+                      className="bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Cancel "${e.name}"?`))
+                          changeStatus(e.id, "cancelled");
+                      }}
+                      disabled={busy === e.id}
+                      className="text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
                 {e.status === "approved" && (
-                  <button
-                    onClick={() => {
-                      if (confirm(`Cancel "${e.name}"?`))
-                        changeStatus(e.id, "cancelled");
-                    }}
-                    disabled={busy === e.id}
-                    className="text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Cancel event
-                  </button>
+                  <>
+                    <button
+                      onClick={() => changeStatus(e.id, "reserved")}
+                      disabled={busy === e.id}
+                      className="text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-md hover:bg-sky-100 disabled:opacity-50"
+                    >
+                      Move to Reserved
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Cancel "${e.name}"?`))
+                          changeStatus(e.id, "cancelled");
+                      }}
+                      disabled={busy === e.id}
+                      className="text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Cancel event
+                    </button>
+                  </>
                 )}
                 {(e.status === "rejected" || e.status === "cancelled") && (
                   <button
@@ -246,7 +309,7 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                   {!e.projectType && (
                     <Pill highlight>⚠ Set project type</Pill>
                   )}
-                  {!e.pic && e.status === "approved" && (
+                  {!e.pic && (e.status === "approved" || e.status === "reserved") && (
                     <Pill highlight>⚠ Assign PIC</Pill>
                   )}
                 </div>
@@ -261,7 +324,8 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
 
             {e.approvedAt && (
               <p className="text-[11px] text-gray-400 mt-3">
-                Approved by {e.approvedBy || "Sharlene"} on{" "}
+                {e.status === "reserved" ? "Reserved" : "Confirmed"} by{" "}
+                {e.approvedBy || "Sharlene"} on{" "}
                 {new Date(e.approvedAt).toLocaleString()}
               </p>
             )}

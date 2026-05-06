@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listEvents, type SOPEvent } from "@/lib/sheets";
+import { listEvents, listHolidays, type Holiday, type SOPEvent } from "@/lib/sheets";
 import CalendarView from "@/components/CalendarView";
 
 export const revalidate = 60; // re-fetch from Sheets at most every 60 s
@@ -36,17 +36,23 @@ function monthLabel(key: string): string {
 }
 
 export default async function V2Home() {
-  let allApproved: SOPEvent[] = [];
+  let allVisible: SOPEvent[] = [];
+  let holidays: Holiday[] = [];
   let backendError: string | null = null;
 
   try {
-    // Only "approved" — not cancelled / rejected
-    allApproved = await listEvents("approved");
+    // Show confirmed (approved) + reserved on home page; hide cancelled / rejected / pending
+    // Fetch holidays in parallel — fails soft to [] if backend doesn't support it yet.
+    const [all, hols] = await Promise.all([listEvents(), listHolidays()]);
+    allVisible = all.filter(
+      (e) => e.status === "approved" || e.status === "reserved",
+    );
+    holidays = hols;
   } catch (err) {
     backendError = String(err);
   }
 
-  const upcoming = allApproved
+  const upcoming = allVisible
     .filter((e) => isUpcoming(String(e.date)))
     .sort((a, b) => String(a.date).localeCompare(String(b.date)));
 
@@ -154,7 +160,7 @@ export default async function V2Home() {
         <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
           Hall Availability
         </p>
-        <CalendarView events={allApproved} />
+        <CalendarView events={allVisible} holidays={holidays} />
       </section>
     </div>
   );

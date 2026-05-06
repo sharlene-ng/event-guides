@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { SOPEvent } from "@/lib/sheets";
+import type { Holiday, SOPEvent } from "@/lib/sheets";
 import { getColorBar } from "@/lib/colors";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -43,7 +43,27 @@ const HEADER_AREA = 22; // px reserved for date number at top of cell
 const BAR_HEIGHT = 18; // px
 const BAR_GAP = 2; // px
 
-export default function CalendarView({ events }: { events: SOPEvent[] }) {
+export default function CalendarView({
+  events,
+  holidays = [],
+}: {
+  events: SOPEvent[];
+  holidays?: Holiday[];
+}) {
+  // Lookup map: "YYYY-MM-DD" → holiday name
+  const holidayByDate = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const h of holidays) if (h.date) m.set(h.date, h.name);
+    return m;
+  }, [holidays]);
+
+  function isoKey(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const [cursor, setCursor] = useState(
@@ -220,24 +240,44 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
               {week.map(({ date, inMonth }, di) => {
                 const isToday = sameDay(date, today);
                 const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                const holidayName = holidayByDate.get(isoKey(date));
+                const isHoliday = !!holidayName && inMonth;
                 return (
                   <div
                     key={di}
-                    className={`px-1 pt-1 ${di < 6 ? "border-r border-gray-100" : ""} ${inMonth ? "bg-white" : "bg-gray-50/50"}`}
+                    className={`px-1 pt-1 ${di < 6 ? "border-r border-gray-100" : ""} ${
+                      isHoliday
+                        ? "bg-rose-50/70"
+                        : inMonth
+                          ? "bg-white"
+                          : "bg-gray-50/50"
+                    }`}
                   >
-                    <span
-                      className={`text-xs font-semibold inline-flex items-center justify-center w-5 h-5 rounded-full ${
-                        isToday
-                          ? "bg-blue-600 text-white"
-                          : !inMonth
-                            ? "text-gray-300"
-                            : isWeekend
-                              ? "text-gray-400"
-                              : "text-gray-700"
-                      }`}
-                    >
-                      {date.getDate()}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span
+                        className={`text-xs font-semibold inline-flex items-center justify-center w-5 h-5 rounded-full flex-shrink-0 ${
+                          isToday
+                            ? "bg-blue-600 text-white"
+                            : !inMonth
+                              ? "text-gray-300"
+                              : isHoliday
+                                ? "text-rose-700"
+                                : isWeekend
+                                  ? "text-gray-400"
+                                  : "text-gray-700"
+                        }`}
+                      >
+                        {date.getDate()}
+                      </span>
+                      {isHoliday && (
+                        <span
+                          className="text-[9px] font-medium text-rose-600 truncate leading-tight"
+                          title={holidayName}
+                        >
+                          {holidayName}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -250,12 +290,15 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
                 const radiusLeft = b.startsBeforeWeek ? 0 : 4;
                 const radiusRight = b.endsAfterWeek ? 0 : 4;
                 const colorCls = getColorBar(b.event.requirements?.color);
+                const isReserved = b.event.status === "reserved";
                 return (
                   <Link
                     key={`${wi}-${idx}-${b.event.id}`}
                     href={`/events/${b.event.id}`}
-                    title={`${b.event.name}${b.event.startTime ? ` · ${b.event.startTime}` : ""}`}
-                    className={`absolute text-[10px] font-medium truncate px-1.5 leading-none flex items-center border ${colorCls}`}
+                    title={`${b.event.name}${isReserved ? " (Reserved · TBC)" : ""}${b.event.startTime ? ` · ${b.event.startTime}` : ""}`}
+                    className={`absolute text-[10px] font-medium truncate px-1.5 leading-none flex items-center gap-1 border ${
+                      isReserved ? "border-dashed opacity-80" : ""
+                    } ${colorCls}`}
                     style={{
                       left,
                       width: `calc(${width} - 4px)`,
@@ -263,9 +306,15 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
                       top,
                       height: BAR_HEIGHT,
                       borderRadius: `${radiusLeft}px ${radiusRight}px ${radiusRight}px ${radiusLeft}px`,
+                      borderWidth: isReserved ? 1.5 : 1,
                     }}
                   >
-                    {b.event.name}
+                    {isReserved && (
+                      <span className="text-[8px] font-bold uppercase tracking-wide bg-white/60 rounded px-1 py-px leading-none flex-shrink-0">
+                        TBC
+                      </span>
+                    )}
+                    <span className="truncate">{b.event.name}</span>
                   </Link>
                 );
               })}
@@ -290,10 +339,18 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
       </div>
 
       {/* Legend */}
-      <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-4 text-[11px] text-gray-500">
+      <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-4 text-[11px] text-gray-500 flex-wrap">
         <span className="inline-flex items-center gap-1.5">
           <span className="w-4 h-2 rounded bg-blue-200 border border-blue-300" />
-          Booked
+          Confirmed
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-4 h-2 rounded bg-blue-200 border border-dashed border-blue-400" />
+          Reserved (TBC)
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-4 h-2 rounded bg-rose-50 border border-rose-200" />
+          Public holiday
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-600" />

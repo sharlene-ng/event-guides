@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    if (!["approved", "rejected", "pending", "cancelled"].includes(body.status)) {
+    if (!["approved", "reserved", "rejected", "pending", "cancelled"].includes(body.status)) {
       return NextResponse.json(
         { ok: false, error: "Invalid status" },
         { status: 400 },

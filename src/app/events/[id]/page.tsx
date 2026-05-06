@@ -22,8 +22,18 @@ const projectTypeLabel: Record<string, string> = {
 const statusBadge: Record<string, string> = {
   pending: "bg-amber-100 text-amber-800 border-amber-200",
   approved: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  reserved: "bg-sky-100 text-sky-800 border-sky-200 border-dashed",
   rejected: "bg-rose-100 text-rose-800 border-rose-200",
   cancelled: "bg-gray-200 text-gray-800 border-gray-300",
+};
+
+// "approved" stored internally; displayed as "Confirmed"
+const statusLabel: Record<string, string> = {
+  pending: "Pending",
+  approved: "Confirmed",
+  reserved: "Reserved (TBC)",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
 };
 
 export default async function EventDetailPage({
@@ -66,7 +76,7 @@ export default async function EventDetailPage({
           <span
             className={`text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded border bg-white/20 border-white/30 text-white`}
           >
-            {event.status}
+            {statusLabel[event.status] || event.status}
           </span>
           <span className="text-cyan-100 text-xs">
             {projectTypeLabel[String(event.projectType)] || event.projectType}
@@ -80,18 +90,20 @@ export default async function EventDetailPage({
         </p>
       </div>
 
-      {/* Status bar (only if not approved) */}
+      {/* Status bar (only if not confirmed) */}
       {event.status !== "approved" && (
         <div
           className={`border rounded-lg px-4 py-3 mb-6 text-sm ${statusBadge[event.status]}`}
         >
           {event.status === "pending"
-            ? "⏳ This event is awaiting approval from Sharlene."
-            : event.status === "rejected"
-              ? "✕ This event was rejected and won't appear on the home page."
-              : event.status === "cancelled"
-                ? "✕ This event has been cancelled."
-                : ""}
+            ? "⏳ This event is awaiting confirmation from Sharlene."
+            : event.status === "reserved"
+              ? "◌ This is a tentative reservation (TBC) — date is held but not yet confirmed."
+              : event.status === "rejected"
+                ? "✕ This event was rejected and won't appear on the home page."
+                : event.status === "cancelled"
+                  ? "✕ This event has been cancelled."
+                  : ""}
         </div>
       )}
 
@@ -290,8 +302,8 @@ export default async function EventDetailPage({
         </section>
       )}
 
-      {/* Checklist (only meaningful for approved events) */}
-      {event.status === "approved" && (
+      {/* Checklist (only meaningful for confirmed / reserved events) */}
+      {(event.status === "approved" || event.status === "reserved") && (
         <section>
           <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
             Event Checklist

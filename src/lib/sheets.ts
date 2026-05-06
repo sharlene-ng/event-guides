@@ -1,6 +1,11 @@
 // Google Sheets backend client (via Apps Script web app)
 
-export type EventStatus = "pending" | "approved" | "rejected" | "cancelled";
+export type EventStatus =
+  | "pending"
+  | "approved" // displayed as "Confirmed" in the UI
+  | "reserved" // tentative / TBC — slot is held but not fully confirmed
+  | "rejected"
+  | "cancelled";
 export type EventLayout = "theater" | "classroom" | "banquet";
 export type ProjectType = "company" | "internal" | "external";
 
@@ -265,4 +270,41 @@ export async function listHallInfo(): Promise<HallInfoRow[]> {
     unit: String(h.unit || ""),
     order: String(h.order || ""),
   }));
+}
+
+// ============ PUBLIC HOLIDAYS ============
+
+export type Holiday = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  name: string;
+};
+
+export async function listHolidays(): Promise<Holiday[]> {
+  try {
+    const data = (await callGet("listHolidays")) as { holidays: Holiday[] };
+    return (data.holidays || []).map((h) => ({
+      id: String(h.id || ""),
+      date: normalizeDate(h.date),
+      name: String(h.name || ""),
+    }));
+  } catch {
+    // If backend doesn't have the listHolidays action yet, fail soft.
+    return [];
+  }
+}
+
+export async function createHoliday(
+  payload: { date: string; name: string },
+): Promise<Holiday> {
+  const data = (await callPost("createHoliday", payload)) as { holiday: Holiday };
+  return {
+    id: String(data.holiday.id || ""),
+    date: normalizeDate(data.holiday.date),
+    name: String(data.holiday.name || ""),
+  };
+}
+
+export async function deleteHoliday(id: string): Promise<void> {
+  await callPost("deleteHoliday", { id });
 }
