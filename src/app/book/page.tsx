@@ -6,9 +6,7 @@ import "react-day-picker/style.css";
 import LayoutPicker from "@/components/LayoutPicker";
 import TimeSelect from "@/components/TimeSelect";
 
-const MAX_POSTER_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_VEHICLES = 2;
-const ASPECT_TOLERANCE = 0.08; // ±8% from 16:9
 
 type Vehicle = { plate: string; model: string; color: string };
 type BookedRange = { start: string; end: string; name: string };
@@ -37,20 +35,6 @@ function toDateString(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function validateAspect(file: File): Promise<{ ok: boolean; ratio: number }> {
-  return new Promise((resolve) => {
-    const img = new window.Image();
-    img.onload = () => {
-      const ratio = img.width / img.height;
-      const expected = 16 / 9;
-      const ok = Math.abs(ratio - expected) / expected <= ASPECT_TOLERANCE;
-      resolve({ ok, ratio });
-      URL.revokeObjectURL(img.src);
-    };
-    img.onerror = () => resolve({ ok: false, ratio: 0 });
-    img.src = URL.createObjectURL(file);
-  });
-}
 
 export default function PublicBookingPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -98,10 +82,6 @@ export default function PublicBookingPage() {
     setError("");
     if (!file.type.startsWith("image/")) {
       setError("Poster must be an image file.");
-      return;
-    }
-    if (file.size > MAX_POSTER_SIZE) {
-      setError("Poster too large — max 5 MB.");
       return;
     }
     setPoster(file);
@@ -484,7 +464,7 @@ export default function PublicBookingPage() {
           <Card label="Event Poster *">
             <p className="text-sm text-gray-500 -mt-2">
               <span className="font-medium text-gray-700">Required</span> ·
-              Will be displayed at the entrance · JPG/PNG, max 5 MB. 16:9 ratio recommended.
+              Will be displayed at the entrance. 16:9 ratio recommended.
             </p>
             {posterPreview ? (
               <div className="relative inline-block">
@@ -542,7 +522,7 @@ export default function PublicBookingPage() {
                   {dragOver ? "Drop image here" : "Drag & drop or click to choose"}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  JPG, PNG up to 5 MB
+                  16:9 ratio recommended
                 </p>
                 <input
                   type="file"
