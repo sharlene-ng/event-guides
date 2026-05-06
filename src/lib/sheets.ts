@@ -66,7 +66,7 @@ async function callGet(action: string, extraParams: Record<string, string> = {})
   const res = await fetch(`${API_URL}?${params.toString()}`, {
     method: "GET",
     redirect: "follow",
-    cache: "no-store",
+    next: { revalidate: 60 },
   });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error || "API error");

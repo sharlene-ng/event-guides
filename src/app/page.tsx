@@ -2,7 +2,7 @@ import Link from "next/link";
 import { listEvents, type SOPEvent } from "@/lib/sheets";
 import CalendarView from "@/components/CalendarView";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // re-fetch from Sheets at most every 60 s
 
 const layoutLabel: Record<string, string> = {
   theater: "Theater",
