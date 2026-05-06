@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { SOPEvent } from "@/lib/sheets";
+import { EVENT_COLORS } from "@/lib/colors";
 
 const statusBadge: Record<string, string> = {
   pending: "bg-amber-100 text-amber-800 border-amber-200",
@@ -254,7 +255,7 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                   onClick={() => setEditingId(e.id)}
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700"
                 >
-                  ✎ Edit admin fields
+                  ✎ Edit event
                 </button>
               </div>
             )}
@@ -284,18 +285,48 @@ function EditForm({
   onCancel: () => void;
   busy: boolean;
 }) {
+  // Basic event info
+  const [name, setName] = useState(event.name || "");
+  const [date, setDate] = useState(String(event.date || ""));
+  const [endDate, setEndDate] = useState(String(event.endDate || event.date || ""));
+  const [startTime, setStartTime] = useState(event.startTime || "");
+  const [endTime, setEndTime] = useState(event.endTime || "");
+  const [pax, setPax] = useState(String(event.pax ?? ""));
+  const [layout, setLayout] = useState(String(event.layout || ""));
+  const [organizer, setOrganizer] = useState(event.organizer || "");
+  const [organizerContact, setOrganizerContact] = useState(
+    event.organizerContact || "",
+  );
+
+  // Admin assignment
   const [projectType, setProjectType] = useState(String(event.projectType || ""));
   const [pic, setPic] = useState(event.pic || "");
+
+  // Requirements + speaker + display
   const [reqs, setReqs] = useState({
     catering: !!event.requirements?.catering,
     parking: !!event.requirements?.parking,
     lift: !!event.requirements?.lift,
     aircond: !!event.requirements?.aircond,
     notes: event.requirements?.notes || "",
+    adminRemarks: event.requirements?.adminRemarks || "",
+    layoutNotes: event.requirements?.layoutNotes || "",
+    speakerName: event.requirements?.speakerName || "",
+    speakerContact: event.requirements?.speakerContact || "",
+    color: event.requirements?.color || "blue",
   });
 
   function handleSave() {
     onSave({
+      name,
+      date,
+      endDate: endDate || date,
+      startTime,
+      endTime,
+      pax,
+      layout,
+      organizer,
+      organizerContact,
       projectType,
       pic,
       requirements: reqs,
@@ -303,66 +334,203 @@ function EditForm({
   }
 
   return (
-    <div className="bg-blue-50/30 border border-blue-100 rounded-lg p-4 space-y-4 mt-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
-        Admin-only fields
-      </p>
+    <div className="bg-blue-50/30 border border-blue-100 rounded-lg p-4 space-y-5 mt-3">
+      {/* Basics */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-3">
+          Event details
+        </p>
+        <div className="space-y-3">
+          <Field label="Event name">
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </Field>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
-            Project Type
-          </label>
-          <select
-            value={projectType}
-            onChange={(e) => setProjectType(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-          >
-            <option value="">— select —</option>
-            <option value="company">Company</option>
-            <option value="internal">Internal</option>
-            <option value="external">External (chargeable)</option>
-          </select>
-        </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Start date">
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </Field>
+            <Field label="End date">
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </Field>
+          </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">
-            Event PIC
-          </label>
-          <input
-            value={pic}
-            onChange={(e) => setPic(e.target.value)}
-            placeholder="Person assigned from FD team"
-            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-          />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Field label="Start time">
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </Field>
+            <Field label="End time">
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </Field>
+            <Field label="Pax">
+              <input
+                type="number"
+                min={0}
+                value={pax}
+                onChange={(e) => setPax(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </Field>
+            <Field label="Layout">
+              <select
+                value={layout}
+                onChange={(e) => setLayout(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="theater">Theater</option>
+                <option value="classroom">Classroom</option>
+                <option value="banquet">Fishbone</option>
+              </select>
+            </Field>
+          </div>
         </div>
       </div>
 
+      {/* People */}
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-3">
+          People
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label="Project Owner">
+            <input
+              value={organizer}
+              onChange={(e) => setOrganizer(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </Field>
+          <Field label="Owner Contact">
+            <input
+              value={organizerContact}
+              onChange={(e) => setOrganizerContact(e.target.value)}
+              placeholder="Phone or email"
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </Field>
+          <Field label="Project Type (admin)">
+            <select
+              value={projectType}
+              onChange={(e) => setProjectType(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="">— select —</option>
+              <option value="company">Company</option>
+              <option value="internal">Internal</option>
+              <option value="external">External (chargeable)</option>
+            </select>
+          </Field>
+          <Field label="Event PIC (admin)">
+            <input
+              value={pic}
+              onChange={(e) => setPic(e.target.value)}
+              placeholder="Person assigned from FD team"
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </Field>
+          <Field label="Speaker name">
+            <input
+              value={reqs.speakerName}
+              onChange={(e) => setReqs({ ...reqs, speakerName: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </Field>
+          <Field label="Speaker contact">
+            <input
+              value={reqs.speakerContact}
+              onChange={(e) => setReqs({ ...reqs, speakerContact: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* Requirements */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-3">
           Requirements
-        </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
           <Toggle label="🍱 Catering" checked={reqs.catering} onChange={(v) => setReqs({ ...reqs, catering: v })} />
           <Toggle label="🅿️ Parking" checked={reqs.parking} onChange={(v) => setReqs({ ...reqs, parking: v })} />
           <Toggle label="🛗 Bomba lift" checked={reqs.lift} onChange={(v) => setReqs({ ...reqs, lift: v })} />
           <Toggle label="❄️ Aircond" checked={reqs.aircond} onChange={(v) => setReqs({ ...reqs, aircond: v })} />
         </div>
+        <Field label="Layout notes">
+          <textarea
+            value={reqs.layoutNotes}
+            onChange={(e) => setReqs({ ...reqs, layoutNotes: e.target.value })}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+        </Field>
       </div>
 
+      {/* Notes & remarks */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Field label="Notes (from owner)">
+          <textarea
+            value={reqs.notes}
+            onChange={(e) => setReqs({ ...reqs, notes: e.target.value })}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+        </Field>
+        <Field label="Admin remarks (visible to all)">
+          <textarea
+            value={reqs.adminRemarks}
+            onChange={(e) => setReqs({ ...reqs, adminRemarks: e.target.value })}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+        </Field>
+      </div>
+
+      {/* Calendar color */}
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">
-          Notes
-        </label>
-        <textarea
-          value={reqs.notes}
-          onChange={(e) => setReqs({ ...reqs, notes: e.target.value })}
-          rows={2}
-          className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
-        />
+        <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2">
+          Calendar bar color
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {EVENT_COLORS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              onClick={() => setReqs({ ...reqs, color: c.value })}
+              title={c.label}
+              className={`w-6 h-6 rounded-md border-2 transition ${c.swatch} ${
+                reqs.color === c.value
+                  ? "ring-2 ring-blue-500 ring-offset-1"
+                  : "hover:scale-110"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="flex gap-2 justify-end">
+      <div className="flex gap-2 justify-end pt-2 border-t border-blue-100">
         <button
           onClick={onCancel}
           disabled={busy}
@@ -375,9 +543,26 @@ function EditForm({
           disabled={busy}
           className="bg-blue-600 text-white text-xs font-semibold px-4 py-1.5 rounded-md hover:bg-blue-700 disabled:opacity-50"
         >
-          {busy ? "Saving…" : "Save"}
+          {busy ? "Saving…" : "Save changes"}
         </button>
       </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-700 mb-1">
+        {label}
+      </label>
+      {children}
     </div>
   );
 }
