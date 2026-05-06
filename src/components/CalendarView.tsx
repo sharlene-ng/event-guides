@@ -248,7 +248,7 @@ export default function CalendarView({ events }: { events: SOPEvent[] }) {
                 return (
                   <Link
                     key={`${wi}-${idx}-${b.event.id}`}
-                    href={`/v2/events/${b.event.id}`}
+                    href={`/events/${b.event.id}`}
                     title={`${b.event.name}${b.event.startTime ? ` · ${b.event.startTime}` : ""}`}
                     className={`absolute text-[10px] font-medium truncate px-1.5 leading-none flex items-center border ${colorCls}`}
                     style={{

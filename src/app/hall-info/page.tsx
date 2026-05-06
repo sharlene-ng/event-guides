@@ -126,7 +126,7 @@ export default async function V2HallInfoPage() {
             Rate Card
           </p>
           <Link
-            href="/v2/pricing"
+            href="/pricing"
             className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

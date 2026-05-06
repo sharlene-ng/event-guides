@@ -130,7 +130,7 @@ const phases: Phase[] = [
           "Standby credit card machines (company & internal events) and any special arrangements.",
       },
     ],
-    cta: { href: "/v2/checklist", label: "Open interactive checklist →" },
+    cta: { href: "/checklist", label: "Open interactive checklist →" },
   },
 ];
 

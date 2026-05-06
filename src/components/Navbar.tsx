@@ -5,11 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const links = [
-  { href: "/v2", label: "Home" },
-  { href: "/v2/hall-info", label: "Hall Info" },
-  { href: "/v2/sop", label: "Booking Guide" },
-  { href: "/v2/checklist", label: "Checklist" },
-  { href: "/v2/contacts", label: "Contacts" },
+  { href: "/", label: "Home" },
+  { href: "/hall-info", label: "Hall Info" },
+  { href: "/sop", label: "Booking Guide" },
+  { href: "/checklist", label: "Checklist" },
+  { href: "/contacts", label: "Contacts" },
 ];
 
 export default function Navbar() {
@@ -40,7 +40,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-6">
           {/* Brand */}
-          <Link href="/v2" className="flex items-center gap-2.5 flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
               <svg
                 className="w-5 h-5 text-white"
@@ -65,7 +65,7 @@ export default function Navbar() {
             {links.map((link) => {
               const active =
                 pathname === link.href ||
-                (link.href !== "/v2" && pathname.startsWith(link.href));
+                (link.href !== "/" && pathname.startsWith(link.href));
               return (
                 <Link
                   key={link.href}
@@ -85,7 +85,7 @@ export default function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link
-              href="/v2/submit"
+              href="/submit"
               className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-blue-700"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
@@ -94,7 +94,7 @@ export default function Navbar() {
 
             {isAdmin ? (
               <Link
-                href="/v2/admin"
+                href="/admin"
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 px-2.5 py-1.5 rounded-md transition-colors"
                 title="You are signed in as Admin · click for approval panel"
               >
@@ -119,7 +119,7 @@ export default function Navbar() {
             )}
             {!isAdmin && (
               <Link
-                href="/v2/admin"
+                href="/admin"
                 className="text-xs text-gray-400 hover:text-amber-700"
                 title="Sign in as Admin"
               >
