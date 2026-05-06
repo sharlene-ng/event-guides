@@ -194,10 +194,19 @@ function EventCard({ event }: { event: SOPEvent }) {
           {event.name}
         </h3>
         <p className="text-xs text-gray-500 mb-2">
-          {isMultiDay && (
+          {isMultiDay ? (
             <>
-              until {end.getDate()} {end.toLocaleString("default", { month: "short" })} ·{" "}
+              {start.toLocaleString("default", { month: "short" })}{" "}
+              {start.getDate()}–
+              {start.getMonth() !== end.getMonth() &&
+                `${end.toLocaleString("default", { month: "short" })} `}
+              {end.getDate()}
+              {" · "}
+              {Math.round((end.getTime() - start.getTime()) / 86400000) + 1} days
+              {" · "}
             </>
+          ) : (
+            <>1 day · </>
           )}
           {event.startTime && `${event.startTime}`}
           {event.endTime && `–${event.endTime} · `}
