@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listEvents, listHolidays, type Holiday, type SOPEvent } from "@/lib/sheets";
 import HomeTabs from "@/components/HomeTabs";
+import ShareLinkButton from "@/components/ShareLinkButton";
 
 export const revalidate = 60; // re-fetch from Sheets at most every 60 s
 
@@ -60,6 +61,38 @@ export default async function V2Home() {
           ⚠ Could not load events: {backendError}
         </div>
       )}
+
+      {/* Quick shortcuts — guidebook creation + sharable booking link */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <a
+          href="https://bighall.vercel.app/admin"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+        >
+          <span className="text-base">📖</span>
+          Create Event Guidebook
+          <svg
+            className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+        </a>
+        <ShareLinkButton
+          url="/book"
+          label="Share Public Application Form"
+          icon="🔗"
+          className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 hover:border-blue-300"
+        />
+      </div>
 
       <HomeTabs events={allVisible} holidays={holidays} />
     </div>
