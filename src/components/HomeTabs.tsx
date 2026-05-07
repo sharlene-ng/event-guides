@@ -196,7 +196,11 @@ function EventCard({ event }: { event: SOPEvent }) {
   return (
     <Link
       href={`/events/${event.id}`}
-      className="group bg-white border border-gray-200 rounded-xl p-4 flex gap-4 hover:border-blue-300 hover:shadow-md transition-all"
+      className={`group rounded-xl p-4 flex gap-4 transition-all ${
+        isReserved
+          ? "bg-rose-50/50 border-2 border-dashed border-red-400 hover:border-red-500 hover:shadow-md"
+          : "bg-white border border-gray-200 hover:border-blue-300 hover:shadow-md"
+      }`}
     >
       {/* Date block (left) */}
       <div className="flex-shrink-0 w-14 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg py-2 relative">
