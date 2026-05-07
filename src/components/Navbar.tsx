@@ -133,13 +133,15 @@ export default function Navbar() {
               </Link>
             )}
 
-            <button
-              onClick={handleLogout}
-              className="text-xs text-gray-400 hover:text-gray-700"
-              title="Sign out"
-            >
-              Logout
-            </button>
+            {isAdmin && (
+              <button
+                onClick={handleLogout}
+                className="text-xs text-gray-400 hover:text-gray-700"
+                title="Sign out of admin"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
       </div>

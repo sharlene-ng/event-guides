@@ -1,6 +1,8 @@
 import CopyableValue from "@/components/CopyableValue";
+import { isAdminAuthed } from "@/lib/admin";
 
 export const metadata = { title: "Resources" };
+export const dynamic = "force-dynamic";
 
 type Resource = {
   icon: string;
@@ -63,7 +65,8 @@ const guides: Resource[] = [
   },
 ];
 
-export default function ResourcesPage() {
+export default async function ResourcesPage() {
+  const isAdmin = await isAdminAuthed();
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Hero */}
@@ -87,13 +90,17 @@ export default function ResourcesPage() {
         </div>
       </div>
 
-      {/* Guides */}
-      <SectionHeader
-        eyebrow="Run an Event"
-        title="Guides"
-        subtitle="Step-by-step interactive checklist."
-      />
-      <ResourceGrid items={guides} className="mb-10" />
+      {/* Guides — admin only */}
+      {isAdmin && (
+        <>
+          <SectionHeader
+            eyebrow="Run an Event"
+            title="Guides"
+            subtitle="Step-by-step interactive checklist."
+          />
+          <ResourceGrid items={guides} className="mb-10" />
+        </>
+      )}
 
       {/* Wi-Fi quick info */}
       <SectionHeader eyebrow="Hall Info" title="Wi-Fi" />
