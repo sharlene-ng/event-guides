@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getEvent } from "@/lib/sheets";
 import { isAdminAuthed } from "@/lib/admin";
+import { headerGradients, DEFAULT_COLOR, type EventColor } from "@/lib/colors";
 import EventChecklist from "./EventChecklist";
 import AdminControls from "./AdminControls";
 
@@ -47,6 +48,9 @@ export default async function EventDetailPage({
 
   const isAdmin = await isAdminAuthed();
 
+  const eventColor = (event.requirements?.color as EventColor) || DEFAULT_COLOR;
+  const headerGrad = headerGradients[eventColor] ?? headerGradients[DEFAULT_COLOR];
+
   const start = new Date(String(event.date));
   const end = event.endDate ? new Date(String(event.endDate)) : start;
   const isMultiDay = end.toDateString() !== start.toDateString();
@@ -71,7 +75,7 @@ export default async function EventDetailPage({
       </Link>
 
       {/* Header card */}
-      <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white rounded-2xl p-6 sm:p-8 mb-6 shadow-sm">
+      <div className={`bg-gradient-to-br ${headerGrad} text-white rounded-2xl p-6 sm:p-8 mb-6 shadow-sm`}>
         <div className="flex items-center gap-2 mb-3">
           <span
             className={`text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded border bg-white/20 border-white/30 text-white`}

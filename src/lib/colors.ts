@@ -118,6 +118,25 @@ export const EVENT_COLORS: { value: EventColor; label: string; swatch: string; b
 
 export const DEFAULT_COLOR: EventColor = "blue";
 
+export const headerGradients: Record<EventColor, string> = {
+  red:     "from-red-500 via-red-600 to-rose-700",
+  orange:  "from-orange-400 via-orange-500 to-amber-600",
+  amber:   "from-amber-400 via-amber-500 to-yellow-600",
+  yellow:  "from-yellow-400 via-yellow-500 to-amber-600",
+  lime:    "from-lime-400 via-lime-500 to-green-600",
+  emerald: "from-emerald-500 via-emerald-600 to-teal-700",
+  teal:    "from-teal-500 via-teal-600 to-cyan-700",
+  cyan:    "from-cyan-500 via-cyan-600 to-sky-700",
+  sky:     "from-sky-500 via-sky-600 to-blue-700",
+  blue:    "from-blue-500 via-blue-600 to-indigo-700",
+  indigo:  "from-indigo-500 via-indigo-600 to-violet-700",
+  violet:  "from-violet-500 via-violet-600 to-purple-700",
+  purple:  "from-purple-500 via-purple-600 to-violet-700",
+  pink:    "from-pink-500 via-pink-600 to-rose-700",
+  rose:    "from-rose-500 via-rose-600 to-pink-700",
+  slate:   "from-slate-600 via-slate-700 to-gray-800",
+};
+
 export function getColorBar(color?: string): string {
   return (
     EVENT_COLORS.find((c) => c.value === color)?.bar ||

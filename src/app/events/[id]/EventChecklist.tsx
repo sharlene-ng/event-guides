@@ -1,81 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { allChecklistSections } from "@/lib/checklistData";
 
-type CheckItem = { id: string; label: string };
-type Section = { title: string; icon: string; items: CheckItem[] };
+type Section = { title: string; items: { id: string; label: string }[] };
 
-const sections: Section[] = [
-  {
-    title: "Approval & Calendar",
-    icon: "✅",
-    items: [
-      { id: "ap1", label: "Approval received from Sharlene" },
-      { id: "ap2", label: "Logged in FD Calendar" },
-      { id: "ap3", label: "Logged in AIA GE Calendar" },
-      { id: "ap4", label: "Self + all PICs invited" },
-    ],
-  },
-  {
-    title: "Email to Building Management",
-    icon: "📧",
-    items: [
-      { id: "e1", label: "Email sent to mercumkpmoffice@gmail.com (≥1 wk)" },
-      { id: "e2", label: "Guest list PDF attached" },
-      { id: "e3", label: "Reserved parking requested (if needed)" },
-      { id: "e4", label: "Service lift (Bomba) requested (if needed)" },
-      { id: "e5", label: "Aircond requested (if needed)" },
-    ],
-  },
-  {
-    title: "Pre-Event Prep",
-    icon: "🛠️",
-    items: [
-      { id: "pr1", label: "Guest list printed and passed to security" },
-      { id: "pr2", label: "Parking confirmed (if applicable)" },
-      { id: "pr3", label: "Aircond confirmed (if applicable)" },
-      { id: "pr4", label: "Bomba lift booking confirmed (if applicable)" },
-    ],
-  },
-  {
-    title: "Event Day · Setup & Display",
-    icon: "🎀",
-    items: [
-      { id: "s1", label: "Lanyard sleeve" },
-      { id: "s2", label: "Lanyard strap" },
-      { id: "s3", label: "Print lanyard nametag" },
-      { id: "s4", label: "Bunting placement" },
-      { id: "s5", label: "Lobby TV display" },
-      { id: "s6", label: "Event hall layout set up" },
-    ],
-  },
-  {
-    title: "Event Day · Comms & PICs",
-    icon: "📣",
-    items: [
-      { id: "c1", label: "Event reminder sent" },
-      { id: "c2", label: "Announced to FD Official Group Chat" },
-      { id: "p1", label: "Registration PIC in position" },
-      { id: "p2", label: "AV PIC in position" },
-      { id: "p3", label: "Cleaner confirmed (if needed)" },
-    ],
-  },
-  {
-    title: "Event Day · Refreshments & Other",
-    icon: "🍱",
-    items: [
-      { id: "r1", label: "Food / catering" },
-      { id: "r2", label: "Coffee / tea" },
-      { id: "r3", label: "Candies, snacks" },
-      { id: "r4", label: "Crew food" },
-      {
-        id: "o1",
-        label: "Standby credit card machines (company & internal)",
-      },
-      { id: "o2", label: "Special arrangements done" },
-    ],
-  },
-];
+const sections: Section[] = allChecklistSections;
 
 export default function EventChecklist({
   eventId,
@@ -179,8 +109,8 @@ export default function EventChecklist({
               className="bg-white border border-gray-200 rounded-xl overflow-hidden"
             >
               <div className="px-5 py-2.5 border-b border-gray-100 flex justify-between items-center">
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-700 flex items-center gap-2">
-                  <span>{section.icon}</span> {section.title}
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-700">
+                  {section.title}
                 </h2>
                 <span className="text-xs text-gray-400">
                   {sectionDone}/{section.items.length}
