@@ -161,37 +161,6 @@ const tabs = [
   { id: "post", label: "Post-Event", data: postEventSections },
 ];
 
-// ============ Resources for "When Date Is Confirmed" tab ============
-
-type Resource = { label: string; href?: string; icon: string };
-const confirmedResources: Resource[] = [
-  {
-    icon: "✉️",
-    label: "Email Template",
-    href: "https://docs.google.com/document/d/1zItAHHseRnrvc7q1XnJUXgrhX9Ad1O01svnQ9dCAhD8/edit?usp=sharing",
-  },
-  {
-    icon: "📅",
-    label: "FD Calendar",
-    href: "https://calendar.google.com/calendar/u/3?cid=Y18zM2RhNWU2NDY4Mzk1Mzg3NDJiOGQ1MDFiZDZkODM4OWY2ZWU2NDQzNTkzMjdiZDgwZjJiODU5MDM5NDI4ZmU2QGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20",
-  },
-  {
-    icon: "📅",
-    label: "AIA GE Calendar",
-    href: "https://calendar.google.com/calendar/u/3?cid=Y180YjE3Y2YyZDE1YjkxMDliMDA0YzRkNmQ4NGNlODcxN2M3ZjVhOTEwNThjODYxMTgxODEwNmQ0NTc1YWM3MTg0QGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20",
-  },
-  {
-    icon: "📄",
-    label: "Guest List Template",
-    href: "https://docs.google.com/spreadsheets/d/15HHNs5L_sAbXqrSrjggBdHFgLqnHuz_uv9SttKZ7avo/copy",
-  },
-  {
-    icon: "🛗",
-    label: "Bomba Lift Application Form",
-    href: "https://drive.google.com/file/d/1Xto8QCFOFousJsSSUZXN-YXfDWrr84EM/view?usp=sharing",
-  },
-];
-
 export default function V2ChecklistPage() {
   const [activeTab, setActiveTab] = useState("confirmed");
   const [checked, setChecked] = useState<Record<string, boolean>>({});
@@ -215,137 +184,75 @@ export default function V2ChecklistPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Header */}
-      <div className="mb-8">
-        <span className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-medium px-2.5 py-1 rounded-full mb-3">
-          ✅ Interactive
-        </span>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Event Checklist
-        </h1>
-        <p className="text-gray-500">
-          Tick off items as you complete them. Progress is per tab.
-        </p>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Hero — matches Event Playbook */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-8 sm:p-10 text-white mb-8 shadow-sm">
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 80% 20%, white 1.5px, transparent 1.5px)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div>
+            <p className="text-blue-200 text-xs font-semibold tracking-[0.25em] uppercase mb-3">
+              Interactive
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+              Event Checklist
+            </h1>
+            <p className="text-blue-100 text-sm sm:text-base max-w-xl">
+              Tick off items as you complete them. Progress is saved per phase.
+            </p>
+          </div>
+          {/* Progress ring */}
+          <ProgressRing pct={pct} done={doneCount} total={totalCount} />
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6 flex items-center gap-4 flex-wrap">
+      {/* Segmented pill tabs */}
+      <div className="bg-gray-100 p-1 rounded-xl mb-6 flex flex-wrap gap-1">
         {tabs.map((tab) => {
           const tabItems = tab.data.flatMap((s) => s.items);
           const tabDone = tabItems.filter((i) => checked[i.id]).length;
+          const isActive = activeTab === tab.id;
+          const isDone = tabDone === tabItems.length && tabItems.length > 0;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative flex items-center gap-2 px-1 py-3 text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex-1 sm:flex-initial justify-center ${
+                isActive
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              {tab.label}
+              <span className="truncate">{tab.label}</span>
               <span
-                className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
-                  activeTab === tab.id
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-gray-100 text-gray-500"
+                className={`text-[10px] rounded-full px-1.5 py-0.5 font-bold flex-shrink-0 ${
+                  isDone
+                    ? "bg-emerald-100 text-emerald-700"
+                    : isActive
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-200 text-gray-500"
                 }`}
               >
                 {tabDone}/{tabItems.length}
               </span>
-              {activeTab === tab.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
-              )}
             </button>
           );
         })}
       </div>
 
-      {/* Resources panel — only for "When Date Is Confirmed" tab */}
-      {activeTab === "confirmed" && (
-        <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-4 mb-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-amber-800 mb-2.5">
-            📌 Templates & Resources
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {confirmedResources.map((r) =>
-              r.href ? (
-                <a
-                  key={r.label}
-                  href={r.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 bg-white border border-amber-200 rounded-md hover:bg-amber-50 hover:border-amber-300 transition-colors text-sm"
-                >
-                  <span className="text-base">{r.icon}</span>
-                  <span className="font-medium text-gray-900 flex-1 truncate">
-                    {r.label}
-                  </span>
-                  <svg
-                    className="w-3.5 h-3.5 text-amber-500 flex-shrink-0"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    <polyline points="15 3 21 3 21 9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </svg>
-                </a>
-              ) : (
-                <div
-                  key={r.label}
-                  className="flex items-center gap-2 px-3 py-2 bg-white/60 border border-dashed border-amber-300 rounded-md text-sm text-gray-500"
-                  title="No link configured yet"
-                >
-                  <span className="text-base">{r.icon}</span>
-                  <span className="flex-1 truncate">{r.label}</span>
-                  <span className="text-[10px] uppercase tracking-wide text-amber-600 font-semibold">
-                    add link
-                  </span>
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Progress bar */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex items-center gap-4">
-        <div className="flex-1">
-          <div className="flex justify-between text-xs mb-1.5">
-            <span className="font-medium text-gray-700 uppercase tracking-wide">
-              {currentTab.label} progress
-            </span>
-            <span className="text-gray-500">
-              {doneCount} of {totalCount}
-            </span>
-          </div>
-          <div className="w-full bg-gray-100 rounded-full h-1.5">
-            <div
-              className={`h-1.5 rounded-full transition-all ${
-                pct === 100 ? "bg-emerald-500" : "bg-blue-500"
-              }`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </div>
-        <div
-          className={`text-2xl font-bold w-14 text-right ${
-            pct === 100 ? "text-emerald-600" : "text-blue-600"
-          }`}
-        >
-          {pct}%
-        </div>
+      {/* Reset link */}
+      <div className="flex justify-end mb-3">
         <button
           onClick={resetTab}
-          className="text-xs text-gray-400 hover:text-gray-600"
+          className="text-xs text-gray-400 hover:text-gray-700"
         >
-          Reset
+          ↺ Reset this tab
         </button>
       </div>
 
@@ -353,17 +260,35 @@ export default function V2ChecklistPage() {
       <div className="space-y-4">
         {currentTab.data.map((section) => {
           const sectionDone = section.items.filter((i) => checked[i.id]).length;
+          const sectionTotal = section.items.length;
+          const sectionDoneAll = sectionDone === sectionTotal;
+          const visual = sectionVisuals[section.title] || {
+            icon: "📌",
+            border: "border-l-gray-300",
+            iconBg: "bg-gray-50",
+          };
           return (
             <div
               key={section.title}
-              className="bg-white border border-gray-200 rounded-xl overflow-hidden"
+              className={`bg-white border border-gray-200 rounded-xl overflow-hidden border-l-4 ${visual.border}`}
             >
-              <div className="px-5 py-3 border-b border-gray-100 flex justify-between items-center">
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  {section.title}
+              <div className="px-5 py-3 border-b border-gray-100 flex justify-between items-center gap-3">
+                <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 min-w-0">
+                  <span
+                    className={`${visual.iconBg} w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0`}
+                  >
+                    <span className="text-base leading-none">{visual.icon}</span>
+                  </span>
+                  <span className="truncate">{section.title}</span>
                 </h2>
-                <span className="text-xs text-gray-400">
-                  {sectionDone}/{section.items.length}
+                <span
+                  className={`text-[10px] font-bold rounded-full px-2 py-0.5 flex-shrink-0 ${
+                    sectionDoneAll
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {sectionDone}/{sectionTotal}
                 </span>
               </div>
               <ul className="divide-y divide-gray-100">
@@ -421,6 +346,123 @@ export default function V2ChecklistPage() {
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+// Per-section visual cues. Section title → icon + accent border tint.
+const sectionVisuals: Record<
+  string,
+  { icon: string; border: string; iconBg: string }
+> = {
+  "Approval & Calendar": {
+    icon: "✅",
+    border: "border-l-blue-400",
+    iconBg: "bg-blue-50",
+  },
+  "Email to Building Management": {
+    icon: "✉️",
+    border: "border-l-indigo-400",
+    iconBg: "bg-indigo-50",
+  },
+  "Other Prep": {
+    icon: "📋",
+    border: "border-l-violet-400",
+    iconBg: "bg-violet-50",
+  },
+  "Setup & Display": {
+    icon: "🎯",
+    border: "border-l-rose-400",
+    iconBg: "bg-rose-50",
+  },
+  Comms: {
+    icon: "📢",
+    border: "border-l-amber-400",
+    iconBg: "bg-amber-50",
+  },
+  "People (PICs)": {
+    icon: "👥",
+    border: "border-l-emerald-400",
+    iconBg: "bg-emerald-50",
+  },
+  "Refreshments & Catering": {
+    icon: "🍱",
+    border: "border-l-orange-400",
+    iconBg: "bg-orange-50",
+  },
+  Others: {
+    icon: "📌",
+    border: "border-l-slate-400",
+    iconBg: "bg-slate-50",
+  },
+  "Morning Setup": {
+    icon: "🌅",
+    border: "border-l-amber-400",
+    iconBg: "bg-amber-50",
+  },
+  "AV & Technical Check": {
+    icon: "🎤",
+    border: "border-l-cyan-400",
+    iconBg: "bg-cyan-50",
+  },
+  "Wrap Up": {
+    icon: "🧹",
+    border: "border-l-emerald-400",
+    iconBg: "bg-emerald-50",
+  },
+};
+
+// Circular progress ring shown in the hero.
+function ProgressRing({
+  pct,
+  done,
+  total,
+}: {
+  pct: number;
+  done: number;
+  total: number;
+}) {
+  const r = 32;
+  const c = 2 * Math.PI * r;
+  const offset = c - (pct / 100) * c;
+  const isDone = pct === 100;
+  return (
+    <div className="flex items-center gap-4 self-start sm:self-auto">
+      <div className="relative w-20 h-20 flex-shrink-0">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+          <circle
+            cx="40"
+            cy="40"
+            r={r}
+            fill="none"
+            stroke="rgba(255,255,255,0.15)"
+            strokeWidth="6"
+          />
+          <circle
+            cx="40"
+            cy="40"
+            r={r}
+            fill="none"
+            stroke={isDone ? "#34d399" : "#60a5fa"}
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={offset}
+            className="transition-all duration-300"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-lg font-bold text-white">{pct}%</span>
+        </div>
+      </div>
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-200 mb-0.5">
+          This tab
+        </p>
+        <p className="text-sm font-semibold text-white">
+          {done} of {total} done
+        </p>
+      </div>
     </div>
   );
 }

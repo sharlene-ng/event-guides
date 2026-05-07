@@ -99,26 +99,6 @@ export default async function V2HallInfoPage() {
         </div>
       </div>
 
-      {/* Quick stats — only renders if there are non-hidden non-TBD stats */}
-      {stats.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
-          {stats.map((s) => (
-            <div
-              key={s.key}
-              className="bg-white border border-gray-200 rounded-xl p-4"
-            >
-              <p className="text-[10px] uppercase tracking-wide text-gray-500 font-semibold mb-1">
-                {s.key
-                  .replace(/_/g, " ")
-                  .replace(/\b\w/g, (c) => c.toUpperCase())}
-              </p>
-              <p className="text-xl font-bold text-gray-900">{s.value}</p>
-              {s.unit && <p className="text-xs text-gray-500 mt-0.5">{s.unit}</p>}
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Rate card — full pricing breakdown */}
       <div className="mb-10">
         <div className="flex items-baseline justify-between mb-4">

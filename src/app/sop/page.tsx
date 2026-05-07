@@ -63,24 +63,6 @@ const accentDot: Record<Phase["accent"], string> = {
   rose: "bg-rose-500 ring-rose-100",
 };
 
-type QuickLink = { icon: string; label: string; href: string };
-const quickLinks: QuickLink[] = [
-  {
-    icon: "✉️",
-    label: "Email Building Mgmt",
-    href: "mailto:mercumkpmoffice@gmail.com",
-  },
-  {
-    icon: "📄",
-    label: "Guest List",
-    href: "https://docs.google.com/spreadsheets/d/15HHNs5L_sAbXqrSrjggBdHFgLqnHuz_uv9SttKZ7avo/copy",
-  },
-  {
-    icon: "🛗",
-    label: "Bomba Lift Form",
-    href: "https://drive.google.com/file/d/1Xto8QCFOFousJsSSUZXN-YXfDWrr84EM/view?usp=sharing",
-  },
-];
 
 export default function V2SOPPage() {
   return (
@@ -120,73 +102,36 @@ export default function V2SOPPage() {
         </div>
       </div>
 
-      {/* Quick Reference bar */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-10">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-4 md:divide-x md:divide-gray-100">
-          {/* Wi-Fi */}
-          <div className="md:pr-6">
-            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2 flex items-center gap-1.5">
-              <span>📶</span>
-              Hall Wi-Fi
-            </p>
-            <div className="flex items-baseline gap-4 text-sm">
-              <div>
-                <span className="text-gray-400 text-xs mr-1">Network</span>
-                <CopyableValue
-                  value="AIM.BIG_Guest"
-                  type="text"
-                  className="text-gray-900 font-medium"
-                />
-              </div>
-              <div>
-                <span className="text-gray-400 text-xs mr-1">Password</span>
-                <CopyableValue
-                  value="ai888888"
-                  type="text"
-                  className="text-gray-900 font-medium font-mono"
-                />
-              </div>
-            </div>
+      {/* Hall Wi-Fi quick info (templates & forms now live on /resources) */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-8">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xl">📶</span>
+          <p className="text-sm font-bold text-gray-900">Hall Wi-Fi</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 flex-1">
+          <div>
+            <span className="text-gray-400 text-xs mr-1">Network</span>
+            <CopyableValue
+              value="AIM.BIG_Guest"
+              type="text"
+              className="text-sm text-gray-900 font-medium"
+            />
           </div>
-
-          {/* Quick links */}
-          <div className="md:pl-6">
-            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-gray-500 mb-2">
-              📌 Templates & Forms
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {quickLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target={link.href.startsWith("http") ? "_blank" : undefined}
-                  rel={
-                    link.href.startsWith("http")
-                      ? "noopener noreferrer"
-                      : undefined
-                  }
-                  className="inline-flex items-center gap-1.5 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 border border-gray-200 hover:border-blue-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors"
-                >
-                  <span>{link.icon}</span>
-                  {link.label}
-                  <svg
-                    className="w-3 h-3 text-gray-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    <polyline points="15 3 21 3 21 9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </svg>
-                </a>
-              ))}
-            </div>
+          <div>
+            <span className="text-gray-400 text-xs mr-1">Password</span>
+            <CopyableValue
+              value="ai888888"
+              type="text"
+              className="text-sm text-gray-900 font-medium font-mono"
+            />
           </div>
         </div>
+        <Link
+          href="/resources"
+          className="text-xs font-semibold text-blue-600 hover:text-blue-700 sm:ml-auto"
+        >
+          All resources →
+        </Link>
       </div>
 
       {/* Phases — vertical timeline */}
@@ -230,22 +175,86 @@ export default function V2SOPPage() {
         ))}
       </ol>
 
-      {/* Inline CTA */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <p className="text-sm font-bold text-blue-900">
-            Ready to track your event step-by-step?
-          </p>
-          <p className="text-xs text-blue-700">
-            The interactive checklist saves your progress per phase.
-          </p>
-        </div>
-        <Link
-          href="/checklist"
-          className="inline-flex items-center gap-1.5 bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 text-sm flex-shrink-0"
+      {/* Office How-To */}
+      <SectionHeader
+        eyebrow="Office"
+        title="How-To"
+        subtitle="Quick references for the things you'll occasionally need."
+      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+        {/* Credit Card Machines */}
+        <a
+          href="https://app.clickup.com/3700403/v/dc/3gxnk-54576/3gxnk-15676"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group bg-white border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-sm transition-all"
         >
-          ✅ Open Checklist
-        </Link>
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 group-hover:text-blue-700">
+              <span className="text-base">💳</span>
+              Credit Card Machines
+            </h3>
+            <svg
+              className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 flex-shrink-0 mt-0.5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </div>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            For last-minute setup. Open the ClickUp guide for the full
+            walk-through.
+          </p>
+        </a>
+
+        {/* Printer */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span className="text-base">🖨️</span>
+            Use the Printer
+          </h3>
+          <ol className="space-y-2 text-sm text-gray-700">
+            <li className="flex gap-2.5">
+              <span className="bg-blue-100 text-blue-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                1
+              </span>
+              <span>Go to the iMac next to Kherwei&apos;s seat.</span>
+            </li>
+            <li className="flex gap-2.5">
+              <span className="bg-blue-100 text-blue-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                2
+              </span>
+              <span className="flex items-center gap-1.5 flex-wrap">
+                <span>Log in. Password:</span>
+                <span className="text-xs italic text-gray-400">
+                  — to fill in —
+                </span>
+              </span>
+            </li>
+            <li className="flex gap-2.5">
+              <span className="bg-blue-100 text-blue-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                3
+              </span>
+              <span>
+                Open WhatsApp Web with your own number, send the file/link
+                from your phone, then download or open it on the iMac.
+              </span>
+            </li>
+            <li className="flex gap-2.5">
+              <span className="bg-blue-100 text-blue-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                4
+              </span>
+              <span>Print.</span>
+            </li>
+          </ol>
+        </div>
       </div>
 
       {/* Contingency Plan */}
