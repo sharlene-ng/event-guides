@@ -27,7 +27,7 @@ export default async function PricingPage() {
 
   const header = group(rows, "header")[0] || {
     label: "Big Hall",
-    value: "Kuala Lumpur",
+    value: "Petaling Jaya",
     unit: "100 participants",
   };
   const internal = group(rows, "internal")[0];

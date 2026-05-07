@@ -271,7 +271,7 @@ export default function PublicBookingPage() {
             </button>
           </div>
           <p className="text-xs text-gray-400 text-center mt-6">
-            BIG Hall · Kuala Lumpur
+            BIG Hall · Petaling Jaya
           </p>
         </div>
       </div>
