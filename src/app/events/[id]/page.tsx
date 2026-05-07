@@ -345,19 +345,20 @@ export default async function EventDetailPage({
         </section>
       )}
 
-      {/* Checklist (only meaningful for confirmed / reserved events) */}
-      {(event.status === "approved" || event.status === "reserved") && (
-        <section>
-          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
-            Event Checklist
-          </p>
-          <EventChecklist
-            eventId={event.id}
-            initialState={event.checklistState || {}}
-            canEdit={isAdmin}
-          />
-        </section>
-      )}
+      {/* Checklist — admins only (full view). Non-admins see basic info above. */}
+      {isAdmin &&
+        (event.status === "approved" || event.status === "reserved") && (
+          <section>
+            <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+              Event Checklist
+            </p>
+            <EventChecklist
+              eventId={event.id}
+              initialState={event.checklistState || {}}
+              canEdit={isAdmin}
+            />
+          </section>
+        )}
     </div>
   );
 }
