@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-async function expectedHash(password: string): Promise<string> {
-  const data = new TextEncoder().encode(password);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash))
+async function hash(prefix: string, password: string): Promise<string> {
+  const data = new TextEncoder().encode(prefix + password);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
@@ -26,6 +26,7 @@ function rateLimited(ip: string): boolean {
 
 export async function POST(req: NextRequest) {
   const sitePassword = process.env.SITE_PASSWORD;
+  const adminPassword = process.env.ADMIN_PASSWORD;
   if (!sitePassword) {
     return NextResponse.json(
       { ok: false, error: "Password not configured on server" },
@@ -52,21 +53,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  if (body.password !== sitePassword) {
+  const isAdmin = !!adminPassword && body.password === adminPassword;
+  const isTeam = body.password === sitePassword;
+
+  if (!isAdmin && !isTeam) {
     return NextResponse.json(
       { ok: false, error: "Wrong password" },
       { status: 401 },
     );
   }
 
-  const hash = await expectedHash(sitePassword);
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set("auth", hash, {
+  const res = NextResponse.json({ ok: true, role: isAdmin ? "admin" : "team" });
+
+  // Always set the team auth cookie when either password is correct
+  res.cookies.set("auth", await hash("", sitePassword), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 30, // 30 days
     path: "/",
   });
+
+  // Additionally set the admin cookie when admin password matches
+  if (isAdmin && adminPassword) {
+    res.cookies.set("admin", await hash("admin:", adminPassword), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 8, // 8 hours
+      path: "/",
+    });
+  }
+
   return res;
 }

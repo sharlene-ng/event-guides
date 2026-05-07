@@ -5,96 +5,117 @@ import { useState } from "react";
 type CheckItem = { id: string; label: string };
 type Section = { title: string; items: CheckItem[] };
 
-const setupSection: Section[] = [
-  {
-    title: "Setup & Display",
-    items: [
-      { id: "s1", label: "Lanyard sleeve" },
-      { id: "s2", label: "Lanyard strap" },
-      { id: "s3", label: "Print lanyard nametag" },
-      { id: "s4", label: "Bunting placement" },
-      { id: "s5", label: "Lobby TV display" },
-      { id: "s6", label: "Event hall layout" },
-    ],
-  },
-  {
-    title: "Comms",
-    items: [
-      { id: "c1", label: "Event reminder" },
-      { id: "c2", label: "Announcement to FD Official Group Chat" },
-    ],
-  },
-  {
-    title: "People (PICs)",
-    items: [
-      { id: "p1", label: "Registration PIC assigned" },
-      { id: "p2", label: "AV PIC assigned" },
-      { id: "p3", label: "Cleaner — needed? Confirm if yes" },
-    ],
-  },
-  {
-    title: "Refreshments & Catering",
-    items: [
-      { id: "r1", label: "Food / catering" },
-      { id: "r2", label: "Coffee / tea" },
-      { id: "r3", label: "Candies, snacks" },
-      { id: "r4", label: "Crew food" },
-    ],
-  },
-  {
-    title: "Other",
-    items: [
-      {
-        id: "o1",
-        label: "Standby credit card machines (company & internal events)",
-      },
-      { id: "o2", label: "Any special arrangements?" },
-    ],
-  },
-];
+// ============ Tab 1: When Date Is Confirmed ============
 
-const prepSection: Section[] = [
+const confirmedSections: Section[] = [
   {
     title: "Approval & Calendar",
     items: [
       { id: "ap1", label: "Approval received from Sharlene" },
-      { id: "ap2", label: "Project type identified (company / internal / external)" },
-      { id: "ap3", label: "Logged in FD Calendar" },
-      { id: "ap4", label: "Logged in AIA GE Calendar" },
-      { id: "ap5", label: "Self + all PICs invited" },
+      { id: "ap2", label: "Logged relevant in Google Calendar (e.g. FD Calendar, AIA GE etc)" },
+      { id: "ap3", label: "Invite relevant PICs via email" },
     ],
   },
   {
     title: "Email to Building Management",
     items: [
-      { id: "e1", label: "Email sent to mercumkpmoffice@gmail.com (≥1 week before)" },
-      { id: "e2", label: "Event name included" },
-      { id: "e3", label: "Event date & time included" },
-      { id: "e4", label: "Estimated pax included" },
-      { id: "e5", label: "Guest list PDF attached" },
-      { id: "e6", label: "Reserved parking requested (if needed)" },
-      { id: "e7", label: "Service lift (Bomba) requested (if needed)" },
-      { id: "e8", label: "Aircond requested (if needed)" },
+      { id: "em1", label: "Email to mercumkpmoffice@gmail.com (≥1 week before)" },
+      { id: "em2", label: "Event name included" },
+      { id: "em3", label: "Event date & time included" },
+      { id: "em4", label: "Estimated pax included" },
+      { id: "em5", label: "Guest list PDF attached" },
+      { id: "em6", label: "Reserved parking requested (if applicable)" },
+      { id: "em7", label: "Use of Bomba / Service lift (if applicable)" },
+      { id: "em8", label: "Aircond requested (if applicable)" },
     ],
   },
   {
     title: "Other Prep",
     items: [
-      { id: "pr1", label: "Guest list printed and passed to security" },
-      { id: "pr2", label: "Parking confirmed (if applicable)" },
-      { id: "pr3", label: "Aircond confirmed (if applicable)" },
-      { id: "pr4", label: "Bomba lift booking confirmed (if applicable)" },
+      { id: "op1", label: "Guest list printed and passed to security" },
+      { id: "op2", label: "Parking confirmed (if applicable)" },
+      { id: "op3", label: "Aircond confirmed (if applicable)" },
+      { id: "op4", label: "Bomba lift booking confirmed" },
+    ],
+  },
+];
+
+// ============ Tab 2: Pre-Event ============
+
+const preEventSections: Section[] = [
+  {
+    title: "Setup & Display",
+    items: [
+      { id: "sd1", label: "Prepare lanyard sleeve" },
+      { id: "sd2", label: "Prepare lanyard strap" },
+      { id: "sd3", label: "Print lanyard nametag" },
+      { id: "sd4", label: "Bunting placement" },
+      { id: "sd5", label: "Lobby TV display" },
+      { id: "sd6", label: "Event hall layout arrangement" },
+      { id: "sd7", label: "Extension" },
+      { id: "sd8", label: "Mic batteries" },
+      { id: "sd9", label: "Testimonial Room" },
+    ],
+  },
+  {
+    title: "Comms",
+    items: [
+      { id: "co1", label: "Event reminders" },
+      { id: "co2", label: "Announcement to FD Official Group Chat with Agenda" },
+    ],
+  },
+  {
+    title: "People (PICs)",
+    items: [
+      { id: "pe1", label: "Registration PIC assigned" },
+      { id: "pe2", label: "AV PIC assigned" },
+      { id: "pe3", label: "Testimonial PIC" },
+      { id: "pe4", label: "Cleaner (if applicable)" },
+    ],
+  },
+  {
+    title: "Refreshments & Catering",
+    items: [
+      { id: "rc1", label: "Food / Catering" },
+      { id: "rc2", label: "Coffee / Tea" },
+      { id: "rc3", label: "Candies, snacks" },
+      { id: "rc4", label: "Crew food" },
+    ],
+  },
+  {
+    title: "Others",
+    items: [
+      { id: "ot1", label: "Standby credit card machines (company & internal events)" },
+      { id: "ot2", label: "Any special arrangements" },
     ],
   },
 ];
 
 const tabs = [
-  { id: "prep", label: "Pre-Event", data: prepSection },
-  { id: "day", label: "Event Day", data: setupSection },
+  { id: "confirmed", label: "When Date Is Confirmed", data: confirmedSections },
+  { id: "pre", label: "Pre-Event", data: preEventSections },
+];
+
+// ============ Resources for "When Date Is Confirmed" tab ============
+
+type Resource = { label: string; href?: string; icon: string };
+const confirmedResources: Resource[] = [
+  { icon: "✉️", label: "Email Template", href: undefined },
+  { icon: "📅", label: "Calendar Link", href: undefined },
+  {
+    icon: "📄",
+    label: "Guest List Template",
+    href: "https://docs.google.com/spreadsheets/d/15HHNs5L_sAbXqrSrjggBdHFgLqnHuz_uv9SttKZ7avo/copy",
+  },
+  {
+    icon: "🛗",
+    label: "Bomba Lift Application Form",
+    href: "https://drive.google.com/file/d/1Xto8QCFOFousJsSSUZXN-YXfDWrr84EM/view?usp=sharing",
+  },
 ];
 
 export default function V2ChecklistPage() {
-  const [activeTab, setActiveTab] = useState("prep");
+  const [activeTab, setActiveTab] = useState("confirmed");
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
   const toggle = (id: string) =>
@@ -131,7 +152,7 @@ export default function V2ChecklistPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6 flex items-center gap-4">
+      <div className="border-b border-gray-200 mb-6 flex items-center gap-4 flex-wrap">
         {tabs.map((tab) => {
           const tabItems = tab.data.flatMap((s) => s.items);
           const tabDone = tabItems.filter((i) => checked[i.id]).length;
@@ -163,12 +184,64 @@ export default function V2ChecklistPage() {
         })}
       </div>
 
+      {/* Resources panel — only for "When Date Is Confirmed" tab */}
+      {activeTab === "confirmed" && (
+        <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-4 mb-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-800 mb-2.5">
+            📌 Templates & Resources
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {confirmedResources.map((r) =>
+              r.href ? (
+                <a
+                  key={r.label}
+                  href={r.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 bg-white border border-amber-200 rounded-md hover:bg-amber-50 hover:border-amber-300 transition-colors text-sm"
+                >
+                  <span className="text-base">{r.icon}</span>
+                  <span className="font-medium text-gray-900 flex-1 truncate">
+                    {r.label}
+                  </span>
+                  <svg
+                    className="w-3.5 h-3.5 text-amber-500 flex-shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                </a>
+              ) : (
+                <div
+                  key={r.label}
+                  className="flex items-center gap-2 px-3 py-2 bg-white/60 border border-dashed border-amber-300 rounded-md text-sm text-gray-500"
+                  title="No link configured yet"
+                >
+                  <span className="text-base">{r.icon}</span>
+                  <span className="flex-1 truncate">{r.label}</span>
+                  <span className="text-[10px] uppercase tracking-wide text-amber-600 font-semibold">
+                    add link
+                  </span>
+                </div>
+              ),
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Progress bar */}
       <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex items-center gap-4">
         <div className="flex-1">
           <div className="flex justify-between text-xs mb-1.5">
             <span className="font-medium text-gray-700 uppercase tracking-wide">
-              {currentTab.label} Progress
+              {currentTab.label} progress
             </span>
             <span className="text-gray-500">
               {doneCount} of {totalCount}

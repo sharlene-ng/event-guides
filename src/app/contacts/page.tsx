@@ -6,19 +6,35 @@ import BookingFormResource from "@/components/BookingFormResource";
 
 export const dynamic = "force-dynamic";
 
-const sectionConfig: Record<
-  string,
-  { label: string; icon: string; type: "table" | "vendors" }
-> = {
-  approver: { label: "Calendar Booking Approver", icon: "⭐", type: "table" },
-  building: { label: "Building Management", icon: "🏗️", type: "table" },
-  pic: { label: "Event PIC", icon: "👥", type: "table" },
-  "vendor-maintenance": { label: "🛠️ Office Maintenance", icon: "🛠️", type: "vendors" },
-  "vendor-wireman": { label: "⚡ Wireman / Electrical", icon: "⚡", type: "vendors" },
-  "vendor-av": { label: "🎤 AV System", icon: "🎤", type: "vendors" },
-  "vendor-internet": { label: "📡 Internet", icon: "📡", type: "vendors" },
-  "vendor-catering": { label: "🍱 F&B / Catering", icon: "🍱", type: "vendors" },
+// Optional overrides — keys here get a custom label/icon. Anything else
+// in the sheet is rendered with an auto-prettified label and a default icon.
+const sectionOverrides: Record<string, { label: string; icon: string }> = {
+  "internal-team": { label: "Internal Team", icon: "👥" },
+  "building-mgmt": { label: "Building Management", icon: "🏗️" },
+  "vendor-catering": { label: "Catering", icon: "🍱" },
+  "vendor-av": { label: "AV / Technical", icon: "🎤" },
+  "vendor-decoration": { label: "Decoration / Florist", icon: "💐" },
+  "vendor-photography": { label: "Photography", icon: "📷" },
+  "vendor-internet": { label: "Internet", icon: "📡" },
+  "vendor-wireman": { label: "Wireman / Electrical", icon: "⚡" },
+  "vendor-maintenance": { label: "Office Maintenance", icon: "🛠️" },
 };
+
+function prettify(key: string): string {
+  return key
+    .split("-")
+    .filter((part) => part !== "vendor")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function sectionMeta(key: string): { label: string; icon: string } {
+  if (sectionOverrides[key]) return sectionOverrides[key];
+  return {
+    label: prettify(key),
+    icon: key.startsWith("vendor-") ? "📋" : "📌",
+  };
+}
 
 function groupBySection(contacts: Contact[]): Record<string, Contact[]> {
   const sorted = [...contacts].sort((a, b) =>
@@ -42,13 +58,20 @@ export default async function V2ContactsPage() {
   const grouped = groupBySection(contacts);
   const emergency = grouped["emergency"] || [];
 
+  // Sections fall into three buckets — emergency banner, table sections,
+  // and vendor cards (vendor-*). Order is preserved by appearance in the
+  // sheet (after sorting by `order` column inside each section).
+  const allSectionKeys = Object.keys(grouped).filter((k) => k !== "emergency");
+  const tableSectionKeys = allSectionKeys.filter((k) => !k.startsWith("vendor-"));
+  const vendorSectionKeys = allSectionKeys.filter((k) => k.startsWith("vendor-"));
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-10">
         <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 text-xs font-medium px-2.5 py-1 rounded-full mb-3">
           📞 Directory
         </span>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Contacts</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Key Contacts</h1>
         <p className="text-gray-500">
           Edit any cell in the{" "}
           <span className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-sm font-mono">
@@ -84,62 +107,59 @@ export default async function V2ContactsPage() {
         </div>
       )}
 
-      {/* Tabular sections */}
-      {Object.entries(sectionConfig)
-        .filter(([, cfg]) => cfg.type === "table")
-        .map(([key, cfg]) => {
-          const rows = grouped[key];
-          if (!rows || !rows.length) return null;
-          return (
-            <Section key={key} label={cfg.label}>
-              <ContactTable contacts={rows} />
-            </Section>
-          );
-        })}
+      {/* Table sections (Internal Team, Building Management, etc.) */}
+      {tableSectionKeys.map((key) => {
+        const rows = grouped[key];
+        const meta = sectionMeta(key);
+        return (
+          <Section key={key} icon={meta.icon} label={meta.label}>
+            <ContactTable contacts={rows} />
+          </Section>
+        );
+      })}
 
       {/* Vendors grid */}
-      {Object.entries(sectionConfig).some(
-        ([key, cfg]) => cfg.type === "vendors" && grouped[key]?.length,
-      ) && (
-        <Section label="Vendors">
+      {vendorSectionKeys.length > 0 && (
+        <Section icon="🎁" label="Approved Vendors">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Object.entries(sectionConfig)
-              .filter(([, cfg]) => cfg.type === "vendors")
-              .map(([key, cfg]) => {
-                const rows = grouped[key];
-                if (!rows || !rows.length) return null;
-                return (
-                  <div
-                    key={key}
-                    className="bg-white border border-gray-200 rounded-xl p-4"
-                  >
-                    <p className="text-sm font-semibold text-gray-800 mb-3">
-                      {cfg.label}
-                    </p>
-                    <div className="space-y-2">
-                      {rows.map((v) => (
-                        <div
-                          key={v.role + v.phone}
-                          className="flex justify-between items-center text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0 gap-2"
-                        >
-                          <span className="text-gray-700 truncate">{v.role}</span>
-                          <CopyableValue
-                            value={v.phone}
-                            type="phone"
-                            className="text-gray-500 text-xs"
-                          />
-                        </div>
-                      ))}
-                    </div>
+            {vendorSectionKeys.map((key) => {
+              const rows = grouped[key];
+              const meta = sectionMeta(key);
+              return (
+                <div
+                  key={key}
+                  className="bg-white border border-gray-200 rounded-xl p-4"
+                >
+                  <p className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-1.5">
+                    <span>{meta.icon}</span>
+                    {meta.label}
+                  </p>
+                  <div className="space-y-2">
+                    {rows.map((v) => (
+                      <div
+                        key={v.role + v.phone}
+                        className="flex justify-between items-center text-sm border-b border-gray-100 pb-2 last:border-0 last:pb-0 gap-2"
+                      >
+                        <span className="text-gray-700 truncate">
+                          {v.name || v.role}
+                        </span>
+                        <CopyableValue
+                          value={v.phone}
+                          type="phone"
+                          className="text-gray-500 text-xs"
+                        />
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
           </div>
         </Section>
       )}
 
       {/* Resources (kept hardcoded — relevant links, not contacts) */}
-      <Section label="Useful Resources">
+      <Section icon="🔗" label="Useful Resources">
         <div className="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100">
           <BookingFormResource />
           <a
@@ -177,15 +197,18 @@ export default async function V2ContactsPage() {
 }
 
 function Section({
+  icon,
   label,
   children,
 }: {
+  icon?: string;
   label: string;
   children: React.ReactNode;
 }) {
   return (
     <section className="mb-8">
-      <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3">
+      <p className="text-xs font-semibold tracking-[0.15em] uppercase text-gray-500 mb-3 flex items-center gap-1.5">
+        {icon && <span>{icon}</span>}
         {label}
       </p>
       {children}

@@ -1,13 +1,14 @@
+import { redirect } from "next/navigation";
 import { isAdminAuthed } from "@/lib/admin";
 import { listHolidays } from "@/lib/sheets";
-import AdminLogin from "../AdminLogin";
 import HolidaysClient from "./HolidaysClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function HolidaysAdminPage() {
-  const authed = await isAdminAuthed();
-  if (!authed) return <AdminLogin />;
+  if (!(await isAdminAuthed())) {
+    redirect("/login?redirect=/admin/holidays");
+  }
 
   let holidays;
   try {

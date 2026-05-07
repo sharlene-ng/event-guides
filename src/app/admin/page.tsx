@@ -1,15 +1,13 @@
+import { redirect } from "next/navigation";
 import { isAdminAuthed } from "@/lib/admin";
 import { listEvents } from "@/lib/sheets";
-import AdminLogin from "./AdminLogin";
 import AdminPanel from "./AdminPanel";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const authed = await isAdminAuthed();
-
-  if (!authed) {
-    return <AdminLogin />;
+  if (!(await isAdminAuthed())) {
+    redirect("/login?redirect=/admin");
   }
 
   let events;

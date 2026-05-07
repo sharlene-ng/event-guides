@@ -9,7 +9,7 @@ const links = [
   { href: "/hall-info", label: "Hall Info" },
   { href: "/sop", label: "Booking Guide" },
   { href: "/checklist", label: "Checklist" },
-  { href: "/contacts", label: "Contacts" },
+  { href: "/contacts", label: "Key Contacts" },
 ];
 
 export default function Navbar() {
