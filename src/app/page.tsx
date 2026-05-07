@@ -24,35 +24,26 @@ export default async function V2Home() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-8 sm:p-10 text-white mb-8 shadow-sm">
+      {/* Hero — matches Event Playbook */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-6 sm:p-8 text-white mb-6 shadow-sm">
         <div
-          className="absolute inset-0 opacity-15"
+          className="absolute inset-0 opacity-10"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 30% 50%, white 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
+              "radial-gradient(circle at 80% 20%, white 1.5px, transparent 1.5px)",
+            backgroundSize: "24px 24px",
           }}
         />
-        <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-          <div>
-            <p className="text-blue-100 text-xs font-semibold tracking-[0.2em] uppercase mb-3">
-              Internal Wiki
-            </p>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-              BIG Hall Event Planning
-            </h1>
-            <p className="text-blue-50 text-sm sm:text-base max-w-xl">
-              Calendar of upcoming bookings, booking guide, and resources.
-            </p>
-          </div>
-          <Link
-            href="/submit"
-            className="inline-flex items-center gap-2 bg-white text-blue-700 font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-50 shadow-md transition-colors text-sm self-start sm:self-end"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-            Submit New Event
-          </Link>
+        <div className="relative">
+          <p className="text-blue-200 text-[11px] font-semibold tracking-[0.25em] uppercase mb-2">
+            Internal Wiki
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">
+            BIG Hall Event Planning
+          </h1>
+          <p className="text-blue-100 text-sm max-w-2xl">
+            Calendar of upcoming bookings, booking guide, and resources.
+          </p>
         </div>
       </div>
 
@@ -62,22 +53,29 @@ export default async function V2Home() {
         </div>
       )}
 
-      {/* Quick shortcuts — guidebook creation + sharable booking link */}
-      <div className="flex flex-wrap gap-3 mb-6">
+      {/* Unified action row */}
+      <div className="flex flex-wrap gap-3 mb-6 justify-end">
+        <Link
+          href="/submit"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Request a Booking
+        </Link>
         <a
           href="https://bighall.vercel.app/admin"
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+          className="group inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 text-gray-800 font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
         >
           <span className="text-base">📖</span>
           Create Event Guidebook
           <svg
-            className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform"
+            className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
@@ -88,7 +86,7 @@ export default async function V2Home() {
         </a>
         <ShareLinkButton
           url="/book"
-          label="Share Public Application Form"
+          label="Share Public Form"
           icon="🔗"
           className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 hover:border-blue-300"
         />

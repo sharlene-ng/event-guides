@@ -93,12 +93,6 @@ export default function HomeTabs({
             label={`List (${upcoming.length})`}
           />
         </div>
-        <Link
-          href="/submit"
-          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-        >
-          Submit new →
-        </Link>
       </div>
 
       {/* Active view */}
