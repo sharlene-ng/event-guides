@@ -255,56 +255,58 @@ export default function V2SOPPage() {
         subtitle="If something breaks during the event — refer to these steps in order."
         accent="rose"
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Power Trips */}
-        <div className="bg-white border border-rose-200 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span className="text-base">⚡</span>
-            If Power Trips
-          </h3>
-          <ol className="space-y-2.5 text-sm text-gray-700">
-            <Step n={1}>
-              Check the DB Box next to the stage (there are two — check both).
-              Another DB Box is in the Big Room.
-            </Step>
-            <Step n={2}>
-              Push up all the switches. If it still trips, call the Management
-              Office (Akmal).
-            </Step>
-            <Step n={3}>If still unresolved, call our vendor (Abee).</Step>
-          </ol>
-        </div>
+      <div className="bg-rose-50/60 border border-rose-200 rounded-2xl p-5 sm:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Power Trips */}
+          <div className="bg-white border border-rose-200 rounded-xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <span className="text-base">⚡</span>
+              If Power Trips
+            </h3>
+            <ol className="space-y-2.5 text-sm text-gray-700">
+              <Step n={1}>
+                Check the DB Box next to the stage (there are two — check both).
+                Another DB Box is in the Big Room.
+              </Step>
+              <Step n={2}>
+                Push up all the switches. If it still trips, call the
+                Management Office (Akmal).
+              </Step>
+              <Step n={3}>If still unresolved, call our vendor (Abee).</Step>
+            </ol>
+          </div>
 
-        {/* Internet Down */}
-        <div className="bg-white border border-rose-200 rounded-xl p-5">
-          <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span className="text-base">📡</span>
-            If Internet Goes Down
-          </h3>
-          <p className="text-[10px] font-bold tracking-wide uppercase text-rose-700 mb-1.5">
-            Immediate workaround
-          </p>
-          <p className="text-sm text-gray-700 mb-3 pl-3 border-l-2 border-rose-200">
-            Ask attendees to connect to their own hotspot.
-          </p>
-          <p className="text-[10px] font-bold tracking-wide uppercase text-rose-700 mb-1.5">
-            Troubleshooting
-          </p>
-          <ol className="space-y-2.5 text-sm text-gray-700">
-            <Step n={1}>Restart the internet / router.</Step>
-            <Step n={2}>
-              If still down, call Nick to check. If the issue is
-              infrastructure-related, contact Khai.
-            </Step>
-          </ol>
+          {/* Internet Down */}
+          <div className="bg-white border border-rose-200 rounded-xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <span className="text-base">📡</span>
+              If Internet Goes Down
+            </h3>
+            <p className="text-[10px] font-bold tracking-wide uppercase text-rose-700 mb-1.5">
+              Immediate workaround
+            </p>
+            <p className="text-sm text-gray-700 mb-3 pl-3 border-l-2 border-rose-200">
+              Ask attendees to connect to their own hotspot.
+            </p>
+            <p className="text-[10px] font-bold tracking-wide uppercase text-rose-700 mb-1.5">
+              Troubleshooting
+            </p>
+            <ol className="space-y-2.5 text-sm text-gray-700">
+              <Step n={1}>Restart the internet / router.</Step>
+              <Step n={2}>
+                If still down, call Nick to check. If the issue is
+                infrastructure-related, contact Khai.
+              </Step>
+            </ol>
+          </div>
         </div>
+        <Link
+          href="/contacts"
+          className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-900"
+        >
+          See full contact list →
+        </Link>
       </div>
-      <Link
-        href="/contacts"
-        className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-900"
-      >
-        See full contact list →
-      </Link>
     </div>
   );
 }
