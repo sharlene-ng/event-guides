@@ -7,9 +7,10 @@ import { useEffect, useState } from "react";
 const links = [
   { href: "/", label: "Event Calendar" },
   { href: "/sop", label: "Event Playbook" },
-  { href: "/contacts", label: "Key Contacts" },
   { href: "/checklist", label: "Checklist" },
+  { href: "/contacts", label: "Key Contacts" },
   { href: "/resources", label: "Resources" },
+  { href: "/office-tools", label: "Office Tools" },
   { href: "/rate-card", label: "Rate Card" },
 ];
 
