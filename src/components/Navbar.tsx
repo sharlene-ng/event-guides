@@ -19,7 +19,7 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (pathname === "/login" || pathname === "/book") return;
+    if (pathname === "/login" || pathname === "/admin/login" || pathname === "/book") return;
     fetch("/api/me")
       .then((r) => r.json())
       .then((d) => setIsAdmin(!!d.admin))
@@ -27,7 +27,7 @@ export default function Navbar() {
   }, [pathname]);
 
   // Hide navbar on login + public booking form
-  if (pathname === "/login" || pathname === "/book") return null;
+  if (pathname === "/login" || pathname === "/admin/login" || pathname === "/book") return null;
 
   async function handleLogout() {
     if (isAdmin) await fetch("/api/admin/login", { method: "DELETE" });
@@ -111,25 +111,16 @@ export default function Navbar() {
                 Admin
               </Link>
             ) : (
-              <span
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1.5 rounded-md"
-                title="Read-only access — sign in as Admin to make changes"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="8.5" cy="7" r="4" />
-                  <path d="M20 8v6M23 11h-6" />
-                </svg>
-                Team
-              </span>
-            )}
-            {!isAdmin && (
               <Link
-                href="/admin"
-                className="text-xs text-gray-400 hover:text-amber-700"
+                href="/admin/login"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1.5 rounded-md transition-colors"
                 title="Sign in as Admin"
               >
-                🔐
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Admin Login
               </Link>
             )}
 
