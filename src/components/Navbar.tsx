@@ -83,6 +83,18 @@ export default function Navbar() {
                 </Link>
               );
             })}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                  pathname.startsWith("/admin")
+                    ? "bg-amber-50 text-amber-700"
+                    : "text-amber-700 hover:bg-amber-50"
+                }`}
+              >
+                Approvals
+              </Link>
+            )}
           </div>
 
           {/* Search */}
