@@ -22,13 +22,13 @@ const templates: Resource[] = [
     icon: "📄",
     label: "Guest List Template",
     href: "https://docs.google.com/spreadsheets/d/15HHNs5L_sAbXqrSrjggBdHFgLqnHuz_uv9SttKZ7avo/copy",
-    note: "Make a copy for each event",
+    note: "Make a copy for each event, submit to management and security",
   },
   {
     icon: "🛗",
-    label: "Bomba Lift Application Form",
+    label: "Bomba / Service Lift Application Form",
     href: "https://drive.google.com/file/d/1Xto8QCFOFousJsSSUZXN-YXfDWrr84EM/view?usp=sharing",
-    note: "Submit ≥1 day before event",
+    note: "Submit at least 3 days before",
   },
 ];
 
