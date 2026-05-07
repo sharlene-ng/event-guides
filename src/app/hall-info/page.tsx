@@ -80,7 +80,7 @@ export default async function V2HallInfoPage() {
         <div className="relative flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <p className="text-blue-100 text-xs font-semibold tracking-[0.2em] uppercase mb-3">
-              Hall Info
+              Rate Card
             </p>
             <h1 className="text-3xl sm:text-4xl font-bold mb-2">{venueName}</h1>
             <p className="text-blue-100">

@@ -91,13 +91,14 @@ export default function V2SOPPage() {
       {/* Header */}
       <div className="mb-8">
         <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full mb-3">
-          📋 Quick Guide
+          📘 Team Reference
         </span>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Booking Guide
+          Event Playbook
         </h1>
         <p className="text-gray-500">
-          Four phases at a glance. Use the{" "}
+          Everything the team needs to run a BIG Hall event — phases,
+          quick links, and what to do when things go wrong. Use the{" "}
           <Link
             href="/checklist"
             className="text-blue-600 font-medium hover:underline"
@@ -188,7 +189,7 @@ export default function V2SOPPage() {
       {/* Big CTA */}
       <Link
         href="/checklist"
-        className="block bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl p-6 sm:p-8 text-center hover:shadow-lg transition-shadow"
+        className="block bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl p-6 sm:p-8 text-center hover:shadow-lg transition-shadow mb-10"
       >
         <p className="text-sm font-semibold uppercase tracking-wider text-blue-100 mb-2">
           ✅ Ready to run your event?
@@ -200,6 +201,96 @@ export default function V2SOPPage() {
           Tick off each step as you go — progress is saved per phase.
         </p>
       </Link>
+
+      {/* Contingency Plan */}
+      <section className="bg-rose-50/40 border border-rose-200 rounded-2xl p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-lg">🚨</span>
+          <h2 className="text-lg font-bold text-rose-900">Contingency Plan</h2>
+        </div>
+        <p className="text-xs text-rose-700 mb-5">
+          When something goes wrong on the day — refer to these steps in order.
+        </p>
+
+        <div className="space-y-4">
+          {/* Power Trips */}
+          <div className="bg-white border border-rose-200 rounded-xl p-4">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <span className="text-base">⚡</span>
+              If Power Trips
+            </h3>
+            <ol className="space-y-2 text-sm text-gray-700">
+              <li className="flex gap-2.5">
+                <span className="bg-rose-100 text-rose-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                  1
+                </span>
+                <span>
+                  Check the DB Box next to the stage (there are two — check
+                  both). Another DB Box is in the Big Room.
+                </span>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="bg-rose-100 text-rose-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                  2
+                </span>
+                <span>
+                  Push up all the switches. If it still trips, call the
+                  Management Office (Akmal).
+                </span>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="bg-rose-100 text-rose-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                  3
+                </span>
+                <span>If still unresolved, call our vendor (Abee).</span>
+              </li>
+            </ol>
+          </div>
+
+          {/* Internet Down */}
+          <div className="bg-white border border-rose-200 rounded-xl p-4">
+            <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <span className="text-base">📡</span>
+              If Internet Goes Down
+            </h3>
+
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-700 mb-2">
+              Immediate workaround
+            </p>
+            <p className="text-sm text-gray-700 mb-4 pl-3 border-l-2 border-rose-200">
+              Ask attendees to connect to their own hotspot.
+            </p>
+
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-700 mb-2">
+              Troubleshooting steps
+            </p>
+            <ol className="space-y-2 text-sm text-gray-700">
+              <li className="flex gap-2.5">
+                <span className="bg-rose-100 text-rose-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                  1
+                </span>
+                <span>Restart the internet / router.</span>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="bg-rose-100 text-rose-700 font-semibold rounded-full w-5 h-5 flex items-center justify-center text-[11px] flex-shrink-0">
+                  2
+                </span>
+                <span>
+                  If still down, call Nick to check. If the issue is
+                  infrastructure-related, contact Khai.
+                </span>
+              </li>
+            </ol>
+          </div>
+        </div>
+
+        <Link
+          href="/contacts"
+          className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-900"
+        >
+          See full contact list →
+        </Link>
+      </section>
     </div>
   );
 }

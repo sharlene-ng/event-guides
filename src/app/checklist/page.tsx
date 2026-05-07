@@ -91,17 +91,95 @@ const preEventSections: Section[] = [
   },
 ];
 
+// ============ Tab 3: On Event Date ============
+
+const eventDaySections: Section[] = [
+  {
+    title: "Morning Setup",
+    items: [
+      {
+        id: "ms1",
+        label:
+          "Event PIC and Project PIC arrive at least 1 hour before (1.5 hours for larger call times)",
+      },
+      {
+        id: "ms2",
+        label:
+          "Set up registration desk with nametags and attendance list; assigned personnel on standby",
+      },
+      { id: "ms3", label: "Switch on all lights and aircond (if weekend)" },
+      {
+        id: "ms4",
+        label:
+          "Both TVs at entrance turned on with holding slides or assigned video",
+      },
+    ],
+  },
+  {
+    title: "AV & Technical Check",
+    items: [
+      { id: "av1", label: "All microphones tested and working" },
+      { id: "av2", label: "Screen tested" },
+      { id: "av3", label: "Slides / presentation loaded and tested" },
+      { id: "av4", label: "Speaker / PA system tested" },
+      {
+        id: "av5",
+        label:
+          "Recording / live stream setup (if applicable) — send Zoom link in the group",
+      },
+    ],
+  },
+];
+
+// ============ Tab 4: Post-Event ============
+
+const postEventSections: Section[] = [
+  {
+    title: "Wrap Up",
+    items: [
+      { id: "pv1", label: "Ensure all rubbish is cleared and tied up" },
+      { id: "pv2", label: "Switch off all lights" },
+      { id: "pv3", label: "Ensure the Big Hall back door is locked" },
+      {
+        id: "pv4",
+        label:
+          "Walk through the entire office premises to confirm everyone has left",
+      },
+      {
+        id: "pv5",
+        label:
+          "Before heading home, make sure the entrance door is closed and all lights are off",
+      },
+    ],
+  },
+];
+
 const tabs = [
   { id: "confirmed", label: "When Date Is Confirmed", data: confirmedSections },
   { id: "pre", label: "Pre-Event", data: preEventSections },
+  { id: "event", label: "On Event Date", data: eventDaySections },
+  { id: "post", label: "Post-Event", data: postEventSections },
 ];
 
 // ============ Resources for "When Date Is Confirmed" tab ============
 
 type Resource = { label: string; href?: string; icon: string };
 const confirmedResources: Resource[] = [
-  { icon: "✉️", label: "Email Template", href: undefined },
-  { icon: "📅", label: "Calendar Link", href: undefined },
+  {
+    icon: "✉️",
+    label: "Email Template",
+    href: "https://docs.google.com/document/d/1zItAHHseRnrvc7q1XnJUXgrhX9Ad1O01svnQ9dCAhD8/edit?usp=sharing",
+  },
+  {
+    icon: "📅",
+    label: "FD Calendar",
+    href: "https://calendar.google.com/calendar/u/3?cid=Y18zM2RhNWU2NDY4Mzk1Mzg3NDJiOGQ1MDFiZDZkODM4OWY2ZWU2NDQzNTkzMjdiZDgwZjJiODU5MDM5NDI4ZmU2QGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20",
+  },
+  {
+    icon: "📅",
+    label: "AIA GE Calendar",
+    href: "https://calendar.google.com/calendar/u/3?cid=Y180YjE3Y2YyZDE1YjkxMDliMDA0YzRkNmQ4NGNlODcxN2M3ZjVhOTEwNThjODYxMTgxODEwNmQ0NTc1YWM3MTg0QGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20",
+  },
   {
     icon: "📄",
     label: "Guest List Template",
