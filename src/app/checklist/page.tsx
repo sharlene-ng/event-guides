@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { checklistTabs } from "@/lib/checklistData";
+import { checklistTabs, getSectionVisual } from "@/lib/checklistData";
 
 const tabs = checklistTabs;
 
@@ -106,11 +106,7 @@ export default function V2ChecklistPage() {
           const sectionDone = section.items.filter((i) => checked[i.id]).length;
           const sectionTotal = section.items.length;
           const sectionDoneAll = sectionDone === sectionTotal;
-          const visual = sectionVisuals[section.title] || {
-            icon: "📌",
-            border: "border-l-gray-300",
-            iconBg: "bg-gray-50",
-          };
+          const visual = getSectionVisual(section.title);
           return (
             <div
               key={section.title}
@@ -193,68 +189,6 @@ export default function V2ChecklistPage() {
     </div>
   );
 }
-
-// Per-section visual cues. Section title → icon + accent border tint.
-const sectionVisuals: Record<
-  string,
-  { icon: string; border: string; iconBg: string }
-> = {
-  "Approval & Calendar": {
-    icon: "✅",
-    border: "border-l-blue-400",
-    iconBg: "bg-blue-50",
-  },
-  "Email to Building Management": {
-    icon: "✉️",
-    border: "border-l-indigo-400",
-    iconBg: "bg-indigo-50",
-  },
-  "Other Prep": {
-    icon: "📋",
-    border: "border-l-violet-400",
-    iconBg: "bg-violet-50",
-  },
-  "Setup & Display": {
-    icon: "🎯",
-    border: "border-l-rose-400",
-    iconBg: "bg-rose-50",
-  },
-  Comms: {
-    icon: "📢",
-    border: "border-l-amber-400",
-    iconBg: "bg-amber-50",
-  },
-  "People (PICs)": {
-    icon: "👥",
-    border: "border-l-emerald-400",
-    iconBg: "bg-emerald-50",
-  },
-  "Refreshments & Catering": {
-    icon: "🍱",
-    border: "border-l-orange-400",
-    iconBg: "bg-orange-50",
-  },
-  Others: {
-    icon: "📌",
-    border: "border-l-slate-400",
-    iconBg: "bg-slate-50",
-  },
-  "Morning Setup": {
-    icon: "🌅",
-    border: "border-l-amber-400",
-    iconBg: "bg-amber-50",
-  },
-  "AV & Technical Check": {
-    icon: "🎤",
-    border: "border-l-cyan-400",
-    iconBg: "bg-cyan-50",
-  },
-  "Wrap Up": {
-    icon: "🧹",
-    border: "border-l-emerald-400",
-    iconBg: "bg-emerald-50",
-  },
-};
 
 // Circular progress ring shown in the hero.
 function ProgressRing({

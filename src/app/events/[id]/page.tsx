@@ -5,6 +5,7 @@ import { isAdminAuthed } from "@/lib/admin";
 import { headerGradients, DEFAULT_COLOR, type EventColor } from "@/lib/colors";
 import EventChecklist from "./EventChecklist";
 import AdminControls from "./AdminControls";
+import EditableDetail from "./EditableDetail";
 
 export const dynamic = "force-dynamic";
 
@@ -152,19 +153,57 @@ export default async function EventDetailPage({
         </section>
       )}
 
-      {/* Quick details */}
+      {/* Quick details — admins can click to edit inline */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
-        <Detail label="Pax" value={String(event.pax)} />
-        <Detail
+        <EditableDetail
+          event={event}
+          label="Pax"
+          field="pax"
+          type="number"
+          rawValue={String(event.pax)}
+          displayValue={String(event.pax)}
+          canEdit={isAdmin}
+        />
+        <EditableDetail
+          event={event}
           label="Layout"
-          value={layoutLabel[String(event.layout)] || String(event.layout)}
+          field="layout"
+          type="select"
+          options={[
+            { value: "theater", label: "Theater seats" },
+            { value: "classroom", label: "Classroom" },
+            { value: "banquet", label: "Fishbone style" },
+          ]}
+          rawValue={String(event.layout)}
+          displayValue={
+            layoutLabel[String(event.layout)] || String(event.layout)
+          }
+          canEdit={isAdmin}
         />
-        <Detail
+        <EditableDetail
+          event={event}
           label="Speaker"
-          value={event.requirements?.speakerName || "—"}
+          field="speakerName"
+          rawValue={event.requirements?.speakerName || ""}
+          displayValue={event.requirements?.speakerName || "—"}
+          canEdit={isAdmin}
         />
-        <Detail label="Project Owner" value={event.organizer} />
-        <Detail label="Event PIC" value={event.pic || "—"} />
+        <EditableDetail
+          event={event}
+          label="Project Owner"
+          field="organizer"
+          rawValue={event.organizer}
+          displayValue={event.organizer}
+          canEdit={isAdmin}
+        />
+        <EditableDetail
+          event={event}
+          label="Event PIC"
+          field="pic"
+          rawValue={event.pic || ""}
+          displayValue={event.pic || "—"}
+          canEdit={isAdmin}
+        />
       </div>
 
       {/* Speaker (new structured fields) */}

@@ -39,7 +39,7 @@ export default async function V2Home() {
             Internal Wiki
           </p>
           <h1 className="text-2xl sm:text-3xl font-bold mb-1">
-            BIG Hall Event Planning
+            BIG Hall Event Calendar
           </h1>
           <p className="text-blue-100 text-sm max-w-2xl">
             Calendar of upcoming bookings, booking guide, and resources.
@@ -90,6 +90,13 @@ export default async function V2Home() {
           icon="🔗"
           className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 hover:border-blue-300"
         />
+        <Link
+          href="/rate-card"
+          className="group inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 text-gray-800 font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+        >
+          <span className="text-base">💰</span>
+          Rate Card
+        </Link>
       </div>
 
       <HomeTabs events={allVisible} holidays={holidays} />

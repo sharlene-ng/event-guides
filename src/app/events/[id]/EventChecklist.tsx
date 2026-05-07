@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { allChecklistSections } from "@/lib/checklistData";
+import { checklistTabs, getSectionVisual } from "@/lib/checklistData";
 
-type Section = { title: string; items: { id: string; label: string }[] };
-
-const sections: Section[] = allChecklistSections;
+const tabs = checklistTabs;
+const allItems = tabs.flatMap((t) => t.data.flatMap((s) => s.items));
 
 export default function EventChecklist({
   eventId,
@@ -17,16 +16,19 @@ export default function EventChecklist({
   canEdit?: boolean;
 }) {
   const [checked, setChecked] = useState<Record<string, boolean>>(initialState);
+  const [activeTab, setActiveTab] = useState(tabs[0].id);
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirtyRef = useRef(false);
 
-  const allItems = sections.flatMap((s) => s.items);
-  const doneCount = allItems.filter((i) => checked[i.id]).length;
-  const total = allItems.length;
-  const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  const totalDone = allItems.filter((i) => checked[i.id]).length;
+  const totalCount = allItems.length;
+  const totalPct = totalCount > 0 ? Math.round((totalDone / totalCount) * 100) : 0;
 
-  // Debounced save — only when admin can edit AND user actually changed state
+  const currentTab = tabs.find((t) => t.id === activeTab)!;
+  const tabItems = currentTab.data.flatMap((s) => s.items);
+  const tabDone = tabItems.filter((i) => checked[i.id]).length;
+
   useEffect(() => {
     if (!canEdit || !dirtyRef.current) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -69,7 +71,7 @@ export default function EventChecklist({
         </div>
       )}
 
-      {/* Progress + save indicator */}
+      {/* Overall progress */}
       <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 flex items-center gap-4">
         <div className="flex-1">
           <div className="flex justify-between text-xs mb-1.5">
@@ -77,43 +79,91 @@ export default function EventChecklist({
               Progress
             </span>
             <span className="text-gray-500">
-              {doneCount} of {total}
+              {totalDone} of {totalCount}
             </span>
           </div>
           <div className="w-full bg-gray-100 rounded-full h-1.5">
             <div
               className={`h-1.5 rounded-full transition-all ${
-                pct === 100 ? "bg-emerald-500" : "bg-blue-500"
+                totalPct === 100 ? "bg-emerald-500" : "bg-blue-500"
               }`}
-              style={{ width: `${pct}%` }}
+              style={{ width: `${totalPct}%` }}
             />
           </div>
         </div>
         <div
           className={`text-2xl font-bold w-14 text-right ${
-            pct === 100 ? "text-emerald-600" : "text-blue-600"
+            totalPct === 100 ? "text-emerald-600" : "text-blue-600"
           }`}
         >
-          {pct}%
+          {totalPct}%
         </div>
         {canEdit && <SaveIndicator state={saving} />}
       </div>
 
-      {/* Sections */}
+      {/* Tabs */}
+      <div className="bg-gray-100 p-1 rounded-xl mb-4 flex flex-wrap gap-1">
+        {tabs.map((tab) => {
+          const items = tab.data.flatMap((s) => s.items);
+          const done = items.filter((i) => checked[i.id]).length;
+          const isActive = activeTab === tab.id;
+          const isDone = done === items.length && items.length > 0;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex-1 sm:flex-initial justify-center ${
+                isActive
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <span className="truncate">{tab.label}</span>
+              <span
+                className={`text-[10px] rounded-full px-1.5 py-0.5 font-bold flex-shrink-0 ${
+                  isDone
+                    ? "bg-emerald-100 text-emerald-700"
+                    : isActive
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-200 text-gray-500"
+                }`}
+              >
+                {done}/{items.length}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Sections within active tab */}
       <div className="space-y-3">
-        {sections.map((section) => {
+        {currentTab.data.map((section) => {
           const sectionDone = section.items.filter((i) => checked[i.id]).length;
+          const sectionTotal = section.items.length;
+          const sectionDoneAll = sectionDone === sectionTotal;
+          const visual = getSectionVisual(section.title);
           return (
             <div
               key={section.title}
-              className="bg-white border border-gray-200 rounded-xl overflow-hidden"
+              className={`bg-white border border-gray-200 rounded-xl overflow-hidden border-l-4 ${visual.border}`}
             >
-              <div className="px-5 py-2.5 border-b border-gray-100 flex justify-between items-center">
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-700">
-                  {section.title}
+              <div className="px-5 py-3 border-b border-gray-100 flex justify-between items-center gap-3">
+                <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 min-w-0">
+                  <span
+                    className={`${visual.iconBg} w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0`}
+                  >
+                    <span className="text-base leading-none">{visual.icon}</span>
+                  </span>
+                  <span className="truncate">{section.title}</span>
                 </h2>
-                <span className="text-xs text-gray-400">
-                  {sectionDone}/{section.items.length}
+                <span
+                  className={`text-[10px] font-bold rounded-full px-2 py-0.5 flex-shrink-0 ${
+                    sectionDoneAll
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {sectionDone}/{sectionTotal}
                 </span>
               </div>
               <ul className="divide-y divide-gray-100">
@@ -121,7 +171,7 @@ export default function EventChecklist({
                   <li
                     key={item.id}
                     onClick={() => toggle(item.id)}
-                    className={`flex items-center gap-3 px-5 py-2.5 transition-colors ${
+                    className={`flex items-center gap-3 px-5 py-3 transition-colors ${
                       canEdit
                         ? "cursor-pointer hover:bg-gray-50"
                         : "cursor-default"
@@ -167,7 +217,15 @@ export default function EventChecklist({
         })}
       </div>
 
-      {pct === 100 && (
+      {tabDone === tabItems.length && tabItems.length > 0 && totalPct < 100 && (
+        <div className="mt-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center text-sm">
+          <span className="font-semibold text-emerald-800">
+            ✓ {currentTab.label} complete
+          </span>
+        </div>
+      )}
+
+      {totalPct === 100 && (
         <div className="mt-4 bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center text-sm">
           🎉 <span className="font-semibold text-emerald-800">All done!</span>{" "}
           <span className="text-emerald-600">

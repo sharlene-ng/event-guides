@@ -54,6 +54,15 @@ const forms: Resource[] = [
   },
 ];
 
+const guides: Resource[] = [
+  {
+    icon: "✅",
+    label: "Event Checklist",
+    href: "/checklist",
+    note: "Interactive run-of-show checklist by phase",
+  },
+];
+
 export default function ResourcesPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -77,6 +86,14 @@ export default function ResourcesPage() {
           </p>
         </div>
       </div>
+
+      {/* Guides */}
+      <SectionHeader
+        eyebrow="Run an Event"
+        title="Guides"
+        subtitle="Step-by-step interactive checklist."
+      />
+      <ResourceGrid items={guides} className="mb-10" />
 
       {/* Wi-Fi quick info */}
       <SectionHeader eyebrow="Hall Info" title="Wi-Fi" />

@@ -1,6 +1,6 @@
 import CopyButton from "@/components/CopyButton";
 
-export const metadata = { title: "Office Tools" };
+export const metadata = { title: "Office How-To" };
 
 type Topic = {
   id: string;
@@ -88,7 +88,7 @@ export default function OfficeToolsPage() {
           <p className="text-blue-200 text-xs font-semibold tracking-[0.25em] uppercase mb-3">
             How-To
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Office Tools</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Office How-To</h1>
           <p className="text-blue-100 text-sm sm:text-base max-w-2xl">
             Quick references for the office tools you&apos;ll occasionally need.
             Tap a topic to jump straight to it.

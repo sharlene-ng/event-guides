@@ -127,3 +127,23 @@ export const checklistTabs: CheckTab[] = [
 ];
 
 export const allChecklistSections: CheckSection[] = checklistTabs.flatMap((t) => t.data);
+
+export type SectionVisual = { icon: string; border: string; iconBg: string };
+
+export const sectionVisuals: Record<string, SectionVisual> = {
+  "Approval & Calendar":         { icon: "✅", border: "border-l-blue-400",    iconBg: "bg-blue-50" },
+  "Email to Building Management": { icon: "✉️", border: "border-l-indigo-400",  iconBg: "bg-indigo-50" },
+  "Other Prep":                  { icon: "📋", border: "border-l-violet-400",  iconBg: "bg-violet-50" },
+  "Setup & Display":             { icon: "🎯", border: "border-l-rose-400",    iconBg: "bg-rose-50" },
+  Comms:                         { icon: "📢", border: "border-l-amber-400",   iconBg: "bg-amber-50" },
+  "People (PICs)":               { icon: "👥", border: "border-l-emerald-400", iconBg: "bg-emerald-50" },
+  "Refreshments & Catering":     { icon: "🍱", border: "border-l-orange-400",  iconBg: "bg-orange-50" },
+  Others:                        { icon: "📌", border: "border-l-slate-400",   iconBg: "bg-slate-50" },
+  "Morning Setup":               { icon: "🌅", border: "border-l-amber-400",   iconBg: "bg-amber-50" },
+  "AV & Technical Check":        { icon: "🎤", border: "border-l-cyan-400",    iconBg: "bg-cyan-50" },
+  "Wrap Up":                     { icon: "🧹", border: "border-l-emerald-400", iconBg: "bg-emerald-50" },
+};
+
+export function getSectionVisual(title: string): SectionVisual {
+  return sectionVisuals[title] || { icon: "📌", border: "border-l-gray-300", iconBg: "bg-gray-50" };
+}

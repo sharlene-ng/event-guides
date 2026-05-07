@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import SearchBar from "@/components/SearchBar";
 
 const links = [
-  { href: "/", label: "Event Calendar" },
-  { href: "/sop", label: "Event Playbook" },
-  { href: "/checklist", label: "Checklist" },
+  { href: "/", label: "Calendar" },
+  { href: "/sop", label: "Playbook" },
   { href: "/contacts", label: "Key Contacts" },
+  { href: "/office-tools", label: "Office How-To" },
   { href: "/resources", label: "Resources" },
-  { href: "/office-tools", label: "Office Tools" },
-  { href: "/rate-card", label: "Rate Card" },
 ];
 
 export default function Navbar() {
@@ -65,9 +64,11 @@ export default function Navbar() {
           {/* Nav links */}
           <div className="flex items-center gap-1 overflow-x-auto">
             {links.map((link) => {
-              const active =
-                pathname === link.href ||
-                (link.href !== "/" && pathname.startsWith(link.href));
+              let active = false;
+              if (link.href === "/") active = pathname === "/";
+              else if (link.href === "/resources")
+                active = pathname.startsWith("/resources") || pathname.startsWith("/checklist");
+              else active = pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}
@@ -83,6 +84,9 @@ export default function Navbar() {
               );
             })}
           </div>
+
+          {/* Search */}
+          <SearchBar />
 
           {/* Right side */}
           <div className="flex items-center gap-2 flex-shrink-0">
