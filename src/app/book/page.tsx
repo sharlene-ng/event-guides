@@ -158,6 +158,27 @@ function BookingPageInner() {
   const [prefill, setPrefill] = useState<Prefill | null>(null);
   const [loadingPrefill, setLoadingPrefill] = useState(!!duplicateId);
 
+  // Project PIC options (from Contacts sheet, section=project-pic)
+  const [picOptions, setPicOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("/api/contacts?section=project-pic")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d.ok || !Array.isArray(d.contacts)) return;
+        const opts = d.contacts
+          .map((c: { role?: string; name?: string }) => {
+            const role = (c.role || "").trim();
+            const name = (c.name || "").trim();
+            // Show "Hackathon Chinese — Sharlene" if name set, else just "Hackathon Chinese"
+            return name ? `${role} — ${name}` : role;
+          })
+          .filter(Boolean);
+        setPicOptions(opts);
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     fetch("/api/booked-dates")
       .then((r) => r.json())
@@ -301,7 +322,7 @@ function BookingPageInner() {
       organizer: fd.get("eventOwner") as string,
       organizerContact: [phone, email].filter(Boolean).join(" | "),
       projectType: "",
-      pic: "",
+      pic: ((fd.get("eventOwner") as string) || "").trim(),
       requirements: {
         notes: fd.get("notes") as string,
         speakerName: fd.get("speakerName") as string,
@@ -503,7 +524,7 @@ function BookingPageInner() {
             <LayoutPicker name="layout" defaultValue={prefill?.layout} />
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                Layout Notes (Optional)
+                Layout Notes
               </label>
               <input
                 name="layoutNotes"
@@ -517,10 +538,10 @@ function BookingPageInner() {
             </div>
           </Card>
 
-          {/* Owner */}
-          <Card label="Project Owner (Optional)">
+          {/* Project PIC */}
+          <Card label="Project PIC">
             <Field
-              label="Your Name"
+              label="Name"
               name="eventOwner"
               placeholder="Person responsible for this event"
               defaultValue={prefill?.organizer || ""}
@@ -539,7 +560,7 @@ function BookingPageInner() {
           </Card>
 
           {/* Speaker */}
-          <Card label="Speaker (Optional)">
+          <Card label="Speaker">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Speaker Name" name="speakerName" placeholder="e.g. Dr Lim" defaultValue={prefill?.speakerName || ""} />
               <Field
@@ -553,7 +574,7 @@ function BookingPageInner() {
           </Card>
 
           {/* Parking */}
-          <Card label="Parking (Optional)">
+          <Card label="Parking">
             <label className="flex items-center gap-2.5 cursor-pointer">
               <input
                 type="checkbox"
@@ -629,7 +650,7 @@ function BookingPageInner() {
           </Card>
 
           {/* Notes */}
-          <Card label="Notes (Optional)">
+          <Card label="Notes">
             <textarea
               name="notes"
               rows={3}
@@ -640,7 +661,7 @@ function BookingPageInner() {
           </Card>
 
           {/* Event poster */}
-          <Card label="Event Poster (Optional)">
+          <Card label="Event Poster">
             <p className="text-sm text-gray-500 -mt-2">
               Will be displayed at the entrance. 16:9 ratio recommended.
             </p>
