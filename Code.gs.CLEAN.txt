@@ -1,0 +1,479 @@
+const SECRET = 'bigHall_kL7m9xQp2vR8sNa3';
+const POSTER_FOLDER_ID = '1s2wvvpM2RP_BsZj2S9yz8_8mvvV8QVTm';
+const NOTIFY_EMAIL = 'sharlene@funnelduo.com';
+const SITE_URL = 'https://aimbighall.vercel.app';
+
+// Run this once from the editor to grant Drive permission
+function _authDrive() {
+  const folder = DriveApp.getFolderById(POSTER_FOLDER_ID);
+  const blob = Utilities.newBlob('test', 'text/plain', 'auth-test.txt');
+  const file = folder.createFile(blob);
+  file.setTrashed(true);
+  Logger.log('Drive write granted. Folder: ' + folder.getName());
+}
+
+// Run this once to grant Mail permission
+function _authMail() {
+  MailApp.sendEmail(NOTIFY_EMAIL, 'BIG Hall — Email Test', 'This confirms email notifications are working.');
+  Logger.log('Test email sent to ' + NOTIFY_EMAIL);
+}
+
+function doGet(e)  { return handle(e); }
+function doPost(e) { return handle(e); }
+
+function handle(e) {
+  try {
+    const params = e.parameter || {};
+    if (params.secret !== SECRET) return json({ ok: false, error: 'unauthorized' });
+    const action = params.action;
+    const body = e.postData ? safeParse(e.postData.contents) : {};
+    switch (action) {
+      case 'list':           return json({ ok: true, events: listEvents(params.status) });
+      case 'get':            return json({ ok: true, event: getEvent(params.id) });
+      case 'create':         return json({ ok: true, event: createEvent(body) });
+      case 'updateStatus':   return json({ ok: true, event: updateStatus(body.id, body.status, body.approvedBy) });
+      case 'updateMeta':     return json({ ok: true, event: updateMeta(body.id, body.fields) });
+      case 'getChecklist':   return json({ ok: true, state: getChecklist(params.id) });
+      case 'saveChecklist':  return json({ ok: true, event: saveChecklist(body.id, body.state) });
+      case 'uploadPoster':   return json({ ok: true, ...uploadPoster(body) });
+      case 'listContacts':   return json({ ok: true, contacts: listContacts() });
+      case 'listPricing':    return json({ ok: true, pricing: listPricing() });
+      case 'listHallInfo':   return json({ ok: true, hallInfo: listHallInfo() });
+      case 'listHolidays':   return json({ ok: true, holidays: listHolidays() });
+      case 'createHoliday':  return json({ ok: true, holiday: createHoliday(body) });
+      case 'deleteHoliday':  deleteHoliday(body); return json({ ok: true });
+      case 'listSchoolHolidays':  return json({ ok: true, schoolHolidays: listSchoolHolidays() });
+      case 'createSchoolHoliday': return json({ ok: true, schoolHoliday: createSchoolHoliday(body) });
+      case 'deleteSchoolHoliday': deleteSchoolHoliday(body); return json({ ok: true });
+      default: return json({ ok: false, error: 'unknown action: ' + action });
+    }
+  } catch (err) { return json({ ok: false, error: String(err) }); }
+}
+
+// Prevents Sheets from interpreting values like "+60..." as formulas (#ERROR!)
+function _escapeFormula_(v) {
+  if (v == null) return '';
+  const s = String(v);
+  return /^[=+\-@]/.test(s) ? "'" + s : s;
+}
+
+const HEADERS_EVENTS = [
+  'id','name','date','endDate','startTime','endTime','pax','layout',
+  'organizer','organizerContact','projectType','pic',
+  'requirements','status','createdAt','approvedAt','approvedBy','checklistState',
+  'posterUrl','posterViewUrl'
+];
+
+function getSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Events');
+  if (!sheet) {
+    sheet = ss.insertSheet('Events');
+    sheet.getRange(1,1,1,HEADERS_EVENTS.length).setValues([HEADERS_EVENTS]);
+    sheet.getRange(1,1,1,HEADERS_EVENTS.length).setFontWeight('bold').setBackground('#f3f4f6');
+    sheet.setFrozenRows(1);
+  }
+  sheet.getRange(1, 1, sheet.getMaxRows(), HEADERS_EVENTS.length).setNumberFormat('@');
+  return sheet;
+}
+
+function rowToObj(row, headers) {
+  const obj = {};
+  headers.forEach((h,i) => obj[h] = row[i]);
+  if (obj.requirements)    { try { obj.requirements    = JSON.parse(obj.requirements);    } catch(e){} }
+  if (obj.checklistState)  { try { obj.checklistState  = JSON.parse(obj.checklistState);  } catch(e){} }
+  return obj;
+}
+
+function listEvents(status) {
+  const sheet = getSheet();
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+  const headers = data[0];
+  const rows = data.slice(1).map(r => rowToObj(r, headers));
+  return status ? rows.filter(r => r.status === status) : rows;
+}
+
+function getEvent(id) { return listEvents().find(e => e.id === id) || null; }
+
+function findRowIndex(id) {
+  const sheet = getSheet();
+  const data = sheet.getRange(2, 1, Math.max(sheet.getLastRow()-1, 1), 1).getValues();
+  for (let i = 0; i < data.length; i++) if (data[i][0] === id) return i + 2;
+  return -1;
+}
+
+function createEvent(payload) {
+  const sheet = getSheet();
+  const id = 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+  const now = new Date().toISOString();
+  const row = HEADERS_EVENTS.map(h => {
+    if (h === 'id') return id;
+    if (h === 'status') return 'pending';
+    if (h === 'createdAt') return now;
+    if (h === 'requirements') return JSON.stringify(payload.requirements || {});
+    if (h === 'checklistState') return '{}';
+    if (h === 'endDate' && !payload.endDate) return payload.date || '';
+    return _escapeFormula_(payload[h]);
+  });
+  sheet.appendRow(row);
+
+  try { sendNewBookingEmail(payload, id); } catch (e) { Logger.log('Email failed: ' + e); }
+  _logActivity_('create', id, payload.name || '', 'status', '', 'pending', 'public');
+
+  return { id, ...payload, status: 'pending', createdAt: now };
+}
+
+function sendNewBookingEmail(payload, id) {
+  const subject = 'New BIG Hall booking — ' + (payload.name || 'Untitled');
+  const lines = [
+    'A new event booking was submitted on the BIG Hall site.',
+    '',
+    'Event:    ' + (payload.name || '—'),
+    'Date:     ' + (payload.date || '—') + (payload.endDate && payload.endDate !== payload.date ? '  →  ' + payload.endDate : ''),
+    'Time:     ' + (payload.startTime || '—') + (payload.endTime ? '  –  ' + payload.endTime : ''),
+    'Pax:      ' + (payload.pax || '—'),
+    'Layout:   ' + (payload.layout || '—'),
+    '',
+    'Owner:    ' + (payload.organizer || '—'),
+    'Contact:  ' + (payload.organizerContact || '—'),
+    '',
+    'Reference: ' + id,
+    '',
+    'Review & approve at:',
+    SITE_URL + '/admin'
+  ];
+  MailApp.sendEmail(NOTIFY_EMAIL, subject, lines.join('\n'));
+}
+
+function updateStatus(id, status, approvedBy) {
+  const sheet = getSheet();
+  const rowIdx = findRowIndex(id);
+  if (rowIdx === -1) throw new Error('Event not found');
+
+  // Capture old status for the activity log + email gating
+  const oldStatus = sheet.getRange(rowIdx, HEADERS_EVENTS.indexOf('status') + 1).getValue();
+
+  sheet.getRange(rowIdx, HEADERS_EVENTS.indexOf('status') + 1).setValue(status);
+  if (status === 'approved' || status === 'reserved') {
+    sheet.getRange(rowIdx, HEADERS_EVENTS.indexOf('approvedAt') + 1).setValue(new Date().toISOString());
+    sheet.getRange(rowIdx, HEADERS_EVENTS.indexOf('approvedBy') + 1).setValue(approvedBy || 'Sharlene');
+  }
+
+  const event = getEvent(id);
+  _logActivity_('updateStatus', id, event ? event.name : '', 'status',
+                oldStatus, status, approvedBy || '');
+
+  // Email the booking requester only when newly approved/reserved
+  if ((status === 'approved' || status === 'reserved') && oldStatus !== status) {
+    try { sendConfirmationEmail(event, status); } catch (e) { Logger.log('Confirmation email failed: ' + e); }
+  }
+
+  return event;
+}
+
+function sendConfirmationEmail(event, status) {
+  if (!event) return;
+  const to = extractEmail(event.organizerContact);
+  if (!to) return; // no email on file — skip silently
+
+  const isReserved = status === 'reserved';
+  const dateRange = event.endDate && event.endDate !== event.date
+    ? event.date + '  →  ' + event.endDate
+    : event.date;
+
+  const subject = isReserved
+    ? '[BIG Hall] Booking tentatively reserved — ' + event.name
+    : '[BIG Hall] Booking confirmed — ' + event.name;
+
+  const lines = [
+    'Hi ' + (event.organizer || 'there') + ',',
+    '',
+    isReserved
+      ? 'Your booking has been tentatively reserved. Final confirmation pending.'
+      : 'Good news — your booking is confirmed. See you at the BIG Hall!',
+    '',
+    '— Event details —',
+    'Name:   ' + event.name,
+    'Date:   ' + dateRange,
+    'Time:   ' + (event.startTime || 'TBC') + '  –  ' + (event.endTime || 'TBC'),
+    'Pax:    ' + (event.pax || 'TBC'),
+    'Status: ' + status,
+    '',
+    'View on the calendar: ' + SITE_URL + '/events/' + event.id,
+    '',
+    'If anything is off, reply to this email and we will sort it out.',
+    '',
+    '— BIG Hall',
+  ];
+  MailApp.sendEmail(to, subject, lines.join('\n'));
+}
+
+function extractEmail(contact) {
+  if (!contact) return '';
+  const m = String(contact).match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  return m ? m[0] : '';
+}
+
+function updateMeta(id, fields) {
+  const sheet = getSheet();
+  const rowIdx = findRowIndex(id);
+  if (rowIdx === -1) throw new Error('Event not found');
+  Object.keys(fields || {}).forEach(key => {
+    const colIdx = HEADERS_EVENTS.indexOf(key);
+    if (colIdx === -1) return;
+    let value = fields[key];
+    if (key === 'requirements' && typeof value === 'object') value = JSON.stringify(value);
+    sheet.getRange(rowIdx, colIdx + 1).setValue(_escapeFormula_(value));
+  });
+  const event = getEvent(id);
+  _logActivity_('updateMeta', id, event ? event.name : '', 'fields',
+                '', JSON.stringify(fields || {}), 'admin');
+  return event;
+}
+
+function getChecklist(id) {
+  const ev = getEvent(id);
+  return ev ? (ev.checklistState || {}) : {};
+}
+
+function saveChecklist(id, state) {
+  const sheet = getSheet();
+  const rowIdx = findRowIndex(id);
+  if (rowIdx === -1) throw new Error('Event not found');
+  sheet.getRange(rowIdx, HEADERS_EVENTS.indexOf('checklistState') + 1).setValue(JSON.stringify(state || {}));
+  const event = getEvent(id);
+  _logActivity_('saveChecklist', id, event ? event.name : '', 'checklistState',
+                '', JSON.stringify(state || {}), 'admin');
+  return event;
+}
+
+function uploadPoster(payload) {
+  payload = payload || {};
+  if (!payload.base64 || !payload.filename) throw new Error('Missing file data');
+  const folder = DriveApp.getFolderById(POSTER_FOLDER_ID);
+  const bytes = Utilities.base64Decode(payload.base64);
+  const blob = Utilities.newBlob(bytes, payload.mimeType || 'image/jpeg', payload.filename);
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  const id = file.getId();
+  return {
+    id: id,
+    webViewLink: file.getUrl(),
+    thumbnailUrl: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w800',
+    directUrl: 'https://drive.google.com/uc?export=view&id=' + id
+  };
+}
+
+const HEADERS_CONTACTS = ['section','role','name','phone','email','note','order'];
+const SEED_CONTACTS = [
+  ['emergency', 'Police', '', '999', '', '', '1'],
+  ['emergency', 'Ambulance / Fire', '', '999', '', '', '2'],
+  ['emergency', 'Building Security', '', 'Update with number', '', '', '3'],
+];
+function listContacts() { return readTab('Contacts', HEADERS_CONTACTS, SEED_CONTACTS); }
+
+const HEADERS_PRICING = ['section','label','value','unit','order'];
+const SEED_PRICING = [
+  ['header', 'Big Hall', 'Kuala Lumpur', '100 participants', '1'],
+];
+function listPricing() { return readTab('Pricing', HEADERS_PRICING, SEED_PRICING); }
+
+const HEADERS_HALLINFO = ['key','value','unit','order'];
+const SEED_HALLINFO = [
+  ['venue_name', 'Big Hall', '', '1'],
+  ['location', 'Kuala Lumpur', '', '2'],
+  ['capacity', '100', 'pax', '3']
+];
+function listHallInfo() { return readTab('HallInfo', HEADERS_HALLINFO, SEED_HALLINFO); }
+
+function readTab(name, headers, seed) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f3f4f6');
+    sheet.setFrozenRows(1);
+    if (seed && seed.length) {
+      sheet.getRange(2, 1, seed.length, headers.length).setValues(seed);
+    }
+  }
+  sheet.getRange(1, 1, sheet.getMaxRows(), headers.length).setNumberFormat('@');
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+  const cols = data[0];
+  return data.slice(1)
+    .map(row => { const obj = {}; cols.forEach((h, i) => obj[h] = row[i]); return obj; })
+    .filter(r => Object.values(r).some(v => v !== '' && v != null));
+}
+
+function json(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function safeParse(s) { try { return JSON.parse(s); } catch(e) { return {}; } }
+
+// ============ HOLIDAYS ============
+
+function _holidaysSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName('Holidays');
+  if (!sh) {
+    sh = ss.insertSheet('Holidays');
+    sh.getRange(1, 1, 1, 4).setValues([['id', 'date', 'name', 'createdAt']]);
+    sh.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#f3f4f6');
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, sh.getMaxRows(), 4).setNumberFormat('@');
+  }
+  return sh;
+}
+
+function listHolidays() {
+  const sh = _holidaysSheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return [];
+  const rows = sh.getRange(2, 1, last - 1, 4).getValues();
+  return rows.filter(r => r[0]).map(r => ({
+    id: String(r[0]),
+    date: r[1] instanceof Date
+      ? Utilities.formatDate(r[1], 'Asia/Kuala_Lumpur', 'yyyy-MM-dd')
+      : String(r[1] || ''),
+    name: String(r[2] || ''),
+  }));
+}
+
+function createHoliday(payload) {
+  if (!payload || !payload.date || !payload.name) {
+    throw new Error('Missing date or name');
+  }
+  const sh = _holidaysSheet_();
+  const id = Utilities.getUuid().slice(0, 8);
+  sh.appendRow([id, payload.date, payload.name, new Date().toISOString()]);
+  _logActivity_('createHoliday', id, payload.name, 'date', '', payload.date, 'admin');
+  return { id: id, date: payload.date, name: payload.name };
+}
+
+function deleteHoliday(payload) {
+  if (!payload || !payload.id) throw new Error('Missing id');
+  const sh = _holidaysSheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return;
+  const ids = sh.getRange(2, 1, last - 1, 1).getValues();
+  for (let i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === String(payload.id)) {
+      const name = sh.getRange(i + 2, 3).getValue();
+      sh.deleteRow(i + 2);
+      _logActivity_('deleteHoliday', payload.id, String(name || ''), '', '', '', 'admin');
+      return;
+    }
+  }
+  throw new Error('Not found');
+}
+
+// ============ ACTIVITY LOG ============
+
+function _activitySheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName('ActivityLog');
+  if (!sh) {
+    sh = ss.insertSheet('ActivityLog');
+    sh.getRange(1, 1, 1, 8).setValues([[
+      'timestamp', 'action', 'eventId', 'eventName',
+      'field', 'oldValue', 'newValue', 'by'
+    ]]);
+    sh.getRange(1, 1, 1, 8).setFontWeight('bold').setBackground('#f3f4f6');
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, sh.getMaxRows(), 8).setNumberFormat('@');
+  }
+  return sh;
+}
+
+function _logActivity_(action, eventId, eventName, field, oldVal, newVal, by) {
+  try {
+    _activitySheet_().appendRow([
+      new Date().toISOString(),
+      action || '',
+      eventId || '',
+      eventName || '',
+      field || '',
+      oldVal == null ? '' : String(oldVal),
+      newVal == null ? '' : String(newVal),
+      by || '',
+    ]);
+  } catch (err) {
+    Logger.log('activity log failed: ' + err);
+  }
+}
+
+function seedProjectPics() {
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Contacts');
+  if (!sh) throw new Error('No Contacts sheet');
+  const rows = [
+    ['project-pic', 'Hackathon Chinese', '', '', '', '', '1'],
+    ['project-pic', 'Hackathon Malay',   '', '', '', '', '2'],
+    ['project-pic', 'Vibe Code',         '', '', '', '', '3'],
+    ['project-pic', 'Anniks',            '', '', '', '', '4'],
+  ];
+  sh.getRange(sh.getLastRow() + 1, 1, rows.length, 7).setValues(rows);
+  Logger.log('Seeded ' + rows.length + ' Project PIC rows');
+}
+
+// ============ SCHOOL HOLIDAYS ============
+
+function _schoolHolidaysSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName('SchoolHolidays');
+  if (!sh) {
+    sh = ss.insertSheet('SchoolHolidays');
+    sh.getRange(1, 1, 1, 4).setValues([['id', 'startDate', 'endDate', 'createdAt']]);
+  }
+  return sh;
+}
+
+function listSchoolHolidays() {
+  const sh = _schoolHolidaysSheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return [];
+  const rows = sh.getRange(2, 1, last - 1, 4).getValues();
+  return rows
+    .filter(function (r) { return r[0]; })
+    .map(function (r) {
+      return {
+        id: String(r[0]),
+        startDate: r[1] instanceof Date
+          ? Utilities.formatDate(r[1], 'Asia/Kuala_Lumpur', 'yyyy-MM-dd')
+          : String(r[1] || ''),
+        endDate: r[2] instanceof Date
+          ? Utilities.formatDate(r[2], 'Asia/Kuala_Lumpur', 'yyyy-MM-dd')
+          : String(r[2] || ''),
+      };
+    });
+}
+
+function createSchoolHoliday(payload) {
+  if (!payload || !payload.startDate || !payload.endDate) {
+    throw new Error('Missing startDate or endDate');
+  }
+  const sh = _schoolHolidaysSheet_();
+  const id = Utilities.getUuid().slice(0, 8);
+  const createdAt = new Date().toISOString();
+  sh.appendRow([id, payload.startDate, payload.endDate, createdAt]);
+  return { id: id, startDate: payload.startDate, endDate: payload.endDate };
+}
+
+function deleteSchoolHoliday(payload) {
+  if (!payload || !payload.id) throw new Error('Missing id');
+  const sh = _schoolHolidaysSheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return;
+  const ids = sh.getRange(2, 1, last - 1, 1).getValues();
+  for (let i = 0; i < ids.length; i++) {
+    if (String(ids[i][0]) === String(payload.id)) {
+      sh.deleteRow(i + 2);
+      return;
+    }
+  }
+  throw new Error('Not found');
+}

@@ -319,7 +319,7 @@ export default function CalendarView({
                 const isReserved = b.event.status === "reserved";
                 const isPending = b.event.status === "pending";
                 const radius = `${radiusLeft}px ${radiusRight}px ${radiusRight}px ${radiusLeft}px`;
-                const titleSuffix = isReserved ? " (Reserved · TBC)" : isPending ? " (Pending approval)" : "";
+                const titleSuffix = isReserved ? " (Reserved)" : isPending ? " (Pending approval)" : "";
                 return (
                   <Link
                     key={`${wi}-${idx}-${b.event.id}`}
@@ -338,23 +338,23 @@ export default function CalendarView({
                     <span
                       aria-hidden="true"
                       className={`absolute inset-0 border ${
-                        isPending
+                        isPending || isReserved
                           ? "bg-gray-100 border-gray-400 opacity-60"
                           : colorCls
-                      } ${isReserved ? "border-dashed border-red-500 opacity-40" : ""}`}
+                      }`}
                       style={{
                         borderRadius: radius,
                         borderWidth: isReserved || isPending ? 1.5 : 1,
-                        borderStyle: isPending ? "dotted" : isReserved ? "dashed" : "solid",
+                        borderStyle: isPending || isReserved ? "dotted" : "solid",
                       }}
                     />
                     {/* Content layer — stays at full opacity */}
                     <span
-                      className={`relative flex items-center gap-1 px-1.5 leading-none w-full text-[10px] font-medium truncate ${isPending ? "text-gray-500" : textCls}`}
+                      className={`relative flex items-center gap-1 px-1.5 leading-none w-full text-[10px] font-medium truncate ${isPending || isReserved ? "text-gray-500" : textCls}`}
                     >
                       {isReserved && (
                         <span className="text-[8px] font-bold uppercase tracking-wide bg-red-600 text-white rounded px-1 py-px leading-none flex-shrink-0">
-                          TBC
+                          RESERVED
                         </span>
                       )}
                       {isPending && (
@@ -399,12 +399,8 @@ export default function CalendarView({
           Confirmed
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-flex items-center bg-blue-200 border border-dashed border-red-500 rounded px-0.5 h-3">
-            <span className="text-[7px] font-bold uppercase bg-red-600 text-white rounded px-0.5 leading-none">
-              TBC
-            </span>
-          </span>
-          Reserved (TBC)
+          <span className="w-4 h-2 rounded bg-gray-100 border border-dotted border-gray-400" />
+          Reserved
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-4 h-2 rounded bg-gray-100 border border-dotted border-gray-400" />
