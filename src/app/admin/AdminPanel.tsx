@@ -138,33 +138,46 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
 
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6 flex items-center gap-4">
-        {(["pending", "approved", "reserved", "cancelled", "rejected", "all"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setFilter(tab)}
-            className={`relative flex items-center gap-2 px-1 py-3 text-sm font-medium transition-colors ${
-              filter === tab
-                ? "text-blue-600"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab === "all" ? "All" : statusLabel[tab]}
-            {tab !== "all" && (
-              <span
-                className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
-                  filter === tab
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-gray-100 text-gray-500"
-                }`}
-              >
-                {counts[tab]}
+        {(["pending", "approved", "reserved", "cancelled", "rejected", "all"] as const).map((tab) => {
+          const isPendingWithCount = tab === "pending" && counts.pending > 0;
+          return (
+            <button
+              key={tab}
+              onClick={() => setFilter(tab)}
+              className={`relative flex items-center gap-2 px-1 py-3 text-sm font-medium transition-colors ${
+                filter === tab
+                  ? "text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                {isPendingWithCount && (
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                  </span>
+                )}
+                {tab === "all" ? "All" : statusLabel[tab]}
               </span>
-            )}
-            {filter === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
-            )}
-          </button>
-        ))}
+              {tab !== "all" && (
+                <span
+                  className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
+                    isPendingWithCount
+                      ? "bg-red-500 text-white"
+                      : filter === tab
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {counts[tab]}
+                </span>
+              )}
+              {filter === tab && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {filtered.length === 0 && (

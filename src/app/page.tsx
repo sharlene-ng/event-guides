@@ -10,6 +10,7 @@ export default async function V2Home() {
   let allVisible: SOPEvent[] = [];
   let holidays: Holiday[] = [];
   let schoolHolidays: SchoolHoliday[] = [];
+  let pendingCount = 0;
   let backendError: string | null = null;
 
   try {
@@ -19,6 +20,7 @@ export default async function V2Home() {
     allVisible = all.filter(
       (e) => e.status === "approved" || e.status === "reserved" || e.status === "pending",
     );
+    pendingCount = all.filter((e) => e.status === "pending").length;
     holidays = hols;
     schoolHolidays = schoolHols;
   } catch (err) {
@@ -61,6 +63,24 @@ export default async function V2Home() {
 
       {/* Compact action row */}
       <div className="flex flex-wrap gap-2 mb-4 justify-end">
+        <Link
+          href="/admin"
+          className="relative inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-amber-300 text-gray-800 font-medium px-3.5 py-2 rounded-lg transition-colors text-sm"
+        >
+          <span>🔐</span>
+          Admin
+          {pendingCount > 0 && (
+            <>
+              <span className="ml-0.5 text-xs rounded-full px-2 py-0.5 font-bold bg-red-500 text-white">
+                {pendingCount}
+              </span>
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+              </span>
+            </>
+          )}
+        </Link>
         <Link
           href="/submit"
           className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-2 rounded-lg shadow-sm transition-colors text-sm"
