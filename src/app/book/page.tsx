@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
@@ -114,6 +114,20 @@ function toDateString(d: Date): string {
 
 
 export default function PublicBookingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+          <p className="text-sm text-gray-500">Loading…</p>
+        </div>
+      }
+    >
+      <BookingPageInner />
+    </Suspense>
+  );
+}
+
+function BookingPageInner() {
   const searchParams = useSearchParams();
   const duplicateId = searchParams.get("duplicate");
 
