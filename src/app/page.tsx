@@ -57,25 +57,25 @@ export default async function V2Home() {
       {/* Booking Rules — collapsible (closed by default to save vertical space) */}
       <BookingRules />
 
-      {/* Unified action row */}
-      <div className="flex flex-wrap gap-3 mb-6 justify-end">
+      {/* Compact action row */}
+      <div className="flex flex-wrap gap-2 mb-4 justify-end">
         <Link
           href="/submit"
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+          className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-2 rounded-lg shadow-sm transition-colors text-sm"
         >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-          Request a Booking
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Request Booking
         </Link>
         <a
           href="https://bighall.vercel.app/admin"
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 text-gray-800 font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+          className="group inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 text-gray-800 font-medium px-3.5 py-2 rounded-lg transition-colors text-sm"
         >
-          <span className="text-base">📖</span>
-          Create Event Guidebook
+          <span>📖</span>
+          Guidebook
           <svg
-            className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500"
+            className="w-3 h-3 text-gray-400 group-hover:text-blue-500"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -90,15 +90,15 @@ export default async function V2Home() {
         </a>
         <ShareLinkButton
           url="/book"
-          label="Share Public Form"
+          label="Share Form"
           icon="🔗"
           className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-800 hover:border-blue-300"
         />
         <Link
           href="/rate-card"
-          className="group inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 text-gray-800 font-semibold px-5 py-2.5 rounded-lg shadow-sm transition-colors text-sm"
+          className="group inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 text-gray-800 font-medium px-3.5 py-2 rounded-lg transition-colors text-sm"
         >
-          <span className="text-base">💰</span>
+          <span>💰</span>
           Rate Card
         </Link>
       </div>

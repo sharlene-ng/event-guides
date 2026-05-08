@@ -71,36 +71,8 @@ export default function HomeTabs({
 
   return (
     <div>
-      {/* Happening today banner */}
-      {happeningToday.length > 0 && (
-        <div className="mb-4 flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-          <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-          </span>
-          <div className="flex-1 min-w-0 text-sm">
-            <span className="font-bold text-emerald-800">
-              Happening today:
-            </span>{" "}
-            <span className="text-emerald-900">
-              {happeningToday.map((e, i) => (
-                <span key={e.id}>
-                  {i > 0 && ", "}
-                  <Link
-                    href={`/events/${e.id}`}
-                    className="font-semibold underline-offset-2 hover:underline"
-                  >
-                    {e.name}
-                  </Link>
-                </span>
-              ))}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Tab switcher */}
-      <div className="flex items-center justify-between mb-4">
+      {/* Combined toolbar: tab switcher + happening-today pill (inline) */}
+      <div className="flex flex-wrap items-center gap-3 mb-3">
         <div className="inline-flex items-center bg-gray-100 p-1 rounded-lg">
           <TabBtn
             active={tab === "calendar"}
@@ -131,6 +103,31 @@ export default function HomeTabs({
             label={`List (${upcoming.length})`}
           />
         </div>
+
+        {happeningToday.length > 0 && (
+          <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-1.5 text-sm min-w-0">
+            <span className="relative flex h-2 w-2 flex-shrink-0">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            <span className="font-semibold text-emerald-800 flex-shrink-0">
+              Today:
+            </span>
+            <span className="text-emerald-900 truncate">
+              {happeningToday.map((e, i) => (
+                <span key={e.id}>
+                  {i > 0 && ", "}
+                  <Link
+                    href={`/events/${e.id}`}
+                    className="font-semibold underline-offset-2 hover:underline"
+                  >
+                    {e.name}
+                  </Link>
+                </span>
+              ))}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Active view */}
