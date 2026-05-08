@@ -293,12 +293,14 @@ export default function CalendarView({
                 // background layer keeps the bg / border / hover classes.
                 const textCls = colorCls.match(/text-\S+/)?.[0] || "";
                 const isReserved = b.event.status === "reserved";
+                const isPending = b.event.status === "pending";
                 const radius = `${radiusLeft}px ${radiusRight}px ${radiusRight}px ${radiusLeft}px`;
+                const titleSuffix = isReserved ? " (Reserved · TBC)" : isPending ? " (Pending approval)" : "";
                 return (
                   <Link
                     key={`${wi}-${idx}-${b.event.id}`}
                     href={`/events/${b.event.id}`}
-                    title={`${b.event.name}${isReserved ? " (Reserved · TBC)" : ""}${b.event.startTime ? ` · ${b.event.startTime}` : ""} · PIC: ${b.event.pic || "unassigned"}`}
+                    title={`${b.event.name}${titleSuffix}${b.event.startTime ? ` · ${b.event.startTime}` : ""} · PIC: ${b.event.pic || "unassigned"}`}
                     className="absolute flex items-center"
                     style={{
                       left,
@@ -311,23 +313,29 @@ export default function CalendarView({
                     {/* Faded fill layer — only this gets opacity */}
                     <span
                       aria-hidden="true"
-                      className={`absolute inset-0 border ${colorCls} ${
-                        isReserved
-                          ? "border-dashed border-red-500 opacity-40"
-                          : ""
-                      }`}
+                      className={`absolute inset-0 border ${
+                        isPending
+                          ? "bg-gray-100 border-gray-400 opacity-60"
+                          : colorCls
+                      } ${isReserved ? "border-dashed border-red-500 opacity-40" : ""}`}
                       style={{
                         borderRadius: radius,
-                        borderWidth: isReserved ? 1.5 : 1,
+                        borderWidth: isReserved || isPending ? 1.5 : 1,
+                        borderStyle: isPending ? "dotted" : isReserved ? "dashed" : "solid",
                       }}
                     />
                     {/* Content layer — stays at full opacity */}
                     <span
-                      className={`relative flex items-center gap-1 px-1.5 leading-none w-full text-[10px] font-medium truncate ${textCls}`}
+                      className={`relative flex items-center gap-1 px-1.5 leading-none w-full text-[10px] font-medium truncate ${isPending ? "text-gray-500" : textCls}`}
                     >
                       {isReserved && (
                         <span className="text-[8px] font-bold uppercase tracking-wide bg-red-600 text-white rounded px-1 py-px leading-none flex-shrink-0">
                           TBC
+                        </span>
+                      )}
+                      {isPending && (
+                        <span className="text-[8px] font-bold uppercase tracking-wide bg-red-500 text-white rounded px-1 py-px leading-none flex-shrink-0">
+                          PENDING
                         </span>
                       )}
                       <span className="truncate">

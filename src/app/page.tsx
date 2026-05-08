@@ -12,11 +12,11 @@ export default async function V2Home() {
   let backendError: string | null = null;
 
   try {
-    // Show confirmed (approved) + reserved on home page; hide cancelled / rejected / pending
+    // Show confirmed (approved) + reserved + pending on home page; hide cancelled / rejected
     // Fetch holidays in parallel — fails soft to [] if backend doesn't support it yet.
     const [all, hols] = await Promise.all([listEvents(), listHolidays()]);
     allVisible = all.filter(
-      (e) => e.status === "approved" || e.status === "reserved",
+      (e) => e.status === "approved" || e.status === "reserved" || e.status === "pending",
     );
     holidays = hols;
   } catch (err) {

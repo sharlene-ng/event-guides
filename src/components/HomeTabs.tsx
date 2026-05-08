@@ -130,6 +130,24 @@ export default function HomeTabs({
         )}
       </div>
 
+      {/* Calendar legend */}
+      {tab === "calendar" && (
+        <div className="flex flex-wrap gap-4 mb-3 px-1 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-8 h-3 rounded bg-blue-200 border border-blue-400" />
+            Confirmed
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-8 h-3 rounded bg-white border-2 border-dashed border-red-500 opacity-70" />
+            Reserved (TBC)
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-8 h-3 rounded bg-gray-100 border-2 border-dotted border-gray-400" />
+            Pending
+          </span>
+        </div>
+      )}
+
       {/* Active view */}
       {tab === "calendar" ? (
         <CalendarView events={events} holidays={holidays} />
