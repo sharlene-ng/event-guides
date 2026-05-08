@@ -125,7 +125,7 @@ function createEvent(payload) {
 }
 
 function sendNewBookingEmail(payload, id) {
-  const subject = 'New BIG Hall booking — ' + (payload.name || 'Untitled');
+  const subject = '📝 [BIG Hall] New Booking — ' + (payload.name || 'Untitled');
   const lines = [
     'A new event booking was submitted on the BIG Hall site.',
     '',
@@ -186,16 +186,16 @@ function sendStatusEmail(event, status) {
   let subject;
   let intro;
   if (status === 'approved') {
-    subject = '[BIG Hall] Booking confirmed — ' + event.name;
+    subject = '✅ [BIG Hall] Booking confirmed — ' + event.name;
     intro = 'Good news — your booking is confirmed. See you at the BIG Hall!';
   } else if (status === 'reserved') {
-    subject = '[BIG Hall] Booking tentatively reserved — ' + event.name;
+    subject = '🟡 [BIG Hall] Booking tentatively reserved — ' + event.name;
     intro = 'Your booking has been tentatively reserved. Final confirmation pending.';
   } else if (status === 'rejected') {
-    subject = '[BIG Hall] Booking declined — ' + event.name;
+    subject = '🔴 [BIG Hall] Booking declined — ' + event.name;
     intro = 'Unfortunately your booking could not be approved. Reply to this email if you would like to discuss alternatives.';
   } else if (status === 'cancelled') {
-    subject = '[BIG Hall] Booking cancelled — ' + event.name;
+    subject = '🔴 [BIG Hall] Booking cancelled — ' + event.name;
     intro = 'Your booking has been cancelled. Reply to this email if this was unexpected.';
   } else {
     return;
