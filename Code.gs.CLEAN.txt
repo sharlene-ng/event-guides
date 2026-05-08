@@ -164,34 +164,47 @@ function updateStatus(id, status, approvedBy) {
   _logActivity_('updateStatus', id, event ? event.name : '', 'status',
                 oldStatus, status, approvedBy || '');
 
-  // Email the booking requester only when newly approved/reserved
-  if ((status === 'approved' || status === 'reserved') && oldStatus !== status) {
-    try { sendConfirmationEmail(event, status); } catch (e) { Logger.log('Confirmation email failed: ' + e); }
+  // Email the booking requester whenever status changes to any of these
+  const NOTIFY_STATUSES = ['approved', 'reserved', 'rejected', 'cancelled'];
+  if (NOTIFY_STATUSES.indexOf(status) !== -1 && oldStatus !== status) {
+    try { sendStatusEmail(event, status); } catch (e) { Logger.log('Status email failed: ' + e); }
   }
 
   return event;
 }
 
-function sendConfirmationEmail(event, status) {
+function sendStatusEmail(event, status) {
   if (!event) return;
   const to = extractEmail(event.organizerContact);
   if (!to) return; // no email on file — skip silently
 
-  const isReserved = status === 'reserved';
   const dateRange = event.endDate && event.endDate !== event.date
     ? event.date + '  →  ' + event.endDate
     : event.date;
 
-  const subject = isReserved
-    ? '[BIG Hall] Booking tentatively reserved — ' + event.name
-    : '[BIG Hall] Booking confirmed — ' + event.name;
+  // Per-status subject + intro line
+  let subject;
+  let intro;
+  if (status === 'approved') {
+    subject = '[BIG Hall] Booking confirmed — ' + event.name;
+    intro = 'Good news — your booking is confirmed. See you at the BIG Hall!';
+  } else if (status === 'reserved') {
+    subject = '[BIG Hall] Booking tentatively reserved — ' + event.name;
+    intro = 'Your booking has been tentatively reserved. Final confirmation pending.';
+  } else if (status === 'rejected') {
+    subject = '[BIG Hall] Booking declined — ' + event.name;
+    intro = 'Unfortunately your booking could not be approved. Reply to this email if you would like to discuss alternatives.';
+  } else if (status === 'cancelled') {
+    subject = '[BIG Hall] Booking cancelled — ' + event.name;
+    intro = 'Your booking has been cancelled. Reply to this email if this was unexpected.';
+  } else {
+    return;
+  }
 
   const lines = [
     'Hi ' + (event.organizer || 'there') + ',',
     '',
-    isReserved
-      ? 'Your booking has been tentatively reserved. Final confirmation pending.'
-      : 'Good news — your booking is confirmed. See you at the BIG Hall!',
+    intro,
     '',
     '— Event details —',
     'Name:   ' + event.name,
@@ -201,8 +214,6 @@ function sendConfirmationEmail(event, status) {
     'Status: ' + status,
     '',
     'View on the calendar: ' + SITE_URL + '/events/' + event.id,
-    '',
-    'If anything is off, reply to this email and we will sort it out.',
     '',
     '— BIG Hall',
   ];
