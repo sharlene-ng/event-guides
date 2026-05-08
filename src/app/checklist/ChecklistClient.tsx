@@ -29,8 +29,8 @@ export default function ChecklistClient() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Hero — matches Event Playbook */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-8 sm:p-10 text-white mb-8 shadow-sm">
+      {/* Hero — standardized to match Calendar */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-6 sm:p-8 text-white mb-6 shadow-sm">
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -39,15 +39,15 @@ export default function ChecklistClient() {
             backgroundSize: "24px 24px",
           }}
         />
-        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-blue-200 text-xs font-semibold tracking-[0.25em] uppercase mb-3">
+            <p className="text-blue-200 text-[11px] font-semibold tracking-[0.25em] uppercase mb-2">
               Interactive
             </p>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1">
               Event Checklist
             </h1>
-            <p className="text-blue-100 text-sm sm:text-base max-w-xl">
+            <p className="text-blue-100 text-sm max-w-xl">
               Tick off items as you complete them. Progress is saved per phase.
             </p>
           </div>

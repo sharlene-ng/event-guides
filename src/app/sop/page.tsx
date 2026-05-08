@@ -122,7 +122,7 @@ export default function PlaybookPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-8 sm:p-10 text-white mb-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-6 sm:p-8 text-white mb-6 shadow-sm">
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -132,29 +132,31 @@ export default function PlaybookPage() {
           }}
         />
         <div className="relative">
-          <p className="text-blue-200 text-xs font-semibold tracking-[0.25em] uppercase mb-3">
+          <p className="text-blue-200 text-[11px] font-semibold tracking-[0.25em] uppercase mb-2">
             Team Reference
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Event Playbook</h1>
-          <p className="text-blue-100 text-sm sm:text-base max-w-2xl">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">Event Playbook</h1>
+          <p className="text-blue-100 text-sm max-w-2xl">
             Office how-to guides and contingency plans — everything you need to
             run an event in the BIG Hall.
           </p>
-          <div className="flex flex-wrap gap-3 mt-5">
-            <Link
-              href="/contacts"
-              className="inline-flex items-center gap-1.5 bg-white/10 text-white font-medium px-4 py-2 rounded-lg hover:bg-white/20 text-sm border border-white/20"
-            >
-              📞 Key Contacts
-            </Link>
-            <Link
-              href="/resources"
-              className="inline-flex items-center gap-1.5 bg-white/10 text-white font-medium px-4 py-2 rounded-lg hover:bg-white/20 text-sm border border-white/20"
-            >
-              📚 Resources
-            </Link>
-          </div>
         </div>
+      </div>
+
+      {/* Quick links — moved out of hero to keep header height consistent */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <Link
+          href="/contacts"
+          className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg hover:border-blue-300 text-sm"
+        >
+          📞 Key Contacts
+        </Link>
+        <Link
+          href="/resources"
+          className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg hover:border-blue-300 text-sm"
+        >
+          📚 Resources
+        </Link>
       </div>
 
       {/* Hall Wi-Fi quick info */}

@@ -70,7 +70,7 @@ export default async function ResourcesPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-8 sm:p-10 text-white mb-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-6 sm:p-8 text-white mb-6 shadow-sm">
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -80,11 +80,11 @@ export default async function ResourcesPage() {
           }}
         />
         <div className="relative">
-          <p className="text-blue-200 text-xs font-semibold tracking-[0.25em] uppercase mb-3">
+          <p className="text-blue-200 text-[11px] font-semibold tracking-[0.25em] uppercase mb-2">
             Quick Access
           </p>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Resources</h1>
-          <p className="text-blue-100 text-sm sm:text-base max-w-2xl">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1">Resources</h1>
+          <p className="text-blue-100 text-sm max-w-2xl">
             Templates, forms, calendars, and shareable links — all in one place.
           </p>
         </div>
