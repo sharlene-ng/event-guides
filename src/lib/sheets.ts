@@ -317,8 +317,14 @@ export type SchoolHoliday = {
 
 export async function listSchoolHolidays(): Promise<SchoolHoliday[]> {
   try {
-    const data = (await callGet("listSchoolHolidays")) as { schoolHolidays: SchoolHoliday[] };
-    return (data.schoolHolidays || []).map((h) => ({
+    const data = (await callGet("listSchoolHolidays")) as {
+      schoolHolidays: SchoolHoliday[] | { schoolHolidays: SchoolHoliday[] };
+    };
+    // Backend may return either an array or a wrapped object — handle both
+    const raw = Array.isArray(data.schoolHolidays)
+      ? data.schoolHolidays
+      : data.schoolHolidays?.schoolHolidays || [];
+    return raw.map((h) => ({
       id: String(h.id || ""),
       startDate: normalizeDate(h.startDate),
       endDate: normalizeDate(h.endDate),
@@ -331,11 +337,17 @@ export async function listSchoolHolidays(): Promise<SchoolHoliday[]> {
 export async function createSchoolHoliday(
   payload: { startDate: string; endDate: string },
 ): Promise<SchoolHoliday> {
-  const data = (await callPost("createSchoolHoliday", payload)) as { schoolHoliday: SchoolHoliday };
+  const data = (await callPost("createSchoolHoliday", payload)) as {
+    schoolHoliday: SchoolHoliday | { schoolHoliday: SchoolHoliday };
+  };
+  // Backend may return either the holiday directly or a wrapped object
+  const sh = "schoolHoliday" in data.schoolHoliday
+    ? (data.schoolHoliday as { schoolHoliday: SchoolHoliday }).schoolHoliday
+    : (data.schoolHoliday as SchoolHoliday);
   return {
-    id: String(data.schoolHoliday.id || ""),
-    startDate: normalizeDate(data.schoolHoliday.startDate),
-    endDate: normalizeDate(data.schoolHoliday.endDate),
+    id: String(sh.id || ""),
+    startDate: normalizeDate(sh.startDate),
+    endDate: normalizeDate(sh.endDate),
   };
 }
 
