@@ -139,9 +139,6 @@ function sendNewBookingEmail(payload, id) {
     'Contact:  ' + (payload.organizerContact || '—'),
     '',
     'Reference: ' + id,
-    '',
-    'Review & approve at:',
-    SITE_URL + '/admin'
   ];
   MailApp.sendEmail(NOTIFY_EMAIL, subject, lines.join('\n'));
 }
@@ -212,8 +209,6 @@ function sendStatusEmail(event, status) {
     'Time:   ' + (event.startTime || 'TBC') + '  –  ' + (event.endTime || 'TBC'),
     'Pax:    ' + (event.pax || 'TBC'),
     'Status: ' + status,
-    '',
-    'View on the calendar: ' + SITE_URL + '/events/' + event.id,
     '',
     '— BIG Hall',
   ];
