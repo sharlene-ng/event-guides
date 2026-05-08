@@ -131,7 +131,7 @@ export default function Navbar() {
             {isAdmin ? (
               <Link
                 href="/admin"
-                className="relative inline-flex items-center gap-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 px-2.5 py-1.5 rounded-md transition-colors"
+                className="relative inline-flex items-center gap-1.5 text-xs font-semibold text-amber-800 bg-yellow-100 hover:bg-yellow-200 border border-yellow-200 px-2.5 py-1.5 rounded-md transition-colors"
                 title="You are signed in as Admin · click for approval panel"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -141,12 +141,12 @@ export default function Navbar() {
                 Admin
                 {pendingCount > 0 && (
                   <>
-                    <span className="ml-0.5 inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 py-0.5 bg-red-500 text-white">
+                    <span className="ml-0.5 inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 py-0.5 bg-yellow-300 text-amber-900">
                       {pendingCount}
                     </span>
                     <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-300 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-400" />
                     </span>
                   </>
                 )}
