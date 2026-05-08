@@ -526,7 +526,14 @@ function BookingPageInner() {
               defaultValue={prefill?.organizer || ""}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Phone" name="ownerPhone" type="tel" placeholder="e.g. +60 12-345 6789" defaultValue={prefill?.ownerPhone || ""} />
+              <Field
+                label="Phone"
+                name="ownerPhone"
+                type="tel"
+                placeholder="60123456789"
+                hint="Digits only — skip the + sign"
+                defaultValue={prefill?.ownerPhone || ""}
+              />
               <Field label="Email" name="ownerEmail" type="email" placeholder="you@example.com" defaultValue={prefill?.ownerEmail || ""} />
             </div>
           </Card>
@@ -535,7 +542,13 @@ function BookingPageInner() {
           <Card label="Speaker (Optional)">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Speaker Name" name="speakerName" placeholder="e.g. Dr Lim" defaultValue={prefill?.speakerName || ""} />
-              <Field label="Speaker Contact" name="speakerContact" placeholder="Phone or email" defaultValue={prefill?.speakerContact || ""} />
+              <Field
+                label="Speaker Contact"
+                name="speakerContact"
+                placeholder="60123456789 or speaker@email.com"
+                hint="If phone — digits only, no + sign"
+                defaultValue={prefill?.speakerContact || ""}
+              />
             </div>
           </Card>
 
@@ -734,9 +747,12 @@ function Card({ label, children }: { label: string; children: React.ReactNode })
 }
 
 function Field(
-  props: React.InputHTMLAttributes<HTMLInputElement> & { label: string },
+  props: React.InputHTMLAttributes<HTMLInputElement> & {
+    label: string;
+    hint?: string;
+  },
 ) {
-  const { label, ...rest } = props;
+  const { label, hint, ...rest } = props;
   return (
     <div>
       <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
@@ -746,6 +762,7 @@ function Field(
         {...rest}
         className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white transition-colors"
       />
+      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
     </div>
   );
 }
