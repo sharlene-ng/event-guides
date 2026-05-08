@@ -53,6 +53,34 @@ export default async function V2Home() {
         </div>
       )}
 
+      {/* Booking Rules — high-level rules every team member should know */}
+      <div className="mb-8">
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-blue-600 mb-1.5">
+          Booking Rules
+        </p>
+        <h2 className="text-xl font-bold text-gray-900">Overview</h2>
+        <p className="text-sm text-gray-500 mt-1 mb-5">
+          The basics every team member should know before booking the hall.
+        </p>
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-3">
+          The Rules
+        </p>
+        <ol className="bg-white border border-gray-200 rounded-2xl divide-y divide-gray-100">
+          {bookingRules.map((rule, i) => (
+            <li key={i} className="flex items-start gap-4 px-5 py-4">
+              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-50 text-blue-700 font-bold text-sm flex items-center justify-center">
+                {i + 1}
+              </span>
+              <p className="text-sm text-gray-700 leading-relaxed pt-0.5">
+                <span className="font-semibold text-gray-900">{rule.lead}</span>
+                <span className="text-gray-500"> — </span>
+                {rule.body}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </div>
+
       {/* Unified action row */}
       <div className="flex flex-wrap gap-3 mb-6 justify-end">
         <Link
@@ -103,3 +131,22 @@ export default async function V2Home() {
     </div>
   );
 }
+
+const bookingRules: { lead: string; body: string }[] = [
+  {
+    lead: "Check availability first",
+    body: "review the BIG Hall calendar before committing to a date.",
+  },
+  {
+    lead: "Submit a booking request",
+    body: "the date isn't yours until Sharlene approves it.",
+  },
+  {
+    lead: "Confirmation status matters",
+    body: "a booking is only confirmed once it appears in this booking system calendar.",
+  },
+  {
+    lead: "Google Calendar ≠ booking",
+    body: "logging the event in Google Calendar (FD / AIA GE) does NOT reserve the hall. It must go through the booking system.",
+  },
+];

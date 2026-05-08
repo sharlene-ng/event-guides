@@ -9,7 +9,6 @@ const links = [
   { href: "/", label: "Calendar" },
   { href: "/sop", label: "Playbook" },
   { href: "/contacts", label: "Key Contacts" },
-  { href: "/office-tools", label: "Office How-To" },
   { href: "/resources", label: "Resources" },
 ];
 
