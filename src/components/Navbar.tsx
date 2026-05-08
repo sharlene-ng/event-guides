@@ -138,7 +138,7 @@ export default function Navbar() {
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                Admin
+                Admin Login
                 {pendingCount > 0 && (
                   <>
                     <span className="ml-0.5 inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 py-0.5 bg-red-500 text-white">
