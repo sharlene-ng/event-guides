@@ -298,7 +298,7 @@ export default function CalendarView({
                   <Link
                     key={`${wi}-${idx}-${b.event.id}`}
                     href={`/events/${b.event.id}`}
-                    title={`${b.event.name}${isReserved ? " (Reserved · TBC)" : ""}${b.event.startTime ? ` · ${b.event.startTime}` : ""}`}
+                    title={`${b.event.name}${isReserved ? " (Reserved · TBC)" : ""}${b.event.startTime ? ` · ${b.event.startTime}` : ""} · PIC: ${b.event.pic || "pending"}`}
                     className="absolute flex items-center"
                     style={{
                       left,
@@ -330,7 +330,12 @@ export default function CalendarView({
                           TBC
                         </span>
                       )}
-                      <span className="truncate">{b.event.name}</span>
+                      <span className="truncate">
+                        {b.event.name}
+                        <span className="opacity-60 ml-1 font-normal">
+                          · {b.event.pic || "pending"}
+                        </span>
+                      </span>
                     </span>
                   </Link>
                 );

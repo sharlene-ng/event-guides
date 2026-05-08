@@ -51,6 +51,16 @@ export default function HomeTabs({
     .filter((e) => isUpcoming(String(e.date)))
     .sort((a, b) => String(a.date).localeCompare(String(b.date)));
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const happeningToday = events.filter((e) => {
+    if (!e.date) return false;
+    const start = parseLocalDate(String(e.date));
+    const end = e.endDate ? parseLocalDate(String(e.endDate)) : start;
+    end.setHours(23, 59, 59, 999);
+    return today >= start && today <= end;
+  });
+
   const grouped = upcoming.reduce<Record<string, SOPEvent[]>>((acc, e) => {
     const k = monthKey(String(e.date));
     if (!acc[k]) acc[k] = [];
@@ -61,6 +71,34 @@ export default function HomeTabs({
 
   return (
     <div>
+      {/* Happening today banner */}
+      {happeningToday.length > 0 && (
+        <div className="mb-4 flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
+          <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+          </span>
+          <div className="flex-1 min-w-0 text-sm">
+            <span className="font-bold text-emerald-800">
+              Happening today:
+            </span>{" "}
+            <span className="text-emerald-900">
+              {happeningToday.map((e, i) => (
+                <span key={e.id}>
+                  {i > 0 && ", "}
+                  <Link
+                    href={`/events/${e.id}`}
+                    className="font-semibold underline-offset-2 hover:underline"
+                  >
+                    {e.name}
+                  </Link>
+                </span>
+              ))}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Tab switcher */}
       <div className="flex items-center justify-between mb-4">
         <div className="inline-flex items-center bg-gray-100 p-1 rounded-lg">
