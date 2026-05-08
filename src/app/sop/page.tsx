@@ -2,6 +2,25 @@ import Link from "next/link";
 import CopyableValue from "@/components/CopyableValue";
 import CopyButton from "@/components/CopyButton";
 
+const bookingRules: { lead: string; body: string }[] = [
+  {
+    lead: "Check availability first",
+    body: "review the BIG Hall calendar before committing to a date.",
+  },
+  {
+    lead: "Submit a booking request",
+    body: "the date isn't yours until Sharlene approves it.",
+  },
+  {
+    lead: "Confirmation status matters",
+    body: "a booking is only confirmed once it appears in this booking system calendar.",
+  },
+  {
+    lead: "Google Calendar ≠ booking",
+    body: "logging the event in Google Calendar (FD / AIA GE) does NOT reserve the hall. It must go through the booking system.",
+  },
+];
+
 export const metadata = { title: "Event Playbook" };
 
 type Topic = {
@@ -9,10 +28,17 @@ type Topic = {
   icon: string;
   title: string;
   oneLiner: string;
-  accent: "blue" | "indigo" | "violet" | "rose" | "amber";
+  accent: "blue" | "indigo" | "violet" | "rose" | "amber" | "emerald";
 };
 
 const topics: Topic[] = [
+  {
+    id: "booking-rules",
+    icon: "📋",
+    title: "Booking Rules",
+    oneLiner: "The basics before you book the hall",
+    accent: "emerald",
+  },
   {
     id: "event-guidebook",
     icon: "📖",
@@ -77,6 +103,12 @@ const accent: Record<
     chipBg: "bg-amber-50",
     chipText: "text-amber-700",
     ring: "ring-amber-100",
+  },
+  emerald: {
+    dot: "bg-emerald-500",
+    chipBg: "bg-emerald-50",
+    chipText: "text-emerald-700",
+    ring: "ring-emerald-100",
   },
   rose: {
     dot: "bg-rose-500",
@@ -187,8 +219,31 @@ export default function PlaybookPage() {
 
         {/* Topic content */}
         <main className="space-y-12 min-w-0">
-          {/* Topic 1: Event Guidebook */}
+          {/* Topic 1: Booking Rules */}
           <TopicSection topic={topics[0]}>
+            <p className="text-sm text-gray-600 leading-relaxed mb-5">
+              The basics every team member should know before booking the hall.
+            </p>
+            <ol className="bg-gray-50 border border-gray-200 rounded-xl divide-y divide-gray-200">
+              {bookingRules.map((rule, i) => (
+                <li key={i} className="flex items-start gap-4 px-5 py-3.5">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <p className="text-sm text-gray-700 leading-relaxed pt-0.5">
+                    <span className="font-semibold text-gray-900">
+                      {rule.lead}
+                    </span>
+                    <span className="text-gray-500"> — </span>
+                    {rule.body}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </TopicSection>
+
+          {/* Topic 2: Event Guidebook */}
+          <TopicSection topic={topics[1]}>
             <p className="text-sm text-gray-600 leading-relaxed mb-5">
               Skip the PDF design — use the online guidebook system. Fast to
               set up, easy to duplicate across events, and updates in real time
@@ -266,8 +321,8 @@ export default function PlaybookPage() {
             </div>
           </TopicSection>
 
-          {/* Topic 2: TV Display */}
-          <TopicSection topic={topics[1]}>
+          {/* Topic 3: TV Display */}
+          <TopicSection topic={topics[2]}>
             <p className="text-sm text-gray-600 leading-relaxed mb-5">
               The entrance TV greets guests and shows countdowns, key messages,
               or any content from a browser link.
@@ -321,8 +376,8 @@ export default function PlaybookPage() {
             </p>
           </TopicSection>
 
-          {/* Topic 3: Credit Card Machines */}
-          <TopicSection topic={topics[2]}>
+          {/* Topic 4: Credit Card Machines */}
+          <TopicSection topic={topics[3]}>
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
               For last-minute setup. The full walk-through lives in ClickUp.
             </p>
@@ -349,8 +404,8 @@ export default function PlaybookPage() {
             </a>
           </TopicSection>
 
-          {/* Topic 4: Printer */}
-          <TopicSection topic={topics[3]}>
+          {/* Topic 5: Printer */}
+          <TopicSection topic={topics[4]}>
             <p className="text-sm text-gray-600 leading-relaxed mb-5">
               The shared printer is connected to the iMac next to
               Kherwei&apos;s seat. Get your file onto the iMac, then print.
@@ -375,8 +430,8 @@ export default function PlaybookPage() {
             </ol>
           </TopicSection>
 
-          {/* Topic 5: Contingency Plan */}
-          <TopicSection topic={topics[4]}>
+          {/* Topic 6: Contingency Plan */}
+          <TopicSection topic={topics[5]}>
             <p className="text-sm text-gray-600 leading-relaxed mb-5">
               If something breaks during the event — refer to these steps in
               order.

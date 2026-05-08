@@ -243,7 +243,7 @@ function EventCard({ event }: { event: SOPEvent }) {
         <p className="text-[10px] text-blue-500 mt-0.5">{dayName}</p>
         {isMultiDay && (
           <span className="absolute -top-1 -right-1 bg-amber-500 text-white text-[9px] font-bold px-1.5 rounded-full">
-            +{Math.round((end.getTime() - start.getTime()) / 86400000)}d
+            {Math.round((end.getTime() - start.getTime()) / 86400000) + 1}d
           </span>
         )}
       </div>
