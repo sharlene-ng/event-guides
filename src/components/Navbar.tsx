@@ -16,12 +16,26 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     if (pathname === "/login" || pathname === "/admin/login" || pathname === "/book") return;
     fetch("/api/me")
       .then((r) => r.json())
       .then((d) => setIsAdmin(!!d.admin))
+      .catch(() => {});
+  }, [pathname]);
+
+  useEffect(() => {
+    if (pathname === "/login" || pathname === "/admin/login" || pathname === "/book") return;
+    fetch("/api/events")
+      .then((r) => r.json())
+      .then((d) => {
+        const n = (d.events || []).filter(
+          (e: { status?: string }) => e.status === "pending",
+        ).length;
+        setPendingCount(n);
+      })
       .catch(() => {});
   }, [pathname]);
 
@@ -85,13 +99,18 @@ export default function Navbar() {
             {isAdmin && (
               <Link
                 href="/admin"
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                className={`relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                   pathname.startsWith("/admin")
                     ? "bg-amber-50 text-amber-700"
                     : "text-amber-700 hover:bg-amber-50"
                 }`}
               >
                 Approvals
+                {pendingCount > 0 && (
+                  <span className="inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 py-0.5 bg-red-500 text-white">
+                    {pendingCount}
+                  </span>
+                )}
               </Link>
             )}
           </div>
@@ -112,7 +131,7 @@ export default function Navbar() {
             {isAdmin ? (
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 px-2.5 py-1.5 rounded-md transition-colors"
+                className="relative inline-flex items-center gap-1.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 px-2.5 py-1.5 rounded-md transition-colors"
                 title="You are signed in as Admin · click for approval panel"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -120,6 +139,17 @@ export default function Navbar() {
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
                 Admin
+                {pendingCount > 0 && (
+                  <>
+                    <span className="ml-0.5 inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 py-0.5 bg-red-500 text-white">
+                      {pendingCount}
+                    </span>
+                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+                    </span>
+                  </>
+                )}
               </Link>
             ) : (
               <Link
