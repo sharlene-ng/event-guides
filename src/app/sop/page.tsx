@@ -428,7 +428,11 @@ export default function PlaybookPage() {
                 Open WhatsApp Web with your own number, send the file/link
                 from your phone, then download or open it on the iMac.
               </NumStep>
-              <NumStep n={4}>Print.</NumStep>
+              <NumStep n={4}>
+                <span>
+                  Print. <span className="text-gray-500">A printer ID is required — contact Sharlene to get one.</span>
+                </span>
+              </NumStep>
             </ol>
           </TopicSection>
 
