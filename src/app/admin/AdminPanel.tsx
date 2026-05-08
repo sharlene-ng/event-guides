@@ -121,6 +121,12 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
           >
             Public holidays →
           </Link>
+          <Link
+            href="/admin/school-holidays"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+          >
+            School holidays →
+          </Link>
           <button
             onClick={logout}
             className="text-xs text-gray-400 hover:text-gray-700"

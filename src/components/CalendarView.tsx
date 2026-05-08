@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { Holiday, SOPEvent } from "@/lib/sheets";
+import type { Holiday, SchoolHoliday, SOPEvent } from "@/lib/sheets";
 import { getColorBar } from "@/lib/colors";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -46,9 +46,11 @@ const BAR_GAP = 2; // px
 export default function CalendarView({
   events,
   holidays = [],
+  schoolHolidays = [],
 }: {
   events: SOPEvent[];
   holidays?: Holiday[];
+  schoolHolidays?: SchoolHoliday[];
 }) {
   // Lookup map: "YYYY-MM-DD" → holiday name
   const holidayByDate = useMemo(() => {
@@ -56,6 +58,20 @@ export default function CalendarView({
     for (const h of holidays) if (h.date) m.set(h.date, h.name);
     return m;
   }, [holidays]);
+
+  // Set of "YYYY-MM-DD" dates that fall within any school holiday range
+  const schoolHolidayDates = useMemo(() => {
+    const s = new Set<string>();
+    for (const sh of schoolHolidays) {
+      if (!sh.startDate || !sh.endDate) continue;
+      const start = parseLocalDate(sh.startDate);
+      const end = parseLocalDate(sh.endDate);
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        s.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+      }
+    }
+    return s;
+  }, [schoolHolidays]);
 
   function isoKey(d: Date): string {
     const y = d.getFullYear();
@@ -242,15 +258,18 @@ export default function CalendarView({
                 const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                 const holidayName = holidayByDate.get(isoKey(date));
                 const isHoliday = !!holidayName && inMonth;
+                const isSchoolHoliday = schoolHolidayDates.has(isoKey(date)) && inMonth;
                 return (
                   <div
                     key={di}
                     className={`px-1 pt-1 ${di < 6 ? "border-r border-gray-100" : ""} ${
                       isHoliday
                         ? "bg-gray-100"
-                        : inMonth
-                          ? "bg-white"
-                          : "bg-gray-50/50"
+                        : isSchoolHoliday
+                          ? "bg-blue-50"
+                          : inMonth
+                            ? "bg-white"
+                            : "bg-gray-50/50"
                     }`}
                   >
                     <div className="flex items-center gap-1">
@@ -273,6 +292,11 @@ export default function CalendarView({
                           title={holidayName}
                         >
                           {holidayName}
+                        </span>
+                      )}
+                      {!isHoliday && isSchoolHoliday && (
+                        <span className="text-[9px] font-medium text-blue-400 leading-tight">
+                          School hol.
                         </span>
                       )}
                     </div>
@@ -383,8 +407,16 @@ export default function CalendarView({
           Reserved (TBC)
         </span>
         <span className="inline-flex items-center gap-1.5">
+          <span className="w-4 h-2 rounded bg-gray-100 border border-dotted border-gray-400" />
+          Pending
+        </span>
+        <span className="inline-flex items-center gap-1.5">
           <span className="w-4 h-2 rounded bg-gray-100 border border-gray-200" />
           <span className="text-rose-600">Public holiday</span>
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-4 h-2 rounded bg-blue-50 border border-blue-200" />
+          School holiday
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-600" />

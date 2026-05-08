@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listEvents, listHolidays, type Holiday, type SOPEvent } from "@/lib/sheets";
+import { listEvents, listHolidays, listSchoolHolidays, type Holiday, type SchoolHoliday, type SOPEvent } from "@/lib/sheets";
 import HomeTabs from "@/components/HomeTabs";
 import ShareLinkButton from "@/components/ShareLinkButton";
 import BookingRules from "@/components/BookingRules";
@@ -9,16 +9,18 @@ export const revalidate = 60; // re-fetch from Sheets at most every 60 s
 export default async function V2Home() {
   let allVisible: SOPEvent[] = [];
   let holidays: Holiday[] = [];
+  let schoolHolidays: SchoolHoliday[] = [];
   let backendError: string | null = null;
 
   try {
     // Show confirmed (approved) + reserved + pending on home page; hide cancelled / rejected
     // Fetch holidays in parallel — fails soft to [] if backend doesn't support it yet.
-    const [all, hols] = await Promise.all([listEvents(), listHolidays()]);
+    const [all, hols, schoolHols] = await Promise.all([listEvents(), listHolidays(), listSchoolHolidays()]);
     allVisible = all.filter(
       (e) => e.status === "approved" || e.status === "reserved" || e.status === "pending",
     );
     holidays = hols;
+    schoolHolidays = schoolHols;
   } catch (err) {
     backendError = String(err);
   }
@@ -73,7 +75,7 @@ export default async function V2Home() {
           className="group inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 border border-gray-200 hover:border-blue-300 text-gray-800 font-medium px-3.5 py-2 rounded-lg transition-colors text-sm"
         >
           <span>📖</span>
-          Guidebook
+          Attendee&apos;s Guidebook
           <svg
             className="w-3 h-3 text-gray-400 group-hover:text-blue-500"
             viewBox="0 0 24 24"
@@ -103,7 +105,7 @@ export default async function V2Home() {
         </Link>
       </div>
 
-      <HomeTabs events={allVisible} holidays={holidays} />
+      <HomeTabs events={allVisible} holidays={holidays} schoolHolidays={schoolHolidays} />
     </div>
   );
 }

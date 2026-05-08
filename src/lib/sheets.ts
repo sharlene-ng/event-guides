@@ -308,3 +308,37 @@ export async function createHoliday(
 export async function deleteHoliday(id: string): Promise<void> {
   await callPost("deleteHoliday", { id });
 }
+
+export type SchoolHoliday = {
+  id: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+};
+
+export async function listSchoolHolidays(): Promise<SchoolHoliday[]> {
+  try {
+    const data = (await callGet("listSchoolHolidays")) as { schoolHolidays: SchoolHoliday[] };
+    return (data.schoolHolidays || []).map((h) => ({
+      id: String(h.id || ""),
+      startDate: normalizeDate(h.startDate),
+      endDate: normalizeDate(h.endDate),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function createSchoolHoliday(
+  payload: { startDate: string; endDate: string },
+): Promise<SchoolHoliday> {
+  const data = (await callPost("createSchoolHoliday", payload)) as { schoolHoliday: SchoolHoliday };
+  return {
+    id: String(data.schoolHoliday.id || ""),
+    startDate: normalizeDate(data.schoolHoliday.startDate),
+    endDate: normalizeDate(data.schoolHoliday.endDate),
+  };
+}
+
+export async function deleteSchoolHoliday(id: string): Promise<void> {
+  await callPost("deleteSchoolHoliday", { id });
+}
