@@ -154,7 +154,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/admin/login"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1.5 rounded-md transition-colors"
+                className="relative inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-1.5 rounded-md transition-colors"
                 title="Sign in as Admin"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -162,6 +162,17 @@ export default function Navbar() {
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
                 Admin Login
+                {pendingCount > 0 && (
+                  <>
+                    <span className="ml-0.5 inline-flex items-center justify-center text-[10px] font-bold rounded-full px-1.5 py-0.5 bg-yellow-200 text-amber-900">
+                      {pendingCount}
+                    </span>
+                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-300 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-400" />
+                    </span>
+                  </>
+                )}
               </Link>
             )}
 
