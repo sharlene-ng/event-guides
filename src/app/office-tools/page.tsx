@@ -114,8 +114,10 @@ export default function OfficeToolsPage() {
                   {t.icon}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">{t.title}</p>
-                  <p className="text-xs opacity-70 truncate">{t.oneLiner}</p>
+                  <p className="font-semibold leading-snug">{t.title}</p>
+                  <p className="text-xs opacity-70 leading-snug mt-0.5">
+                    {t.oneLiner}
+                  </p>
                 </div>
               </a>
             ))}
@@ -184,19 +186,20 @@ export default function OfficeToolsPage() {
                   url="https://bighall.vercel.app/admin"
                   tone="amber"
                 />
-                <div className="bg-white border border-amber-200 rounded-md p-3 flex items-start gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                      Password
-                    </p>
-                    <p className="text-sm font-mono text-amber-900 font-semibold truncate">
-                      931931huat
-                    </p>
-                  </div>
-                  <CopyButton
-                    value="931931huat"
-                    className="text-amber-600 hover:text-amber-800 hover:bg-amber-100"
-                  />
+                <div className="bg-white border border-amber-200 rounded-md p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                    Password
+                  </p>
+                  <p className="text-base font-mono text-amber-900 font-semibold tracking-widest mb-1">
+                    ••••••••
+                  </p>
+                  <p className="text-[11px] text-amber-700 leading-snug">
+                    Refer to the{" "}
+                    <span className="font-semibold">
+                      FD Official Group Chat
+                    </span>{" "}
+                    description.
+                  </p>
                 </div>
               </div>
             </div>

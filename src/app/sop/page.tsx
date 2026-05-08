@@ -1,67 +1,26 @@
 import Link from "next/link";
 import CopyableValue from "@/components/CopyableValue";
 
-type Phase = {
-  num: string;
-  title: string;
-  when: string;
-  accent: "blue" | "indigo" | "violet" | "rose";
-  bullets: string[];
-};
+type Rule = { lead: string; body: string };
 
-const phases: Phase[] = [
+const overviewRules: Rule[] = [
   {
-    num: "1",
-    title: "Approval & Calendar",
-    when: "Start here",
-    accent: "blue",
-    bullets: [
-      "Get approval from Sharlene",
-      "Log event in Google Calendar (FD + AIA GE)",
-      "Invite all PICs via email",
-    ],
+    lead: "Check availability first",
+    body: "review the BIG Hall calendar before committing to a date.",
   },
   {
-    num: "2",
-    title: "Email Building Management",
-    when: "≥ 1 week before",
-    accent: "indigo",
-    bullets: [
-      "Email mercumkpmoffice@gmail.com",
-      "Include name, date/time, pax, guest list (PDF)",
-      "Request parking / Bomba lift / aircond if needed",
-    ],
+    lead: "Submit a booking request",
+    body: "the date isn't yours until Sharlene approves it.",
   },
   {
-    num: "3",
-    title: "Other Prep",
-    when: "Days before",
-    accent: "violet",
-    bullets: [
-      "Print guest list & hand to security",
-      "Confirm parking, aircond, Bomba lift bookings",
-    ],
+    lead: "Confirmation status matters",
+    body: "a booking is only confirmed once it appears in this booking system calendar.",
   },
   {
-    num: "4",
-    title: "Event Day",
-    when: "On the day",
-    accent: "rose",
-    bullets: [
-      "Setup: lanyards, name tags, bunting, hall layout, lobby TV",
-      "PICs in position (registration, AV, cleaner if needed)",
-      "Refreshments, catering, comms",
-      "Standby card machines + special arrangements",
-    ],
+    lead: "Google Calendar ≠ booking",
+    body: "logging the event in Google Calendar (FD / AIA GE) does NOT reserve the hall. It must go through the booking system.",
   },
 ];
-
-const accentDot: Record<Phase["accent"], string> = {
-  blue: "bg-blue-500 ring-blue-100",
-  indigo: "bg-indigo-500 ring-indigo-100",
-  violet: "bg-violet-500 ring-violet-100",
-  rose: "bg-rose-500 ring-rose-100",
-};
 
 
 export default function V2SOPPage() {
@@ -134,43 +93,26 @@ export default function V2SOPPage() {
         </Link>
       </div>
 
-      {/* Phases — vertical timeline */}
+      {/* Overview — high-level booking rules */}
       <SectionHeader
-        eyebrow="Workflow"
-        title="Event Phases"
-        subtitle="Follow each step in order — from booking confirmation to event day."
+        eyebrow="Booking Rules"
+        title="Overview"
+        subtitle="The basics every team member should know before booking the hall."
       />
-      <ol className="relative border-l-2 border-gray-200 ml-4 mb-12 space-y-6">
-        {phases.map((phase) => (
-          <li key={phase.num} className="ml-6 relative">
-            <span
-              className={`absolute -left-[34px] flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold ring-4 ${accentDot[phase.accent]}`}
-            >
-              {phase.num}
+      <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-3">
+        The Rules
+      </p>
+      <ol className="bg-white border border-gray-200 rounded-2xl divide-y divide-gray-100 mb-12">
+        {overviewRules.map((rule, i) => (
+          <li key={i} className="flex items-start gap-4 px-5 py-4">
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-50 text-blue-700 font-bold text-sm flex items-center justify-center">
+              {i + 1}
             </span>
-            <div className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition-colors">
-              <div className="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
-                <h2 className="font-bold text-gray-900 text-base">
-                  {phase.title}
-                </h2>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                  {phase.when}
-                </p>
-              </div>
-              <ul className="space-y-1.5">
-                {phase.bullets.map((b, i) => (
-                  <li
-                    key={i}
-                    className="flex gap-2 text-sm text-gray-600 leading-snug"
-                  >
-                    <span className="text-gray-300 flex-shrink-0 mt-0.5">
-                      ›
-                    </span>
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <p className="text-sm text-gray-700 leading-relaxed pt-0.5">
+              <span className="font-semibold text-gray-900">{rule.lead}</span>
+              <span className="text-gray-500"> — </span>
+              {rule.body}
+            </p>
           </li>
         ))}
       </ol>
