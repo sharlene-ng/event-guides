@@ -251,6 +251,13 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
                     <Pill highlight>⚠ Assign PIC</Pill>
                   )}
                 </div>
+                <Link
+                  href={`/book?duplicate=${e.id}`}
+                  className="text-xs font-semibold text-gray-500 hover:text-gray-700"
+                  title="Open booking form pre-filled with these details — submit as a new event"
+                >
+                  ⎘ Duplicate
+                </Link>
                 <button
                   onClick={() => setEditingId(e.id)}
                   className="text-xs font-semibold text-blue-600 hover:text-blue-700"

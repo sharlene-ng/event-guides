@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { DayPicker, type DateRange } from "react-day-picker";
 import "react-day-picker/style.css";
 import LayoutPicker from "@/components/LayoutPicker";
@@ -10,6 +11,36 @@ const MAX_VEHICLES = 2;
 
 type Vehicle = { plate: string; model: string; color: string };
 type BookedRange = { start: string; end: string; name: string };
+
+type Prefill = {
+  name: string;
+  pax: string | number;
+  layout: string;
+  layoutNotes: string;
+  organizer: string;
+  ownerPhone: string;
+  ownerEmail: string;
+  startTime: string;
+  endTime: string;
+  speakerName: string;
+  speakerContact: string;
+  notes: string;
+  parking: boolean;
+  vehicles: Vehicle[];
+  sourceName: string;
+};
+
+function splitContact(s: string): { phone: string; email: string } {
+  if (!s) return { phone: "", email: "" };
+  const parts = s.split("|").map((p) => p.trim());
+  let phone = "";
+  let email = "";
+  for (const p of parts) {
+    if (/@/.test(p)) email = p;
+    else if (p) phone = p;
+  }
+  return { phone, email };
+}
 
 function fileToBase64(
   file: File,
@@ -83,6 +114,9 @@ function toDateString(d: Date): string {
 
 
 export default function PublicBookingPage() {
+  const searchParams = useSearchParams();
+  const duplicateId = searchParams.get("duplicate");
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<{ id: string; name: string } | null>(
@@ -106,6 +140,10 @@ export default function PublicBookingPage() {
     { plate: "", model: "", color: "" },
   ]);
 
+  // Duplicate-mode prefill
+  const [prefill, setPrefill] = useState<Prefill | null>(null);
+  const [loadingPrefill, setLoadingPrefill] = useState(!!duplicateId);
+
   useEffect(() => {
     fetch("/api/booked-dates")
       .then((r) => r.json())
@@ -114,6 +152,52 @@ export default function PublicBookingPage() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!duplicateId) return;
+    fetch(`/api/events/${duplicateId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d.ok || !d.event) {
+          setLoadingPrefill(false);
+          return;
+        }
+        const ev = d.event;
+        const req = ev.requirements || {};
+        const { phone, email } = splitContact(ev.organizerContact || "");
+        const sourceVehicles: Vehicle[] = Array.isArray(req.vehicles)
+          ? req.vehicles
+              .map((v: Vehicle) => ({
+                plate: String(v?.plate || ""),
+                model: String(v?.model || ""),
+                color: String(v?.color || ""),
+              }))
+              .filter((v: Vehicle) => v.plate || v.model || v.color)
+          : [];
+        const prefillData: Prefill = {
+          name: ev.name || "",
+          pax: ev.pax || "",
+          layout: ev.layout || "",
+          layoutNotes: req.layoutNotes || "",
+          organizer: ev.organizer || "",
+          ownerPhone: phone,
+          ownerEmail: email,
+          startTime: ev.startTime || "",
+          endTime: ev.endTime || "",
+          speakerName: req.speakerName || "",
+          speakerContact: req.speakerContact || "",
+          notes: req.notes || "",
+          parking: !!req.parking,
+          vehicles: sourceVehicles,
+          sourceName: ev.name || "this event",
+        };
+        setPrefill(prefillData);
+        setParkingRequested(prefillData.parking);
+        if (sourceVehicles.length > 0) setVehicles(sourceVehicles);
+        setLoadingPrefill(false);
+      })
+      .catch(() => setLoadingPrefill(false));
+  }, [duplicateId]);
 
   // Build disabled date ranges for the DayPicker
   const disabledRanges = bookedRanges.map((r) => ({
@@ -245,6 +329,14 @@ export default function PublicBookingPage() {
     }
   }
 
+  if (loadingPrefill) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+        <p className="text-sm text-gray-500">Loading event to duplicate…</p>
+      </div>
+    );
+  }
+
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center px-4 py-12">
@@ -302,6 +394,17 @@ export default function PublicBookingPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {prefill && (
+          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm">
+            <p className="font-semibold text-amber-900">
+              Duplicating from: {prefill.sourceName}
+            </p>
+            <p className="text-amber-800 mt-0.5">
+              All details have been copied. Pick a new <strong>date</strong>{" "}
+              and update anything else that needs to change, then submit.
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Event details */}
           <Card label="Event Details">
@@ -310,6 +413,7 @@ export default function PublicBookingPage() {
               name="name"
               required
               placeholder="e.g. Annual Members Gala"
+              defaultValue={prefill?.name || ""}
             />
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
@@ -322,6 +426,7 @@ export default function PublicBookingPage() {
                 max={100}
                 required
                 placeholder="Up to 100"
+                defaultValue={prefill?.pax || ""}
                 className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
               />
               <p className="text-xs text-gray-400 mt-1">
@@ -371,8 +476,8 @@ export default function PublicBookingPage() {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <TimeSelect label="Start Time" name="startTime" />
-              <TimeSelect label="End Time" name="endTime" />
+              <TimeSelect label="Start Time" name="startTime" defaultValue={prefill?.startTime} />
+              <TimeSelect label="End Time" name="endTime" defaultValue={prefill?.endTime} />
             </div>
           </Card>
 
@@ -381,7 +486,7 @@ export default function PublicBookingPage() {
             <p className="text-sm text-gray-500 -mt-2 mb-1">
               Pick the seating arrangement that fits your event.
             </p>
-            <LayoutPicker name="layout" />
+            <LayoutPicker name="layout" defaultValue={prefill?.layout} />
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
                 Layout Notes (Optional)
@@ -389,6 +494,7 @@ export default function PublicBookingPage() {
               <input
                 name="layoutNotes"
                 placeholder="e.g. 8 people per table, VIP table at front"
+                defaultValue={prefill?.layoutNotes || ""}
                 className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
               />
               <p className="text-xs text-gray-400 mt-1">
@@ -403,18 +509,19 @@ export default function PublicBookingPage() {
               label="Your Name"
               name="eventOwner"
               placeholder="Person responsible for this event"
+              defaultValue={prefill?.organizer || ""}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Phone" name="ownerPhone" type="tel" placeholder="e.g. +60 12-345 6789" />
-              <Field label="Email" name="ownerEmail" type="email" placeholder="you@example.com" />
+              <Field label="Phone" name="ownerPhone" type="tel" placeholder="e.g. +60 12-345 6789" defaultValue={prefill?.ownerPhone || ""} />
+              <Field label="Email" name="ownerEmail" type="email" placeholder="you@example.com" defaultValue={prefill?.ownerEmail || ""} />
             </div>
           </Card>
 
           {/* Speaker */}
           <Card label="Speaker (Optional)">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Field label="Speaker Name" name="speakerName" placeholder="e.g. Dr Lim" />
-              <Field label="Speaker Contact" name="speakerContact" placeholder="Phone or email" />
+              <Field label="Speaker Name" name="speakerName" placeholder="e.g. Dr Lim" defaultValue={prefill?.speakerName || ""} />
+              <Field label="Speaker Contact" name="speakerContact" placeholder="Phone or email" defaultValue={prefill?.speakerContact || ""} />
             </div>
           </Card>
 
@@ -499,6 +606,7 @@ export default function PublicBookingPage() {
             <textarea
               name="notes"
               rows={3}
+              defaultValue={prefill?.notes || ""}
               className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 text-sm bg-gray-50 focus:bg-white"
               placeholder="Anything we should know — special requests, agenda highlights, etc."
             />
