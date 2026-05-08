@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 // in the sheet is rendered with an auto-prettified label and a default icon.
 const sectionOverrides: Record<string, { label: string; icon: string }> = {
   "internal-team": { label: "Internal Team", icon: "👥" },
+  "project-pic": { label: "Project PIC", icon: "🎯" },
   "building-mgmt": { label: "Building Management", icon: "🏗️" },
   "vendor-catering": { label: "Catering", icon: "🍱" },
   "vendor-av": { label: "AV / Technical", icon: "🎤" },
