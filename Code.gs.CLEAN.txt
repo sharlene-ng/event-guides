@@ -206,7 +206,12 @@ function sendConfirmationEmail(event, status) {
     '',
     '— BIG Hall',
   ];
-  MailApp.sendEmail(to, subject, lines.join('\n'));
+  MailApp.sendEmail({
+    to: to,
+    cc: NOTIFY_EMAIL,
+    subject: subject,
+    body: lines.join('\n'),
+  });
 }
 
 function extractEmail(contact) {

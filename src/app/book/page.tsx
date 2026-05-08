@@ -555,7 +555,14 @@ function BookingPageInner() {
                 hint="Digits only — skip the + sign"
                 defaultValue={prefill?.ownerPhone || ""}
               />
-              <Field label="Email" name="ownerEmail" type="email" placeholder="you@example.com" defaultValue={prefill?.ownerEmail || ""} />
+              <Field
+                label="Email"
+                name="ownerEmail"
+                type="email"
+                placeholder="you@example.com"
+                hint="Booking confirmation will be sent to this email once approved"
+                defaultValue={prefill?.ownerEmail || ""}
+              />
             </div>
           </Card>
 
