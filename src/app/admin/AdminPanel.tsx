@@ -44,8 +44,29 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
   const [filter, setFilter] = useState<StatusFilter>("pending");
   const [busy, setBusy] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showPast, setShowPast] = useState(false);
 
   const filtered = filter === "all" ? events : events.filter((e) => e.status === filter);
+
+  // Split into upcoming and past based on event end date
+  const todayIso = new Date().toISOString().slice(0, 10);
+  function eventEndIso(e: SOPEvent): string {
+    return (e.endDate || e.date || "").slice(0, 10);
+  }
+  function sortByDate(a: SOPEvent, b: SOPEvent, asc: boolean): number {
+    const ad = (a.date || "").slice(0, 10);
+    const bd = (b.date || "").slice(0, 10);
+    return asc ? ad.localeCompare(bd) : bd.localeCompare(ad);
+  }
+
+  // Past collapse only applies to non-pending tabs (pending should always show all)
+  const splitPast = filter !== "pending";
+  const upcoming = splitPast
+    ? [...filtered].filter((e) => eventEndIso(e) >= todayIso).sort((a, b) => sortByDate(a, b, true))
+    : filtered;
+  const past = splitPast
+    ? [...filtered].filter((e) => eventEndIso(e) < todayIso).sort((a, b) => sortByDate(a, b, false))
+    : [];
 
   const counts = {
     pending: events.filter((e) => e.status === "pending").length,
@@ -187,117 +208,136 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
       )}
 
       <div className="space-y-3">
-        {filtered.map((e) => (
-          <div
-            key={e.id}
-            className="bg-white border border-gray-200 rounded-xl p-5"
-          >
-            {/* Header row */}
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <h2 className="font-bold text-gray-900 truncate">
-                    {e.name}
-                  </h2>
-                  <span
-                    className={`text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded border ${statusBadge[e.status]}`}
-                  >
-                    {statusLabel[e.status] || e.status}
-                  </span>
-                  {e.projectType && (
-                    <span className="text-[10px] uppercase tracking-wide bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded">
-                      {e.projectType}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-gray-500">
-                  {e.date}
-                  {e.endDate && e.endDate !== e.date && ` → ${e.endDate}`}
-                  {e.startTime && ` · ${e.startTime}`}
-                  {e.endTime && `–${e.endTime}`} · {e.pax} pax ·{" "}
-                  {layoutLabel[String(e.layout)] || e.layout}
-                </p>
-              </div>
-              <div className="flex-shrink-0">
-                <StatusSelect
-                  current={e.status}
-                  busy={busy === e.id}
-                  onChange={(next) => {
-                    if (next === e.status) return;
-                    if (next === "cancelled" || next === "rejected") {
-                      const verb = next === "cancelled" ? "Cancel" : "Reject";
-                      if (!confirm(`${verb} "${e.name}"?`)) return;
-                    }
-                    changeStatus(e.id, next);
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Owner details */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
-              <Detail label="Project Owner" value={e.organizer} />
-              <Detail label="Owner Contact" value={e.organizerContact || "—"} />
-              <Detail label="Event PIC" value={e.pic || "—"} />
-            </div>
-
-            {/* Notes */}
-            {e.requirements?.notes && (
-              <p className="text-xs text-gray-500 italic border-l-2 border-gray-200 pl-3 mb-3">
-                ↳ {e.requirements.notes}
-              </p>
-            )}
-
-            {/* Edit panel */}
-            {editingId === e.id ? (
-              <EditForm
-                event={e}
-                onSave={(fields) => saveMeta(e.id, fields)}
-                onCancel={() => setEditingId(null)}
-                busy={busy === e.id}
-              />
-            ) : (
-              <div className="flex items-center gap-3 pt-3 mt-3 border-t border-gray-100">
-                <div className="flex flex-wrap gap-1.5 flex-1">
-                  {e.requirements?.catering && <Pill>🍱 Catering</Pill>}
-                  {e.requirements?.parking && <Pill>🅿️ Parking</Pill>}
-                  {e.requirements?.lift && <Pill>🛗 Bomba lift</Pill>}
-                  {e.requirements?.aircond && <Pill>❄️ Aircond</Pill>}
-                  {!e.projectType && (
-                    <Pill highlight>⚠ Set project type</Pill>
-                  )}
-                  {!e.pic && (e.status === "approved" || e.status === "reserved") && (
-                    <Pill highlight>⚠ Assign PIC</Pill>
-                  )}
-                </div>
-                <Link
-                  href={`/book?duplicate=${e.id}`}
-                  className="text-xs font-semibold text-gray-500 hover:text-gray-700"
-                  title="Open booking form pre-filled with these details — submit as a new event"
-                >
-                  ⎘ Duplicate
-                </Link>
-                <button
-                  onClick={() => setEditingId(e.id)}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                >
-                  ✎ Edit event
-                </button>
-              </div>
-            )}
-
-            {e.approvedAt && (
-              <p className="text-[11px] text-gray-400 mt-3">
-                {e.status === "reserved" ? "Reserved" : "Confirmed"} by{" "}
-                {e.approvedBy || "Sharlene"} on{" "}
-                {new Date(e.approvedAt).toLocaleString()}
-              </p>
-            )}
-          </div>
-        ))}
+        {(splitPast ? upcoming : filtered).map((e) => renderEventCard(e))}
       </div>
+
+      {splitPast && past.length > 0 && (
+        <div className="mt-6">
+          <button
+            onClick={() => setShowPast((v) => !v)}
+            className="w-full text-xs font-semibold text-gray-500 hover:text-gray-700 bg-white border border-dashed border-gray-300 rounded-lg py-2.5 px-4 flex items-center justify-center gap-2 transition-colors"
+          >
+            <span>{showPast ? "▼" : "▶"}</span>
+            {showPast ? `Hide past (${past.length})` : `Show past (${past.length})`}
+          </button>
+          {showPast && (
+            <div className="space-y-3 mt-3 opacity-70">
+              {past.map((e) => renderEventCard(e))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
+
+  function renderEventCard(e: SOPEvent) {
+    return (
+      <div
+        key={e.id}
+        className="bg-white border border-gray-200 rounded-xl p-5"
+      >
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h2 className="font-bold text-gray-900 truncate">{e.name}</h2>
+              <span
+                className={`text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded border ${statusBadge[e.status]}`}
+              >
+                {statusLabel[e.status] || e.status}
+              </span>
+              {e.projectType && (
+                <span className="text-[10px] uppercase tracking-wide bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded">
+                  {e.projectType}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-500">
+              {e.date}
+              {e.endDate && e.endDate !== e.date && ` → ${e.endDate}`}
+              {e.startTime && ` · ${e.startTime}`}
+              {e.endTime && `–${e.endTime}`} · {e.pax} pax ·{" "}
+              {layoutLabel[String(e.layout)] || e.layout}
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <StatusSelect
+              current={e.status}
+              busy={busy === e.id}
+              onChange={(next) => {
+                if (next === e.status) return;
+                if (next === "cancelled" || next === "rejected") {
+                  const verb = next === "cancelled" ? "Cancel" : "Reject";
+                  if (!confirm(`${verb} "${e.name}"?`)) return;
+                }
+                changeStatus(e.id, next);
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Owner details */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+          <Detail label="Project Owner" value={e.organizer} />
+          <Detail label="Owner Contact" value={e.organizerContact || "—"} />
+          <Detail label="Event PIC" value={e.pic || "—"} />
+        </div>
+
+        {/* Notes */}
+        {e.requirements?.notes && (
+          <p className="text-xs text-gray-500 italic border-l-2 border-gray-200 pl-3 mb-3">
+            ↳ {e.requirements.notes}
+          </p>
+        )}
+
+        {/* Edit panel */}
+        {editingId === e.id ? (
+          <EditForm
+            event={e}
+            onSave={(fields) => saveMeta(e.id, fields)}
+            onCancel={() => setEditingId(null)}
+            busy={busy === e.id}
+          />
+        ) : (
+          <div className="flex items-center gap-3 pt-3 mt-3 border-t border-gray-100">
+            <div className="flex flex-wrap gap-1.5 flex-1">
+              {e.requirements?.catering && <Pill>🍱 Catering</Pill>}
+              {e.requirements?.parking && <Pill>🅿️ Parking</Pill>}
+              {e.requirements?.lift && <Pill>🛗 Bomba lift</Pill>}
+              {e.requirements?.aircond && <Pill>❄️ Aircond</Pill>}
+              {!e.projectType && (
+                <Pill highlight>⚠ Set project type</Pill>
+              )}
+              {!e.pic && (e.status === "approved" || e.status === "reserved") && (
+                <Pill highlight>⚠ Assign PIC</Pill>
+              )}
+            </div>
+            <Link
+              href={`/book?duplicate=${e.id}`}
+              className="text-xs font-semibold text-gray-500 hover:text-gray-700"
+              title="Open booking form pre-filled with these details — submit as a new event"
+            >
+              ⎘ Duplicate
+            </Link>
+            <button
+              onClick={() => setEditingId(e.id)}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+            >
+              ✎ Edit event
+            </button>
+          </div>
+        )}
+
+        {e.approvedAt && (
+          <p className="text-[11px] text-gray-400 mt-3">
+            {e.status === "reserved" ? "Reserved" : "Confirmed"} by{" "}
+            {e.approvedBy || "Sharlene"} on{" "}
+            {new Date(e.approvedAt).toLocaleString()}
+          </p>
+        )}
+      </div>
+    );
+  }
 }
 
 function EditForm({
