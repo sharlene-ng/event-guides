@@ -207,9 +207,7 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
         </div>
       )}
 
-      <div className="space-y-3">
-        {(splitPast ? upcoming : filtered).map((e) => renderEventCard(e))}
-      </div>
+      <div>{renderGroupedByMonth(splitPast ? upcoming : filtered)}</div>
 
       {splitPast && past.length > 0 && (
         <div className="mt-6">
@@ -221,14 +219,51 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
             {showPast ? `Hide past (${past.length})` : `Show past (${past.length})`}
           </button>
           {showPast && (
-            <div className="space-y-3 mt-3 opacity-70">
-              {past.map((e) => renderEventCard(e))}
-            </div>
+            <div className="mt-3 opacity-70">{renderGroupedByMonth(past)}</div>
           )}
         </div>
       )}
     </div>
   );
+
+  function renderGroupedByMonth(list: SOPEvent[]) {
+    if (list.length === 0) return null;
+    const groups: { key: string; label: string; items: SOPEvent[] }[] = [];
+    for (const e of list) {
+      const dateStr = (e.date || "").slice(0, 10);
+      if (!dateStr) continue;
+      const [y, m] = dateStr.split("-");
+      const key = `${y}-${m}`;
+      if (groups.length === 0 || groups[groups.length - 1].key !== key) {
+        const label = new Date(Number(y), Number(m) - 1, 1).toLocaleString("en-MY", {
+          month: "long",
+          year: "numeric",
+        });
+        groups.push({ key, label, items: [] });
+      }
+      groups[groups.length - 1].items.push(e);
+    }
+    return (
+      <div className="space-y-6">
+        {groups.map((g) => (
+          <div key={g.key}>
+            <div className="flex items-center gap-3 mb-3">
+              <h3 className="text-xs font-bold tracking-wide uppercase text-gray-500">
+                {g.label}
+              </h3>
+              <span className="text-[10px] text-gray-400">
+                {g.items.length} event{g.items.length === 1 ? "" : "s"}
+              </span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+            <div className="space-y-3">
+              {g.items.map((e) => renderEventCard(e))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   function renderEventCard(e: SOPEvent) {
     return (
