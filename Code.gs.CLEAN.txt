@@ -167,6 +167,15 @@ function updateStatus(id, status, approvedBy) {
     try { sendStatusEmail(event, status); } catch (e) { Logger.log('Status email failed: ' + e); }
   }
 
+  // Sync to Google Calendar
+  try {
+    if (status === 'approved' || status === 'reserved') {
+      _upsertCalendarEvent(event);
+    } else if (status === 'cancelled' || status === 'rejected') {
+      _removeCalendarEvent(event);
+    }
+  } catch (e) { Logger.log('Calendar sync failed: ' + e); }
+
   return event;
 }
 
@@ -240,6 +249,14 @@ function updateMeta(id, fields) {
   const event = getEvent(id);
   _logActivity_('updateMeta', id, event ? event.name : '', 'fields',
                 '', JSON.stringify(fields || {}), 'admin');
+
+  // Re-sync calendar if this event is currently approved/reserved
+  try {
+    if (event && (event.status === 'approved' || event.status === 'reserved')) {
+      _upsertCalendarEvent(event);
+    }
+  } catch (e) { Logger.log('Calendar re-sync failed: ' + e); }
+
   return event;
 }
 
@@ -487,4 +504,72 @@ function deleteSchoolHoliday(payload) {
     }
   }
   throw new Error('Not found');
+}
+
+// ============ GOOGLE CALENDAR SYNC ============
+
+const CALENDAR_ID = 'c_33da5e646839538742b8d501bd6d8389f6ee644359327bd80f2b859039428fe6@group.calendar.google.com';
+
+function _bigHallCalendar_() {
+  try {
+    return CalendarApp.getCalendarById(CALENDAR_ID);
+  } catch (e) {
+    Logger.log('Calendar access failed: ' + e);
+    return null;
+  }
+}
+
+function _findCalendarEventForBooking(event) {
+  const cal = _bigHallCalendar_();
+  if (!cal || !event || !event.id) return null;
+  const tag = '[BIG:' + event.id + ']';
+  const from = event.createdAt ? new Date(event.createdAt) : new Date();
+  from.setDate(from.getDate() - 30);
+  const to = new Date();
+  to.setFullYear(to.getFullYear() + 2);
+  const found = cal.getEvents(from, to);
+  for (let i = 0; i < found.length; i++) {
+    if (found[i].getDescription().indexOf(tag) !== -1) return found[i];
+  }
+  return null;
+}
+
+function _upsertCalendarEvent(event) {
+  const cal = _bigHallCalendar_();
+  if (!cal || !event) return;
+
+  const isReserved = event.status === 'reserved';
+  const title = isReserved
+    ? '🟡 [RESERVED] ' + event.name + ' [BIG HALL]'
+    : '✅ ' + event.name + ' [BIG HALL]';
+
+  const startStr = event.date + 'T' + (event.startTime || '09:00') + ':00';
+  const endStr = (event.endDate || event.date) + 'T' + (event.endTime || '18:00') + ':00';
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+
+  const desc = [
+    'Status: ' + event.status,
+    'Owner: ' + (event.organizer || ''),
+    'Contact: ' + (event.organizerContact || ''),
+    'Pax: ' + (event.pax || ''),
+    'Layout: ' + (event.layout || ''),
+    'PIC: ' + (event.pic || ''),
+    '',
+    '[BIG:' + event.id + ']',
+  ].join('\n');
+
+  const existing = _findCalendarEventForBooking(event);
+  if (existing) {
+    existing.setTitle(title);
+    existing.setDescription(desc);
+    existing.setTime(start, end);
+  } else {
+    cal.createEvent(title, start, end, { description: desc });
+  }
+}
+
+function _removeCalendarEvent(event) {
+  const existing = _findCalendarEventForBooking(event);
+  if (existing) existing.deleteEvent();
 }
