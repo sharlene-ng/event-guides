@@ -7,7 +7,9 @@ import EventChecklist from "./EventChecklist";
 import AdminControls from "./AdminControls";
 import EditableDetail from "./EditableDetail";
 
-export const dynamic = "force-dynamic";
+// Page is dynamic anyway (reads admin cookie). We rely on the tagged fetch
+// cache in getEvent for fast loads, purged on edit via revalidateTag — so we
+// must NOT force-dynamic here (that would disable the fetch cache).
 
 const layoutLabel: Record<string, string> = {
   theater: "Theater seats",

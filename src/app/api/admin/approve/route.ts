@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       body.approvedBy || "Sharlene",
     );
     revalidatePath("/");
+    revalidatePath(`/events/${body.id}`);
     return NextResponse.json({ ok: true, event });
   } catch (err) {
     return NextResponse.json(

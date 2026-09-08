@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(data, { status: 500 });
     }
     revalidatePath("/");
+    revalidatePath(`/events/${body.id}`);
     return NextResponse.json({ ok: true, event: data.event });
   } catch (err) {
     return NextResponse.json(

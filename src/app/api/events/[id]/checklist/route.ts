@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { saveChecklist } from "@/lib/sheets";
 import { isAdminAuthed } from "@/lib/admin";
@@ -16,6 +17,7 @@ export async function POST(
     const { id } = await params;
     const body = await req.json();
     const event = await saveChecklist(id, body.state || {});
+    revalidatePath(`/events/${id}`);
     return NextResponse.json({ ok: true, event });
   } catch (err) {
     return NextResponse.json(

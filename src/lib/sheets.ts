@@ -68,16 +68,16 @@ function ensureConfigured() {
 async function callGet(
   action: string,
   extraParams: Record<string, string> = {},
-  opts: { noCache?: boolean } = {},
+  opts: { revalidate?: number } = {},
 ): Promise<unknown> {
   ensureConfigured();
   const params = new URLSearchParams({ action, secret: API_SECRET!, ...extraParams });
   const res = await fetch(`${API_URL}?${params.toString()}`, {
     method: "GET",
     redirect: "follow",
-    // Detail views (e.g. a single event's checklist) must read fresh so a save
-    // shows immediately on refresh; list views stay cached for speed.
-    ...(opts.noCache ? { cache: "no-store" } : { next: { revalidate: 60 } }),
+    // Cached for fast loads. Detail pages purge their own cache after an edit
+    // via revalidatePath(`/events/${id}`), so refreshes stay fresh.
+    next: { revalidate: opts.revalidate ?? 60 },
   });
   const data = await res.json();
   if (!data.ok) throw new Error(data.error || "API error");
@@ -181,8 +181,9 @@ export async function listEvents(status?: EventStatus): Promise<SOPEvent[]> {
 }
 
 export async function getEvent(id: string): Promise<SOPEvent | null> {
-  // Read fresh (no cache) so checklist ticks / admin edits show on refresh.
-  const data = (await callGet("get", { id }, { noCache: true })) as { event: SOPEvent | null };
+  // Cached for fast loads; edits purge it via revalidatePath(`/events/${id}`)
+  // so a checklist tick / approval shows immediately on refresh.
+  const data = (await callGet("get", { id })) as { event: SOPEvent | null };
   return data.event ? normalizeEvent(data.event) : null;
 }
 
