@@ -316,7 +316,7 @@ export default function CalendarView({
                       isHoliday
                         ? "bg-gray-100"
                         : isReserved
-                          ? "bg-violet-100"
+                          ? "bg-gray-100"
                           : isSchoolHoliday
                             ? "bg-blue-50"
                             : inMonth
@@ -348,10 +348,10 @@ export default function CalendarView({
                       )}
                       {!isHoliday && isReserved && (
                         <span
-                          className="text-[9px] font-semibold text-red-600 leading-tight truncate"
+                          className="text-[9px] font-bold text-red-600 leading-tight truncate uppercase tracking-wide"
                           title={reservedNote || "Reserved"}
                         >
-                          Reserved
+                          RESERVED
                         </span>
                       )}
                       {!isHoliday && !isReserved && isSchoolHoliday && (
@@ -473,8 +473,8 @@ export default function CalendarView({
           School holiday
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-4 h-2 rounded bg-violet-100 border border-violet-200" />
-          <span className="text-red-600">Reserved (blocked)</span>
+          <span className="w-4 h-2 rounded bg-gray-100 border border-gray-300" />
+          <span className="text-red-600 font-semibold">RESERVED (blocked)</span>
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-600" />

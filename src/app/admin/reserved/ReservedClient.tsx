@@ -96,7 +96,7 @@ export default function ReservedClient({ initial }: { initial: Reserved[] }) {
         </span>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Reserved Dates</h1>
         <p className="text-gray-500 text-sm">
-          Reserved date ranges show as light purple cells on the home calendar.
+          Reserved date ranges show as grey cells with red RESERVED text on the home calendar.
         </p>
       </div>
 
