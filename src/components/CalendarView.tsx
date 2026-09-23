@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Holiday, SchoolHoliday, SOPEvent } from "@/lib/sheets";
 import { getColorBar } from "@/lib/colors";
+
+const CAL_MONTH_KEY = "bighall:calMonth";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -85,6 +87,20 @@ export default function CalendarView({
   const [cursor, setCursor] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1),
   );
+
+  // Restore the last-viewed month on load (per browser). Runs client-side only
+  // to avoid a hydration mismatch; falls back to the current month.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(CAL_MONTH_KEY);
+      if (saved && /^\d{4}-\d{2}$/.test(saved)) {
+        const [y, m] = saved.split("-").map(Number);
+        setCursor(new Date(y, m - 1, 1));
+      }
+    } catch {
+      /* localStorage unavailable — ignore */
+    }
+  }, []);
 
   // Build the 6-week grid for the visible month
   const weeks = useMemo(() => {
@@ -181,12 +197,27 @@ export default function CalendarView({
     year: "numeric",
   });
 
+  function persistMonth(d: Date) {
+    try {
+      localStorage.setItem(
+        CAL_MONTH_KEY,
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      );
+    } catch {
+      /* localStorage unavailable — ignore */
+    }
+  }
+
   function move(delta: number) {
-    setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1));
+    const next = new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1);
+    setCursor(next);
+    persistMonth(next);
   }
 
   function goToday() {
-    setCursor(new Date(today.getFullYear(), today.getMonth(), 1));
+    const t = new Date(today.getFullYear(), today.getMonth(), 1);
+    setCursor(t);
+    persistMonth(t);
   }
 
   return (
