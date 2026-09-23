@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getEvent } from "@/lib/sheets";
 import { isAdminAuthed } from "@/lib/admin";
-import { headerGradients, DEFAULT_COLOR, type EventColor } from "@/lib/colors";
+import { headerGradients, DEFAULT_COLOR, colorForEventName, type EventColor } from "@/lib/colors";
 import EventChecklist from "./EventChecklist";
 import AdminControls from "./AdminControls";
 import EditableDetail from "./EditableDetail";
@@ -51,7 +51,9 @@ export default async function EventDetailPage({
 
   const isAdmin = await isAdminAuthed();
 
-  const eventColor = (event.requirements?.color as EventColor) || DEFAULT_COLOR;
+  const eventColor =
+    (colorForEventName(event.name, event.requirements?.color) as EventColor) ||
+    DEFAULT_COLOR;
   const headerGrad = headerGradients[eventColor] ?? headerGradients[DEFAULT_COLOR];
 
   const start = new Date(String(event.date));

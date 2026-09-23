@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Holiday, SchoolHoliday, SOPEvent } from "@/lib/sheets";
-import { getColorBar } from "@/lib/colors";
+import { getColorBar, getColorSwatch, colorForEventName, PROJECT_COLORS } from "@/lib/colors";
 
 const CAL_MONTH_KEY = "bighall:calMonth";
 
@@ -342,7 +342,9 @@ export default function CalendarView({
                 const top = HEADER_AREA + b.lane * (BAR_HEIGHT + BAR_GAP);
                 const radiusLeft = b.startsBeforeWeek ? 0 : 4;
                 const radiusRight = b.endsAfterWeek ? 0 : 4;
-                const colorCls = getColorBar(b.event.requirements?.color);
+                const colorCls = getColorBar(
+                  colorForEventName(b.event.name, b.event.requirements?.color),
+                );
                 // Pull the text-* class out of colorCls so we can apply it
                 // to the (full-opacity) content layer, while the (faded)
                 // background layer keeps the bg / border / hover classes.
@@ -423,15 +425,11 @@ export default function CalendarView({
         })}
       </div>
 
-      {/* Legend */}
+      {/* Legend — status / block types */}
       <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-4 text-[11px] text-gray-500 flex-wrap">
         <span className="inline-flex items-center gap-1.5">
-          <span className="w-4 h-2 rounded bg-blue-200 border border-blue-300" />
-          Confirmed
-        </span>
-        <span className="inline-flex items-center gap-1.5">
           <span className="w-4 h-2 rounded bg-gray-100 border border-dotted border-gray-400" />
-          Reserved
+          Reserved (TBC)
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-4 h-2 rounded bg-gray-100 border border-dotted border-gray-400" />
@@ -452,6 +450,19 @@ export default function CalendarView({
         <span className="text-gray-400 text-[10px]">
           · Tap an event to open
         </span>
+      </div>
+
+      {/* Legend — project colours (confirmed event bars) */}
+      <div className="px-5 py-3 border-t border-gray-100 flex items-center gap-x-4 gap-y-1.5 text-[11px] text-gray-500 flex-wrap">
+        <span className="font-semibold uppercase tracking-wide text-gray-400 text-[10px]">
+          Projects
+        </span>
+        {PROJECT_COLORS.map((p) => (
+          <span key={p.label} className="inline-flex items-center gap-1.5">
+            <span className={`w-4 h-2 rounded border ${getColorSwatch(p.color)}`} />
+            {p.label}
+          </span>
+        ))}
       </div>
     </div>
   );

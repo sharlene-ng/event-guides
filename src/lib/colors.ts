@@ -143,3 +143,30 @@ export function getColorBar(color?: string): string {
     EVENT_COLORS.find((c) => c.value === DEFAULT_COLOR)!.bar
   );
 }
+
+export function getColorSwatch(color?: string): string {
+  return (
+    EVENT_COLORS.find((c) => c.value === color)?.swatch ||
+    EVENT_COLORS.find((c) => c.value === DEFAULT_COLOR)!.swatch
+  );
+}
+
+// Auto-assign a fixed colour per project, matched by a keyword in the event
+// name. Order matters — more specific rules first (e.g. "Malay" before the
+// generic "Hackathon" rule). Falls back to the event's own colour if no match.
+export const PROJECT_COLORS: { label: string; color: EventColor; re: RegExp }[] = [
+  { label: "Malay Hackathon", color: "blue", re: /malay/i },
+  { label: "Hackathon", color: "orange", re: /hackathon/i },
+  { label: "Vibe Coding", color: "sky", re: /vibe\s*cod/i },
+  { label: "Annika", color: "emerald", re: /annik/i },
+  { label: "AI / GenAI", color: "lime", re: /\bAI\b|GenAI/ },
+];
+
+export function colorForEventName(
+  name?: string,
+  fallback?: string,
+): string | undefined {
+  const n = name || "";
+  for (const p of PROJECT_COLORS) if (p.re.test(n)) return p.color;
+  return fallback;
+}
