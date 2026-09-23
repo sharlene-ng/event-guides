@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import type { Holiday, SchoolHoliday, SOPEvent } from "@/lib/sheets";
+import type { Holiday, SchoolHoliday, Reserved, SOPEvent } from "@/lib/sheets";
 import { getColorBar, getColorSwatch, colorForEventName, PROJECT_COLORS } from "@/lib/colors";
 
 const CAL_MONTH_KEY = "bighall:calMonth";
@@ -49,10 +49,12 @@ export default function CalendarView({
   events,
   holidays = [],
   schoolHolidays = [],
+  reserved = [],
 }: {
   events: SOPEvent[];
   holidays?: Holiday[];
   schoolHolidays?: SchoolHoliday[];
+  reserved?: Reserved[];
 }) {
   // Lookup map: "YYYY-MM-DD" → holiday name
   const holidayByDate = useMemo(() => {
@@ -74,6 +76,21 @@ export default function CalendarView({
     }
     return s;
   }, [schoolHolidays]);
+
+  // Map "YYYY-MM-DD" → reserved note (or "") for dates within any reserved range
+  const reservedByDate = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const r of reserved) {
+      if (!r.startDate || !r.endDate) continue;
+      const start = parseLocalDate(r.startDate);
+      const end = parseLocalDate(r.endDate);
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        m.set(key, r.note || "");
+      }
+    }
+    return m;
+  }, [reserved]);
 
   function isoKey(d: Date): string {
     const y = d.getFullYear();
@@ -289,6 +306,8 @@ export default function CalendarView({
                 const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                 const holidayName = holidayByDate.get(isoKey(date));
                 const isHoliday = !!holidayName && inMonth;
+                const reservedNote = reservedByDate.get(isoKey(date));
+                const isReserved = reservedNote !== undefined && inMonth;
                 const isSchoolHoliday = schoolHolidayDates.has(isoKey(date)) && inMonth;
                 return (
                   <div
@@ -296,11 +315,13 @@ export default function CalendarView({
                     className={`px-1 pt-1 ${di < 6 ? "border-r border-gray-100" : ""} ${
                       isHoliday
                         ? "bg-gray-100"
-                        : isSchoolHoliday
-                          ? "bg-blue-50"
-                          : inMonth
-                            ? "bg-white"
-                            : "bg-gray-50/50"
+                        : isReserved
+                          ? "bg-violet-100"
+                          : isSchoolHoliday
+                            ? "bg-blue-50"
+                            : inMonth
+                              ? "bg-white"
+                              : "bg-gray-50/50"
                     }`}
                   >
                     <div className="flex items-center gap-1">
@@ -325,7 +346,15 @@ export default function CalendarView({
                           {holidayName}
                         </span>
                       )}
-                      {!isHoliday && isSchoolHoliday && (
+                      {!isHoliday && isReserved && (
+                        <span
+                          className="text-[9px] font-semibold text-red-600 leading-tight truncate"
+                          title={reservedNote || "Reserved"}
+                        >
+                          Reserved
+                        </span>
+                      )}
+                      {!isHoliday && !isReserved && isSchoolHoliday && (
                         <span className="text-[9px] font-medium text-blue-400 leading-tight">
                           School hol.
                         </span>
@@ -442,6 +471,10 @@ export default function CalendarView({
         <span className="inline-flex items-center gap-1.5">
           <span className="w-4 h-2 rounded bg-blue-50 border border-blue-200" />
           School holiday
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-4 h-2 rounded bg-violet-100 border border-violet-200" />
+          <span className="text-red-600">Reserved (blocked)</span>
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-600" />

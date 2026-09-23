@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { Holiday, SchoolHoliday, SOPEvent } from "@/lib/sheets";
+import type { Holiday, SchoolHoliday, Reserved, SOPEvent } from "@/lib/sheets";
 import CalendarView from "@/components/CalendarView";
 
 const layoutLabel: Record<string, string> = {
@@ -42,10 +42,12 @@ export default function HomeTabs({
   events,
   holidays,
   schoolHolidays = [],
+  reserved = [],
 }: {
   events: SOPEvent[];
   holidays: Holiday[];
   schoolHolidays?: SchoolHoliday[];
+  reserved?: Reserved[];
 }) {
   const [tab, setTab] = useState<TabKey>("calendar");
 
@@ -134,7 +136,7 @@ export default function HomeTabs({
 
       {/* Active view */}
       {tab === "calendar" ? (
-        <CalendarView events={events} holidays={holidays} schoolHolidays={schoolHolidays} />
+        <CalendarView events={events} holidays={holidays} schoolHolidays={schoolHolidays} reserved={reserved} />
       ) : (
         <ListView monthKeys={monthKeys} grouped={grouped} />
       )}

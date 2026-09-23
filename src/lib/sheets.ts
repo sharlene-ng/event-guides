@@ -362,3 +362,52 @@ export async function createSchoolHoliday(
 export async function deleteSchoolHoliday(id: string): Promise<void> {
   await callPost("deleteSchoolHoliday", { id });
 }
+
+// ============ RESERVED (admin-blocked date ranges) ============
+
+export type Reserved = {
+  id: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  note: string;      // optional reason
+};
+
+export async function listReserved(): Promise<Reserved[]> {
+  try {
+    const data = (await callGet("listReserved")) as {
+      reserved: Reserved[] | { reserved: Reserved[] };
+    };
+    const raw = Array.isArray(data.reserved)
+      ? data.reserved
+      : data.reserved?.reserved || [];
+    return raw.map((r) => ({
+      id: String(r.id || ""),
+      startDate: normalizeDate(r.startDate),
+      endDate: normalizeDate(r.endDate),
+      note: String(r.note || ""),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function createReserved(
+  payload: { startDate: string; endDate: string; note?: string },
+): Promise<Reserved> {
+  const data = (await callPost("createReserved", payload)) as {
+    reserved: Reserved | { reserved: Reserved };
+  };
+  const r = "reserved" in data.reserved
+    ? (data.reserved as { reserved: Reserved }).reserved
+    : (data.reserved as Reserved);
+  return {
+    id: String(r.id || ""),
+    startDate: normalizeDate(r.startDate),
+    endDate: normalizeDate(r.endDate),
+    note: String(r.note || ""),
+  };
+}
+
+export async function deleteReserved(id: string): Promise<void> {
+  await callPost("deleteReserved", { id });
+}

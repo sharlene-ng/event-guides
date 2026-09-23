@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listEvents, listHolidays, listSchoolHolidays, type Holiday, type SchoolHoliday, type SOPEvent } from "@/lib/sheets";
+import { listEvents, listHolidays, listSchoolHolidays, listReserved, type Holiday, type SchoolHoliday, type Reserved, type SOPEvent } from "@/lib/sheets";
 import HomeTabs from "@/components/HomeTabs";
 import ShareLinkButton from "@/components/ShareLinkButton";
 import BookingRules from "@/components/BookingRules";
@@ -10,17 +10,25 @@ export default async function V2Home() {
   let allVisible: SOPEvent[] = [];
   let holidays: Holiday[] = [];
   let schoolHolidays: SchoolHoliday[] = [];
+  let reserved: Reserved[] = [];
   let backendError: string | null = null;
 
   try {
     // Show confirmed (approved) + reserved + pending on home page; hide cancelled / rejected
-    // Fetch holidays in parallel — fails soft to [] if backend doesn't support it yet.
-    const [all, hols, schoolHols] = await Promise.all([listEvents(), listHolidays(), listSchoolHolidays()]);
+    // Fetch holidays/reserved in parallel — each fails soft to [] if the backend
+    // doesn't support it yet.
+    const [all, hols, schoolHols, res] = await Promise.all([
+      listEvents(),
+      listHolidays(),
+      listSchoolHolidays(),
+      listReserved(),
+    ]);
     allVisible = all.filter(
       (e) => e.status === "approved" || e.status === "reserved" || e.status === "pending",
     );
     holidays = hols;
     schoolHolidays = schoolHols;
+    reserved = res;
   } catch (err) {
     backendError = String(err);
   }
@@ -105,7 +113,7 @@ export default async function V2Home() {
         </Link>
       </div>
 
-      <HomeTabs events={allVisible} holidays={holidays} schoolHolidays={schoolHolidays} />
+      <HomeTabs events={allVisible} holidays={holidays} schoolHolidays={schoolHolidays} reserved={reserved} />
     </div>
   );
 }

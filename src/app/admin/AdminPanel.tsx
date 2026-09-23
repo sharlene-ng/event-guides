@@ -148,6 +148,12 @@ export default function AdminPanel({ initialEvents }: { initialEvents: SOPEvent[
           >
             School holidays →
           </Link>
+          <Link
+            href="/admin/reserved"
+            className="text-xs font-semibold text-purple-600 hover:text-purple-700"
+          >
+            Reserved dates →
+          </Link>
           <button
             onClick={logout}
             className="text-xs text-gray-400 hover:text-gray-700"
