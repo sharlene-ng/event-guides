@@ -155,7 +155,7 @@ export function getColorSwatch(color?: string): string {
 // name. Order matters — more specific rules first (e.g. "Malay" before the
 // generic "Hackathon" rule). Falls back to the event's own colour if no match.
 export const PROJECT_COLORS: { label: string; color: EventColor; re: RegExp }[] = [
-  { label: "Malay Hackathon", color: "sky", re: /malay/i },
+  { label: "Malay Hackathon", color: "blue", re: /malay/i },
   { label: "Hackathon", color: "orange", re: /hackathon/i },
   { label: "Vibe Coding", color: "cyan", re: /vibe\s*cod/i },
   { label: "Annika", color: "emerald", re: /annik/i },
