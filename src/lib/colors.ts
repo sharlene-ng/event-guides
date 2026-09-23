@@ -157,7 +157,7 @@ export function getColorSwatch(color?: string): string {
 export const PROJECT_COLORS: { label: string; color: EventColor; re: RegExp }[] = [
   { label: "Malay Hackathon", color: "sky", re: /malay/i },
   { label: "Hackathon", color: "orange", re: /hackathon/i },
-  { label: "Vibe Coding", color: "blue", re: /vibe\s*cod/i },
+  { label: "Vibe Coding", color: "cyan", re: /vibe\s*cod/i },
   { label: "Annika", color: "emerald", re: /annik/i },
   { label: "AI / GenAI", color: "lime", re: /\bAI\b|GenAI/ },
 ];
